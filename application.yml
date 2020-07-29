@@ -12,3 +12,15 @@ spring:
     url: jdbc:postgresql://localhost:5432/pubSub
     username: root
     password: 123
+
+  mail:
+    protocol: smtps
+    host: smtp.gmail.com
+    port: 465
+    username: SocialNetwork7SG@gmail.com
+    password: $0c!ALnet
+
+mail:
+  debug: true
+
+
