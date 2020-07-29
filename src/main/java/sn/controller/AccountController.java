@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/api/v1/account")
+@RequestMapping("/account")
 public class AccountController {
 
     //Регистрация пользователя

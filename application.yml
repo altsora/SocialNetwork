@@ -12,3 +12,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/pubSub
     username: root
     password: 123
+
+server:
+  servlet:
+    contextPath: /api/v1
