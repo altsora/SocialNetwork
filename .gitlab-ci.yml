@@ -17,4 +17,4 @@ stages:
 test:
   stage: build
   script:
-    - 'mvn  install'$MAVEN_CLI_OPTS
+    - mvn $MAVEN_CLI_OPTS test
