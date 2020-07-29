@@ -1,0 +1,26 @@
+spring:
+  flyway:
+    enabled: false
+  jpa:
+    generate-ddl: false
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/pubSub
+    username: root
+    password: 123
+
+  mail:
+    protocol: smtps
+    host: smtp.gmail.com
+    port: 465
+    username: SocialNetwork7SG@gmail.com
+    password: $0c!ALnet
+
+mail:
+  debug: true
+
+
