@@ -1,15 +1,10 @@
-package sn;
+package sn.service;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import sn.service.MailSenderService;
 
-
-@RunWith(SpringRunner.class)
 @SpringBootTest
 public class MailSenderTest {
 
@@ -18,20 +13,20 @@ public class MailSenderTest {
 
     @Test
     public void mailServiceCreatedTest() {
-        Assert.assertNotNull(mailSender);
+        Assertions.assertNotNull(mailSender);
     }
 
     @Test
-    public void mailSendTest() throws Exception {
+    public void mailSendTest()  {
         Exception verifiableError = null;
         try {
-            mailSender.send("fyrklod@gmail.com", "testMail", "Hello, <b>Fyrklod</b>!");
+            mailSender.send("test-sd1bkelkj@srv1.mail-tester.com", "testMail", "Hello, <b>group!</b>");
         } catch (Exception ex){
             ex.printStackTrace();
             verifiableError = ex;
         }
 
-        Assert.assertNull(verifiableError);
+        Assertions.assertNull(verifiableError);
     }
 
 }
