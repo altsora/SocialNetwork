@@ -9,7 +9,19 @@ spring:
     url: jdbc:postgresql://localhost:5432/snet
     username: snet
     password: snet
+  mail:
+    protocol: smtps
+    host: smtp.gmail.com
+    port: 465
+    username: SocialNetwork7SG@gmail.com
+    password: $0c!ALnet
 
+mail:
+  debug: true
 flyway:
   user: snet
   password: snet
+
+server:
+  servlet:
+    contextPath: /api/v1
