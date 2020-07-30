@@ -1,6 +1,4 @@
 spring:
-  flyway:
-    enabled: false
   jpa:
     generate-ddl: false
     show-sql: false
@@ -10,9 +8,5 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/pubSub
-    username: root
+    username: postgres
     password: 123
-
-server:
-  servlet:
-    contextPath: /api/v1
