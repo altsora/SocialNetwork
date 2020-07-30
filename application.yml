@@ -24,3 +24,8 @@ mail:
   debug: true
 
 
+
+
+server:
+  servlet:
+    contextPath: /api/v1
