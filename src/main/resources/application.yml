@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    generate-ddl: false
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/snet
+    username: snet
+    password: snet
+
+flyway:
+  user: snet
+  password: snet

@@ -1,4 +1,4 @@
-package main.model;
+package sn.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
