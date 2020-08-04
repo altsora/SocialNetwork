@@ -9,4 +9,19 @@ spring:
     url: jdbc:postgresql://localhost:5432/pubSub
     username: postgres
     password: 123
+  mail:
+    protocol: smtps
+    host: smtp.gmail.com
+    port: 465
+    username: SocialNetwork7SG@gmail.com
+    password: $0c!ALnet
 
+mail:
+  debug: true
+flyway:
+  user: postgres
+  password: 123
+
+server:
+  servlet:
+    contextPath: /api/v1
