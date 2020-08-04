@@ -1,4 +1,4 @@
-package sn.model.dto;
+package sn.model.dto.account;
 
 import lombok.Data;
 

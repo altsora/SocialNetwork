@@ -1,4 +1,4 @@
-package sn.model.dto.recoveryPassword;
+package sn.model.dto.account.recoveryPassword;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

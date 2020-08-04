@@ -1,11 +1,14 @@
 package sn.service.impl;
 
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
+import sn.model.dto.account.UserRegistrationDTO;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 import sn.service.exceptions.PersonNotFoundException;
@@ -30,6 +33,68 @@ public class AccountService implements IAccountService {
 
     @Autowired
     private MailSenderService mailSenderService;
+
+    @Override
+    public boolean register(UserRegistrationDTO userRegistrationDTO) {
+        if (!checkCaptcha(userRegistrationDTO.getCode())) {
+            log.warn("Wrong captcha");
+            return false;
+        }
+        if (!userRegistrationDTO.getPasswd1().equals(userRegistrationDTO.getPasswd2())) {
+            low.warn("Passwords do not match");
+            return false;
+        }
+
+        try {
+            if (personService.findByEmail(userRegistrationDTO.getEmail()) != null) {
+                log.warn("User with email {} is exist.", userRegistrationDTO.getEmail());
+                return false;
+            }
+            Person person = new Person();
+            person.setFirstName(userRegistrationDTO.getFirstName());
+            person.setLastName(userRegistrationDTO.getLastName());
+            person.setPassword(userRegistrationDTO.getPasswd1());
+            person.setEmail(userRegistrationDTO.getEmail());
+            if (personService.save(person).isPresent()) {
+                log.info("Person successfully registered");
+                return true;
+            }
+            log.error("Error in register method. Person do not registered");
+            return false;
+
+        } catch (PersonNotFoundException exception) {
+            log.error("Error in register method. User with this email is exist.");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean recoveryPassword(String email) {
+        try {
+            Person person = personService.findByEmail(email);
+            if (person == null) {
+                log.warn("User with email {} do not exist.", email);
+                return false;
+            }
+            UUID uuid = UUID.randomUUID();
+            String randomUUIDString = uuid.toString();
+            person.setRecoveryCode(randomUUIDString);
+            if (personService.save(person).isPresent()) {
+                log.info("Recovery code has been saved");
+                CompletableFuture.runAsync(() -> {
+                    mailSenderService.send(person.getEmail(), "Password recovery",
+                        "For recovery password go to link {server_name}"+randomUUIDString);
+
+                });
+                return true;
+            }
+            log.error("Error in recoveryPassword method. Recovery code do not set and/or email do not sent.");
+            return false;
+        } catch (PersonNotFoundException exception) {
+            log.error("Error in recoveryPassword method. User with this email do not exist.");
+            return false;
+        }
+    }
 
     @Override
     @Transactional
@@ -83,5 +148,9 @@ public class AccountService implements IAccountService {
             log.error("Error in changeEmail method. User with this email is exist.");
             return false;
         }
+    }
+
+    public boolean checkCaptcha(String code) {
+        return true;
     }
 }
