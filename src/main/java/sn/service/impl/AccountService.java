@@ -11,6 +11,10 @@ import sn.service.IPersonService;
 import sn.service.exceptions.PersonNotFoundException;
 
 import javax.transaction.Transactional;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -24,6 +28,9 @@ public class AccountService implements IAccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MailSenderService mailSenderService;
+
     @Override
     @Transactional
     public boolean setNewPassword(String recoveryCode, String password) {
@@ -32,6 +39,11 @@ public class AccountService implements IAccountService {
             person.setPassword(password);
             if (personService.save(person).isPresent()) {
                 log.info("Person password successfully recovered.");
+                CompletableFuture.runAsync(() -> {
+                    mailSenderService.send(person.getEmail(), "Password recovery",
+                            new StringBuffer("Your password has been changed successfully from ")
+                                    .append(getIpAddress()).append(" at ").append(LocalDateTime.now()).toString());
+                });
                 return true;
             }
             log.error("Error in setNewPassword method. Person with recovered password was not saved.");
@@ -40,6 +52,15 @@ public class AccountService implements IAccountService {
             log.error("Error in setNewPassword method. Person not found by recovery code.");
             return false;
         }
+    }
+
+    private InetAddress getIpAddress() {
+        try {
+            return InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
