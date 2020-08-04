@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ServiceResponse<T> {
+public class ServiceResponse<T extends AbstractResponse> {
     /**
      * Root entity for service response
      *
