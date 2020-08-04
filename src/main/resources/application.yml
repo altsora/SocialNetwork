@@ -6,10 +6,7 @@ spring:
       ddl-auto: validate
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/snet
-    username: snet
-    password: snet
+    url: jdbc:postgresql://localhost:5432/pubSub
+    username: postgres
+    password: 123
 
-flyway:
-  user: snet
-  password: snet
