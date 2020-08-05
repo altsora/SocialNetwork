@@ -11,6 +11,7 @@ import sn.model.Person;
 import sn.model.dto.account.UserRegistrationDTO;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
+import sn.service.MailSenderService;
 import sn.service.exceptions.PersonNotFoundException;
 
 import javax.transaction.Transactional;
