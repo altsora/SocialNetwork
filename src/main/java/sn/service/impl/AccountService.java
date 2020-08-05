@@ -2,7 +2,6 @@ package sn.service.impl;
 
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -31,6 +30,9 @@ public class AccountService implements IAccountService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private Authentication authentication;
 
     @Autowired
     private MailSenderService mailSenderService;
@@ -68,7 +70,11 @@ public class AccountService implements IAccountService {
             return false;
         }
     }
-
+    /*
+    * todo:
+    *  1. Генератор паролей. Приватный метод в этом сервисе;
+    *  2. Сет сгенерированного, зашифрованного PasswordEncoder-ом пароля пользователю, найденному по мылу;
+    *  3. Отправка нового пароля (незашифрованного) на мыло пользвателю*/
     @Override
     public boolean recoveryPassword(String email) {
         try {
@@ -99,10 +105,10 @@ public class AccountService implements IAccountService {
 
     @Override
     @Transactional
-    public boolean setNewPassword(String recoveryCode, String password) {
+    public boolean setNewPassword(String password) {
         try {
-            Person person = personService.findByRecoveryCode(recoveryCode);
-            person.setPassword(password);
+            Person person = personService.findByUsername(authentication.getName());
+            person.setPassword(passwordEncoder.encode(password));
             if (personService.save(person).isPresent()) {
                 log.info("Person password successfully recovered.");
                 CompletableFuture.runAsync(() -> {
@@ -124,14 +130,15 @@ public class AccountService implements IAccountService {
         try {
             return InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
+            log.error("Can't get ip address.");
             e.printStackTrace();
         }
         return null;
     }
 
     @Override
+    @Transactional
     public boolean changeEmail(String newEmail) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         try {
             if (personService.findByEmail(newEmail) != null) {
                 log.warn("User with email {} is exist.", newEmail);
@@ -149,9 +156,5 @@ public class AccountService implements IAccountService {
             log.error("Error in changeEmail method. User with this email is exist.");
             return false;
         }
-    }
-
-    public boolean checkCaptcha(String code) {
-        return true;
     }
 }

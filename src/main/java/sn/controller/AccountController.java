@@ -11,7 +11,7 @@ import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
 import sn.model.dto.account.EmailDTO;
 import sn.model.dto.account.UserRegistrationDTO;
-import sn.model.dto.account.recoveryPassword.RecoveryFormData;
+import sn.model.dto.account.recoveryPassword.PasswordDTO;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 
@@ -61,14 +61,12 @@ public class AccountController {
     }
 
     @PutMapping("/password/set")
-    public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(
-            @RequestBody RecoveryFormData recoveryFormData) {
-        if (Strings.isNullOrEmpty(recoveryFormData.getToken()) || Strings
-                .isNullOrEmpty(recoveryFormData.getPassword())) {
+    public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody PasswordDTO passwordDTO) {
+        if (Strings.isNullOrEmpty(passwordDTO.getPassword())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ServiceResponse<>("Bad request", new ResponseDataMessage("Recovery data null or empty")));
+                    new ServiceResponse<>("Bad request", new ResponseDataMessage("New password null or empty")));
         }
-        return accountService.setNewPassword(recoveryFormData.getToken(), recoveryFormData.getPassword()) ?
+        return accountService.setNewPassword(passwordDTO.getPassword()) ?
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ServiceResponse<>(new ResponseDataMessage("Person password successfully recovered"))
                 ) :

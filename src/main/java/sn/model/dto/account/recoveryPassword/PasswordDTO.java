@@ -4,15 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
- * Класс RecoveryFormData.
+ * Класс PasswordDTO.
  * DTO для восстановления пароля.
+ *
  * @version 1.0
  */
 @Data
 @AllArgsConstructor
-public class RecoveryFormData {
+public class PasswordDTO {
 
-    private String token;
     private String password;
 
 }
