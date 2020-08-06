@@ -1,7 +1,11 @@
 package sn.service.impl;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Random;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -83,14 +87,14 @@ public class AccountService implements IAccountService {
                 log.warn("User with email {} do not exist.", email);
                 return false;
             }
-            UUID uuid = UUID.randomUUID();
-            String randomUUIDString = uuid.toString();
-            person.setRecoveryCode(randomUUIDString);
+            String newPassword = generateNewPassword(9);
+            person.setPassword(passwordEncoder.encode(newPassword));
+
             if (personService.save(person).isPresent()) {
-                log.info("Recovery code has been saved");
+                log.info("New password set to the person");
                 CompletableFuture.runAsync(() -> {
                     mailSenderService.send(person.getEmail(), "Password recovery",
-                        "For recovery password go to link {server_name}"+randomUUIDString);
+                        "Your new password: " + newPassword);
 
                 });
                 return true;
@@ -156,5 +160,17 @@ public class AccountService implements IAccountService {
             log.error("Error in changeEmail method. User with this email is exist.");
             return false;
         }
+    }
+
+    private String generateNewPassword(int length) {
+        int leftLimit = 48; 
+        int rightLimit = 122;
+        Random random = new Random();
+
+        return random.ints(leftLimit, rightLimit + 1)
+            .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+            .limit(length)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString();
     }
 }

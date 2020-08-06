@@ -8,4 +8,10 @@ import sn.api.response.AbstractResponse;
 @AllArgsConstructor
 public class ResponseDataMessage extends AbstractResponse {
     private String message;
+
+    public ResponseDataMessage(String message) {
+        this.message = message;
+    }
 }
+
+

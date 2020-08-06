@@ -39,7 +39,7 @@ public class AccountController {
         }
         return accountService.register(userRegistrationDTO) ? ResponseEntity.status(HttpStatus.OK).body(
                 new ServiceResponse<>(new ResponseDataMessage("Registration successfull"))
-        ) :
+                ) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
                 );
