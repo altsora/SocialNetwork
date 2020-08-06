@@ -5,7 +5,10 @@ import sn.service.exceptions.PersonNotFoundException;
 
 import java.util.Optional;
 
-
+/**
+ * Интерфейс IPersonService.
+ * Методы для работы Person.
+ */
 public interface IPersonService {
 
     Person findByRecoveryCode(String recoveryCode) throws PersonNotFoundException;

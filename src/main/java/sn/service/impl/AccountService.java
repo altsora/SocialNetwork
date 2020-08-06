@@ -1,11 +1,6 @@
 package sn.service.impl;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Random;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -21,8 +16,15 @@ import javax.transaction.Transactional;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Класс AccountService.
+ * Сервисный слой для аккаунта пользователя.
+ *
+ * @version 1.0
+ */
 @Slf4j
 @Service
 @Component("account-service")
@@ -41,14 +43,24 @@ public class AccountService implements IAccountService {
     @Autowired
     private MailSenderService mailSenderService;
 
+    /**
+     * Метод register.
+     * Регистрация нового пользователя.
+     *
+     * @param userRegistrationDTO - данные с веб-формы.
+     * @return true - если пользователь сохранен в базу, false - не совпали пароли, есть пользователь с такой же почтой,
+     * база данных недоступна.
+     * @see sn.model.dto.account.UserRegistrationDTO;
+     */
     @Override
     public boolean register(UserRegistrationDTO userRegistrationDTO) {
-        if (!checkCaptcha(userRegistrationDTO.getCode())) {
-            log.warn("Wrong captcha");
-            return false;
-        }
+        //todo если заработает на фронте
+//        if (!checkCaptcha(userRegistrationDTO.getCode())) {
+//            log.warn("Wrong captcha");
+//            return false;
+//        }
         if (!userRegistrationDTO.getPasswd1().equals(userRegistrationDTO.getPasswd2())) {
-            low.warn("Passwords do not match");
+            log.warn("Passwords do not match");
             return false;
         }
 
@@ -60,7 +72,7 @@ public class AccountService implements IAccountService {
             Person person = new Person();
             person.setFirstName(userRegistrationDTO.getFirstName());
             person.setLastName(userRegistrationDTO.getLastName());
-            person.setPassword(userRegistrationDTO.getPasswd1());
+            person.setPassword(passwordEncoder.econde(userRegistrationDTO.getPasswd1()));
             person.setEmail(userRegistrationDTO.getEmail());
             if (personService.save(person).isPresent()) {
                 log.info("Person successfully registered");
@@ -68,17 +80,19 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in register method. Person do not registered");
             return false;
-
         } catch (PersonNotFoundException exception) {
             log.error("Error in register method. User with this email is exist.");
             return false;
         }
     }
-    /*
-    * todo:
-    *  1. Генератор паролей. Приватный метод в этом сервисе;
-    *  2. Сет сгенерированного, зашифрованного PasswordEncoder-ом пароля пользователю, найденному по мылу;
-    *  3. Отправка нового пароля (незашифрованного) на мыло пользвателю*/
+
+    /**
+     * Метод recoveryPassword.
+     * Метод для восстановления пароля.
+     *
+     * @param email почта пользователя.
+     * @return true - новый пароль сохранен и отправлен пользователю, false - person не найден в базе, база недоступна.
+     */
     @Override
     public boolean recoveryPassword(String email) {
         try {
@@ -94,7 +108,7 @@ public class AccountService implements IAccountService {
                 log.info("New password set to the person");
                 CompletableFuture.runAsync(() -> {
                     mailSenderService.send(person.getEmail(), "Password recovery",
-                        "Your new password: " + newPassword);
+                            "Your new password: " + newPassword);
 
                 });
                 return true;
@@ -107,6 +121,13 @@ public class AccountService implements IAccountService {
         }
     }
 
+    /**
+     * Метод setNewPassword.
+     * Осознанная смена пароля.
+     *
+     * @param password новый пароль.
+     * @return true - если пароль изменен, false - если пользователь не найден в базе, база недоступна.
+     */
     @Override
     @Transactional
     public boolean setNewPassword(String password) {
@@ -130,6 +151,12 @@ public class AccountService implements IAccountService {
         }
     }
 
+    /**
+     * Метод getIpAddress.
+     * Получение ip-адреса пользователя.
+     *
+     * @return ip-алрес пользователя.
+     */
     private InetAddress getIpAddress() {
         try {
             return InetAddress.getLocalHost();
@@ -140,6 +167,14 @@ public class AccountService implements IAccountService {
         return null;
     }
 
+    /**
+     * Метод changeEmail.
+     * Осознанная смена почтового адреса.
+     *
+     * @param newEmail новый адрес почты.
+     * @return true - если адрес измене, false - если существует пользователь с таким же почтовым адресом,
+     * пользователь не найден, база недоступна.
+     */
     @Override
     @Transactional
     public boolean changeEmail(String newEmail) {
@@ -162,15 +197,22 @@ public class AccountService implements IAccountService {
         }
     }
 
+    /**
+     * Метод generateNewPassword.
+     * Генератор пароля.
+     *
+     * @param length длина пароля.
+     * @return пароль.
+     */
     private String generateNewPassword(int length) {
-        int leftLimit = 48; 
+        int leftLimit = 48;
         int rightLimit = 122;
         Random random = new Random();
 
         return random.ints(leftLimit, rightLimit + 1)
-            .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-            .limit(length)
-            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-            .toString();
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(length)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 }

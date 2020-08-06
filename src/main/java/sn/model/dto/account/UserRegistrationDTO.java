@@ -1,11 +1,14 @@
 package sn.model.dto.account;
 
-import java.lang.reflect.Field;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.lang.reflect.Field;
+
 /**
- * DTO for registration
+ * Класс UserRegistrationDTO.
+ * DTO for registration.
+ * @version 1.0
  */
 
 @Data
@@ -20,8 +23,8 @@ public class UserRegistrationDTO {
 
     public boolean selfCheck() throws IllegalAccessException {
         Field[] fields = this.getClass().getFields();
-        for (Field f:fields) {
-            if (((String) f.get(this)).isEmpty() || f.get(this)==null) {
+        for (Field f : fields) {
+            if (((String) f.get(this)).isEmpty() || f.get(this) == null) {
                 return false;
             }
         }
