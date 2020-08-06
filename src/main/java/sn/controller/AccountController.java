@@ -10,11 +10,17 @@ import org.springframework.web.bind.annotation.*;
 import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
 import sn.model.dto.account.EmailDTO;
+import sn.model.dto.account.PasswordDTO;
 import sn.model.dto.account.UserRegistrationDTO;
-import sn.model.dto.account.recoveryPassword.PasswordDTO;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 
+/**
+ * Класс AccountController.
+ * REST-контроллер для работы с аккаунтом.
+ *
+ * @version 1.0
+ */
 @Slf4j
 @RestController
 @RequestMapping("/account")
@@ -28,7 +34,16 @@ public class AccountController {
     @Qualifier("account-service")
     private IAccountService accountService;
 
-    //Регистрация пользователя
+    /**
+     * Метод register.
+     * Регистрация пользователя.
+     * POST запрос /api/v1/register
+     *
+     * @param userRegistrationDTO тело запроса в формате Json.
+     * @return 200 - регистрация прошла успешно, 400 - ошибка во время регистрации.
+     * @throws IllegalAccessException - проверка полей на пустоту и null.
+     * @see sn.model.dto.account.UserRegistrationDTO;
+     */
     @PostMapping("/register")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> register(
             @RequestBody UserRegistrationDTO userRegistrationDTO)
@@ -39,12 +54,21 @@ public class AccountController {
         }
         return accountService.register(userRegistrationDTO) ? ResponseEntity.status(HttpStatus.OK).body(
                 new ServiceResponse<>(new ResponseDataMessage("Registration successfull"))
-                ) :
+        ) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
                 );
     }
 
+    /**
+     * Метод recoveryPassword.
+     * Восстановление пароля пользователя.
+     * PUT запрос /api/v1/password/recovery
+     *
+     * @param emailDTO тело запроса в формате Json.
+     * @return 200 - новый пароль отправлен на почту пользователя, 400 - произошла ошибка.
+     * @see sn.model.dto.account.EmailDTO;
+     */
     @PutMapping("/password/recovery")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> recoveryPassword(@RequestBody EmailDTO emailDTO) {
         if (Strings.isNullOrEmpty(emailDTO.getEmail())) {
@@ -60,6 +84,15 @@ public class AccountController {
                 );
     }
 
+    /**
+     * Метод setPassword.
+     * Изменение пароля пользователя.
+     * PUT запрос /api/v1/password/set
+     *
+     * @param passwordDTO тело запроса в формате Json.
+     * @return 200 - пароль изменен, 400 - произошла ошибка.
+     * @see sn.model.dto.account.PasswordDTO;
+     */
     @PutMapping("/password/set")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody PasswordDTO passwordDTO) {
         if (Strings.isNullOrEmpty(passwordDTO.getPassword())) {
@@ -75,6 +108,15 @@ public class AccountController {
                 );
     }
 
+    /**
+     * Метод setEmail.
+     * Изменение почтового адреса пользователя.
+     * PUT запрос /api/v1/email
+     *
+     * @param emailDTO тело запроса в формате Json.
+     * @return 200 - почтовый адрес изменен, 400 - произошла ошибка.
+     * @see sn.model.dto.account.EmailDTO;
+     */
     @PutMapping("/email")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setEmail(@RequestBody EmailDTO emailDTO) {
         if (Strings.isNullOrEmpty(emailDTO.getEmail())) {
