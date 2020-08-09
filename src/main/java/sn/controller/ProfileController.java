@@ -1,47 +1,280 @@
 package sn.controller;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import sn.api.requests.PersonEditBody;
+import sn.api.requests.PostRequestBody;
+import sn.api.response.*;
+import sn.model.Person;
+import sn.model.Post;
+import sn.service.CommentService;
+import sn.service.PostService;
+import sn.utils.TimeUtil;
 
-@Controller
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class ProfileController {
+    private final CommentService commentService;
+    private final IPersonService personService;
+    private final PostService postService;
+
+    //==================================================================================================================
 
     @GetMapping("/me")
-    public ResponseEntity<Object> getCurrentUser() {
-        //todo
-        return null;
+    public ResponseEntity<ServiceResponse<AbstractResponse>> getCurrentUser() {
+        //TODO: проверка (в каком случае может быть отрицательный ответ?)
+        if (false) {
+            //TODO: нужно слияние
+            return ResponseEntity.badRequest().
+                    body(new ServiceResponse<>("Invalid request", new ResponseDataMessage("Service unavailable")));
+        }
+
+        //TODO: Здесь будет персон из сервиса, которого мы найдём
+        // по ID текущего авторизованного пользователя
+        Person person = new Person();
+
+        //TODO: нет данных, откуда эти объекты берутся
+        CityResponse city = new CityResponse("Москва");
+        CountryResponse country = new CountryResponse("Россия");
+
+        PersonResponse personResponse = PersonResponse.builder()
+                .id(person.getId())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                //TODO: конвертировать время в long
+                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
+                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
+                .email(person.getEmail())
+                .phone(person.getPhone())
+                .photo(person.getPhoto())
+                .about(person.getAbout())
+                .city(city)
+                .country(country)
+                .messagesPermission(person.getMessagesPermission())
+                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                .isBlocked(person.isBlocked())
+                .build();
+
+        //TODO: нужно слияние с веткой SN-8
+        return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
     @PutMapping("/me")
-    public ResponseEntity<Object> editCurrentUser() {
-        //todo
-        return null;
+    public ResponseEntity<ServiceResponse<AbstractResponse>> editCurrentUser(@RequestBody PersonEditBody personEditBody) {
+        //TODO: проверка (в каком случае может быть отрицательный ответ?)
+        if (false) {
+            //TODO: нужно слияние
+            return ResponseEntity.badRequest().
+                    body(new ServiceResponse<>("Invalid request", new ResponseDataMessage("Service unavailable")));
+        }
+
+        //TODO: найти человека в базе (узнать, по какому признаку искать);
+        // обновляем пользователя в сервисе и заносим изменённого пользователя
+        // в базу
+        Person person = personService.updatePerson(personEditBody);
+
+        //ЭТО БУДЕТ В СЕРВИСЕ
+        person.setFirstName(personEditBody.getFirstName());
+        person.setLastName(personEditBody.getLastName());
+        //TODO: конвертировать время в long
+//        person.setBirthDate(personForm.getBirthDate());
+        person.setPhone(personEditBody.getPhone());
+        //TODO: поиск и/или загрузка фото по его ID
+        String photo = null;
+        person.setPhoto(photo);
+        person.setAbout(personEditBody.getAbout());
+        //TODO: город и страна пока что без изменений, т.к. нет их хранилища
+//        person.setCity();
+//        person.setCountry();
+        person.setMessagesPermission(personEditBody.getMessagesPermission());
+        //ЭТО БУДЕТ В СЕРВИСЕ
+
+        //TODO: нет данных, откуда эти объекты берутся.
+        // По приходящим ID должны устанавливаться новые значения
+        CityResponse city = new CityResponse("Москва");
+        CountryResponse country = new CountryResponse("Россия");
+
+        PersonResponse personResponse = PersonResponse.builder()
+                .id(person.getId())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
+                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
+                .email(person.getEmail())
+                .phone(person.getPhone())
+                .photo(person.getPhoto())
+                .about(person.getAbout())
+                .city(city)
+                .country(country)
+                .messagesPermission(person.getMessagesPermission())
+                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                .isBlocked(person.isBlocked())
+                .build();
+
+        //TODO: нужно слияние с веткой SN-8
+        return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<Object> deleteCurrentUser() {
-        //todo
-        return null;
+    public ResponseEntity<ServiceResponse<AbstractResponse>> deleteCurrentUser() {
+        //TODO: Получить ID текущего пользователя и по нему удалять в базе
+        boolean personDeleted = personService.deleteById(getCurrentUserId());
+        return personDeleted ?
+                ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
+                ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUserById() {
-        //todo
-        return null;
+    public ResponseEntity<ServiceResponse<AbstractResponse>> getUserById(@PathVariable(value = "id") long personId) {
+        Person person = personService.findById(personId);
+        if (person == null) {
+            return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
+        }
+
+        //TODO: нет данных, откуда эти объекты берутся.
+        // По названию нужно найти эти объекты (где-то)
+        CityResponse city = unknowService.findByCityName(person.getCity());
+        CountryResponse country = unknowService.findByCountryName(person.getCountry());
+
+        PersonResponse personResponse = PersonResponse.builder()
+                .id(person.getId())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
+                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
+                .email(person.getEmail())
+                .phone(person.getPhone())
+                .photo(person.getPhoto())
+                .about(person.getAbout())
+                .city(city)
+                .country(country)
+                .messagesPermission(person.getMessagesPermission())
+                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                .isBlocked(person.isBlocked())
+                .build();
+
+        //TODO: нужно слияние с веткой SN-8
+        return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
     @GetMapping("/{id}/wall")
-    public ResponseEntity<Object> getWallEntriesByUserId() {
-        //todo
-        return null;
+    public ResponseEntity<ServiceResponse<AbstractResponse>> getWallEntriesByUserId(
+            @PathVariable(value = "id") long personId,
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "itemPerPage", defaultValue = "20") int itemPerPage
+    ) {
+        //TODO: если пользователь не авторизован?
+        if (false) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
+        }
+        List<WallPostResponse> wallPosts = new ArrayList<>();
+        Person person = personService.findById(personId);
+        if (person == null) {
+            return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
+        }
+        //TODO: нет данных, откуда эти объекты берутся.
+        // По названию нужно найти эти объекты (где-то)
+        CityResponse city = unknowService.findByCityName(person.getCity());
+        CountryResponse country = unknowService.findByCountryName(person.getCountry());
+        List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);
+        PersonResponse author = PersonResponse.builder()
+                .id(person.getId())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
+                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
+                .email(person.getEmail())
+                .phone(person.getPhone())
+                .photo(person.getPhoto())
+                .about(person.getAbout())
+                .city(city)
+                .country(country)
+                .messagesPermission(person.getMessagesPermission())
+                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                .isBlocked(person.isBlocked())
+                .build();
+        for (Post post : posts) {
+            List<CommentResponse> comments = commentService.getCommentsByPostId(post.getId());
+            WallPostResponse wallPostResponse = WallPostResponse.builder()
+                    .id(post.getId())
+                    .time(TimeUtil.getTimestampFromLocalDateTime(post.getTime()))
+                    .author(author)
+                    .title(post.getTitle())
+                    .postText(post.getText())
+                    .isBlocked(post.isBlocked())
+                    .likesCount(post.getLikesCount())
+                    .comments(comments)
+                    //TODO: как определять статус записи на стене?
+//                    .statusWallPost()
+                    .build();
+            wallPosts.add(wallPostResponse);
+        }
+        int total = postService.getTotalCountPostsByPersonId(personId);
+        //TODO: Список с постами не наследуется от AbstractResponse
+        return ResponseEntity.ok(new ServiceResponse<>(total,offset, itemPerPage, wallPosts));
     }
 
     @PostMapping("/{id}/wall")
-    public ResponseEntity<Object> setWallEntriesByUserId() {
-        //todo
-        return null;
+    public ResponseEntity<Object> setWallEntriesByUserId(
+            @PathVariable(value = "id") long personId,
+            @PathVariable(value = "publish_date", required = false) Long publishDate,
+            @RequestBody PostRequestBody postRequestBody
+    ) {
+        //TODO: если пользователь не авторизован?
+        if (false) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
+        }
+        Person person = personService.findById(personId);
+        if (person == null) {
+            return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
+        }
+        //TODO: нет данных, откуда эти объекты берутся.
+        // По названию нужно найти эти объекты (где-то)
+        LocalDateTime postTime = publishDate != null ?
+                TimeUtil.getLocalDateTimeFromTimestamp(publishDate) :
+                LocalDateTime.now(TimeUtil.TIME_ZONE);
+        String title = postRequestBody.getTitle();
+        String text = postRequestBody.getPostText();
+        Post post = postService.addPost(person, title, text, postTime);
+        CityResponse city = unknowService.findByCityName(person.getCity());
+        CountryResponse country = unknowService.findByCountryName(person.getCountry());
+        PersonResponse author = PersonResponse.builder()
+                .id(person.getId())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
+                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
+                .email(person.getEmail())
+                .phone(person.getPhone())
+                .photo(person.getPhoto())
+                .about(person.getAbout())
+                .city(city)
+                .country(country)
+                .messagesPermission(person.getMessagesPermission())
+                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                .isBlocked(person.isBlocked())
+                .build();
+        WallPostResponse newPost = WallPostResponse.builder()
+                .id(post.getId())
+                .time(TimeUtil.getTimestampFromLocalDateTime(post.getTime()))
+                .author(author)
+                .title(title)
+                .postText(text)
+                .isBlocked(false)
+                .likesCount(0)
+                .comments(new ArrayList<>())
+                .build();
+
+        return ResponseEntity.ok(new ServiceResponse<>(newPost));
     }
 
     @GetMapping("/search")

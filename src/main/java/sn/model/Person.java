@@ -45,7 +45,8 @@ public class Person {
     private String confirmationCode;
     @Column(name = "is_approved")
     private boolean approved;
-    private String messages_permission;
+    @Column(name = "messages_permission")
+    private String messagesPermission;
     @UpdateTimestamp
     @Column(name = "last_online_time", columnDefinition = "timestamp with time zone")
     private LocalDateTime lastOnlineTime;
