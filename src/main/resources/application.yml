@@ -6,9 +6,9 @@ spring:
       ddl-auto: validate
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/pubSub
-    username: postgres
-    password: 123
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snet}
+    username: snet
+    password: snet
   mail:
     protocol: smtps
     host: smtp.gmail.com
@@ -19,8 +19,8 @@ spring:
 mail:
   debug: true
 flyway:
-  user: postgres
-  password: 123
+  user: snet
+  password: snet
 
 server:
   servlet:
