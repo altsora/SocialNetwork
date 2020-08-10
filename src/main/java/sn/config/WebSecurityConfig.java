@@ -17,7 +17,7 @@ import sn.service.JwtUserDetailsService;
 
 @Component
 @EnableWebSecurity
-@EnableGlobalMethodSecurity
+@EnableGlobalMethodSecurity (prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
