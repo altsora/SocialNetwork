@@ -174,8 +174,8 @@ public class ProfileController {
 
         //TODO: нет данных, откуда эти объекты берутся.
         // По названию нужно найти эти объекты (где-то)
-        CityResponse city = unknowService.findByCityName(person.getCity());
-        CountryResponse country = unknowService.findByCountryName(person.getCountry());
+        CityResponse city = new CityResponse("Москва");
+        CountryResponse country = new CountryResponse("Россия");
 
         PersonResponse personResponse = PersonResponse.builder()
                 .id(person.getId())
@@ -227,8 +227,8 @@ public class ProfileController {
         }
         //TODO: нет данных, откуда эти объекты берутся.
         // По названию нужно найти эти объекты (где-то)
-        CityResponse city = unknowService.findByCityName(person.getCity());
-        CountryResponse country = unknowService.findByCountryName(person.getCountry());
+        CityResponse city = new CityResponse("Москва");
+        CountryResponse country = new CountryResponse("Россия");
         List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);
         PersonResponse author = PersonResponse.builder()
                 .id(person.getId())
@@ -301,8 +301,10 @@ public class ProfileController {
         String title = postRequestBody.getTitle();
         String text = postRequestBody.getPostText();
         Post post = postService.addPost(person, title, text, postTime);
-        CityResponse city = unknowService.findByCityName(person.getCity());
-        CountryResponse country = unknowService.findByCountryName(person.getCountry());
+        //TODO: нет данных, откуда эти объекты берутся.
+        // По названию нужно найти эти объекты (где-то)
+        CityResponse city = new CityResponse("Москва");
+        CountryResponse country = new CountryResponse("Россия");
         PersonResponse author = PersonResponse.builder()
                 .id(person.getId())
                 .firstName(person.getFirstName())
@@ -360,9 +362,36 @@ public class ProfileController {
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "itemPerPage", defaultValue = "20") Integer itemPerPage
     ) {
+        //TODO: без учёта города и страны
+        List<Person> personList = personService.findPersons(firstName, lastName, ageFrom, ageTo, offset, itemPerPage);
+        List<PersonResponse> searchResult = new ArrayList<>();
+        for (Person person : personList) {
+            //TODO: нет данных, откуда эти объекты берутся.
+            // По названию нужно найти эти объекты (где-то)
+            CityResponse city = new CityResponse("Москва");
+            CountryResponse country = new CountryResponse("Россия");
+            PersonResponse personResponse = PersonResponse.builder()
+                    .id(person.getId())
+                    .firstName(person.getFirstName())
+                    .lastName(person.getLastName())
+                    .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
+                    .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
+                    .email(person.getEmail())
+                    .phone(person.getPhone())
+                    .photo(person.getPhoto())
+                    .about(person.getAbout())
+                    .city(city)
+                    .country(country)
+                    .messagesPermission(person.getMessagesPermission())
+                    .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                    .isBlocked(person.isBlocked())
+                    .build();
+            searchResult.add(personResponse);
+        }
 
-        //todo
-        return null;
+        int total = personService.getTotalCountUsers();
+        //TODO: Результирующий список не наследуется от AbstractResponse
+        return ResponseEntity.ok(new ServiceResponse<>(total, offset, itemPerPage, searchResult));
     }
 
     /**
