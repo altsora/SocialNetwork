@@ -11,7 +11,6 @@ import java.util.Optional;
  */
 public interface IPersonService {
 
-    Person findByRecoveryCode(String recoveryCode) throws UsernameNotFoundException;
     Person findByEmail(String email) throws UsernameNotFoundException;
     Person findByUsername(String username) throws UsernameNotFoundException;
     Optional<Person> save(Person person);

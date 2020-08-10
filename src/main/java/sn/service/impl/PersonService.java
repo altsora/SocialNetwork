@@ -23,19 +23,6 @@ public class PersonService implements IPersonService {
     private PersonRepository personRepository;
 
     /**
-     * Метод findByRecoveryCode.
-     * Поиск по токену для восстановления.
-     * @param recoveryCode токен для восстановления.
-     * @return Person
-     * @throws UsernameNotFoundException - когда пользователь не найден по токену.
-     */
-    @Override
-    public Person findByRecoveryCode(String recoveryCode) throws UsernameNotFoundException {
-        return personRepository.findByRecoveryCode(recoveryCode)
-                .orElseThrow(() -> new UsernameNotFoundException("Person not found by recovery code."));
-    }
-
-    /**
      * Метод findByEmail.
      * Поиск по email.
      * @param email - почтовый адрес.

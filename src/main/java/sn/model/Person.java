@@ -43,8 +43,6 @@ public class Person {
     private String country;
     @Column(name = "confirmation_code")
     private String confirmationCode;
-    @Column(name = "recovery_code")
-    private String recoveryCode;
     @Column(name = "is_approved")
     private boolean approved;
     private String messages_permission;
