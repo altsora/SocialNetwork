@@ -3,14 +3,13 @@ package sn.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationDTO;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 import sn.service.MailSenderService;
-import sn.service.exceptions.PersonNotFoundException;
 
 import javax.transaction.Transactional;
 import java.net.InetAddress;
@@ -26,19 +25,18 @@ import java.util.concurrent.CompletableFuture;
  * @version 1.0
  */
 @Slf4j
-@Service
-@Component("account-service")
+@Service("account-service")
 public class AccountService implements IAccountService {
 
     @Autowired
     @Qualifier("person-service")
     private IPersonService personService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private Authentication authentication;
+//    @Autowired
+//    private PasswordEncoder passwordEncoder;
+//
+//    @Autowired
+//    private Authentication authentication;
 
     @Autowired
     private MailSenderService mailSenderService;
@@ -72,7 +70,8 @@ public class AccountService implements IAccountService {
             Person person = new Person();
             person.setFirstName(userRegistrationDTO.getFirstName());
             person.setLastName(userRegistrationDTO.getLastName());
-            person.setPassword(passwordEncoder.econde(userRegistrationDTO.getPasswd1()));
+            //todo убрать "123" и раскоментить когда появится security
+            person.setPassword(/*passwordEncoder.econde(userRegistrationDTO.getPasswd1())*/ "123");
             person.setEmail(userRegistrationDTO.getEmail());
             if (personService.save(person).isPresent()) {
                 log.info("Person successfully registered");
@@ -80,7 +79,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in register method. Person do not registered");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in register method. User with this email is exist.");
             return false;
         }
@@ -102,7 +101,8 @@ public class AccountService implements IAccountService {
                 return false;
             }
             String newPassword = generateNewPassword(9);
-            person.setPassword(passwordEncoder.encode(newPassword));
+            //todo убрать "123" и раскоментить когда появится security
+            person.setPassword(/*passwordEncoder.encode(newPassword)*/ "123");
 
             if (personService.save(person).isPresent()) {
                 log.info("New password set to the person");
@@ -115,7 +115,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in recoveryPassword method. Recovery code do not set and/or email do not sent.");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in recoveryPassword method. User with this email do not exist.");
             return false;
         }
@@ -132,8 +132,12 @@ public class AccountService implements IAccountService {
     @Transactional
     public boolean setNewPassword(String password) {
         try {
-            Person person = personService.findByUsername(authentication.getName());
-            person.setPassword(passwordEncoder.encode(password));
+            //todo раскоментить когда появится security
+      //     Person person = personService.findByUsername(authentication.getName());
+            //todo убрать когда появится security
+            Person person = new Person();
+            //todo убрать "123" и раскоментить когда появится security
+            person.setPassword(/*passwordEncoder.encode(password)*/ "123");
             if (personService.save(person).isPresent()) {
                 log.info("Person password successfully recovered.");
                 CompletableFuture.runAsync(() -> {
@@ -145,7 +149,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in setNewPassword method. Person with recovered password was not saved.");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in setNewPassword method. Person not found by recovery code.");
             return false;
         }
@@ -183,7 +187,8 @@ public class AccountService implements IAccountService {
                 log.warn("User with email {} is exist.", newEmail);
                 return false;
             }
-            Person person = personService.findByUsername(authentication.getName());
+//            Person person = personService.findByUsername(authentication.getName());
+            Person person = new Person();
             person.setEmail(newEmail);
             if (personService.save(person).isPresent()) {
                 log.info("Person email successfully changed.");
@@ -191,7 +196,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in changeEmail method. Person with changed email was not saved.");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in changeEmail method. User with this email is exist.");
             return false;
         }

@@ -31,29 +31,6 @@ public class UserRegistrationDTO {
         return true;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getPasswd1() {
-        return passwd1;
-    }
-
-    public String getPasswd2() {
-        return passwd2;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
 }
 
 

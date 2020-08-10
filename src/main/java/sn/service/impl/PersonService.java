@@ -1,12 +1,11 @@
 package sn.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.repositories.PersonRepository;
 import sn.service.IPersonService;
-import sn.service.exceptions.PersonNotFoundException;
 
 import java.util.Optional;
 
@@ -17,8 +16,7 @@ import java.util.Optional;
  * @see sn.service.IPersonService
  * @version 1.0
  */
-@Service
-@Component("person-service")
+@Service("person-service")
 public class PersonService implements IPersonService {
 
     @Autowired
@@ -29,12 +27,12 @@ public class PersonService implements IPersonService {
      * Поиск по токену для восстановления.
      * @param recoveryCode токен для восстановления.
      * @return Person
-     * @throws PersonNotFoundException - когда пользователь не найден по токену.
+     * @throws UsernameNotFoundException - когда пользователь не найден по токену.
      */
     @Override
-    public Person findByRecoveryCode(String recoveryCode) throws PersonNotFoundException {
+    public Person findByRecoveryCode(String recoveryCode) throws UsernameNotFoundException {
         return personRepository.findByRecoveryCode(recoveryCode)
-                .orElseThrow(() -> new PersonNotFoundException("Person not found by recovery code."));
+                .orElseThrow(() -> new UsernameNotFoundException("Person not found by recovery code."));
     }
 
     /**
@@ -42,12 +40,12 @@ public class PersonService implements IPersonService {
      * Поиск по email.
      * @param email - почтовый адрес.
      * @return Person.
-     * @throws PersonNotFoundException - если пользователь не найден по email.
+     * @throws UsernameNotFoundException - если пользователь не найден по email.
      */
     @Override
-    public Person findByEmail(String email) throws PersonNotFoundException {
+    public Person findByEmail(String email) throws UsernameNotFoundException {
         return personRepository.findByEmail(email)
-                .orElseThrow(() -> new PersonNotFoundException("Person not found by email."));
+                .orElseThrow(() -> new UsernameNotFoundException("Person not found by email."));
     }
 
     /**
@@ -55,12 +53,12 @@ public class PersonService implements IPersonService {
      * Поиск по имени пользователя.
      * @param username - имя пользователя.
      * @return Person.
-     * @throws PersonNotFoundException - если пользователь не найден по имени пользователя.
+     * @throws UsernameNotFoundException - если пользователь не найден по имени пользователя.
      */
     @Override
-    public Person findByUsername(String username) throws PersonNotFoundException {
+    public Person findByUsername(String username) throws UsernameNotFoundException {
         return personRepository.findByEmail(username)
-                .orElseThrow(() -> new PersonNotFoundException("Person not found by username."));
+                .orElseThrow(() -> new UsernameNotFoundException("Person not found by username."));
     }
 
     /**
