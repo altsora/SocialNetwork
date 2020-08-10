@@ -1,7 +1,7 @@
 package sn.service;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import sn.model.Person;
-import sn.service.exceptions.PersonNotFoundException;
 
 import java.util.Optional;
 
@@ -11,8 +11,8 @@ import java.util.Optional;
  */
 public interface IPersonService {
 
-    Person findByRecoveryCode(String recoveryCode) throws PersonNotFoundException;
-    Person findByEmail(String email) throws PersonNotFoundException;
-    Person findByUsername(String username) throws PersonNotFoundException;
+    Person findByRecoveryCode(String recoveryCode) throws UsernameNotFoundException;
+    Person findByEmail(String email) throws UsernameNotFoundException;
+    Person findByUsername(String username) throws UsernameNotFoundException;
     Optional<Person> save(Person person);
 }

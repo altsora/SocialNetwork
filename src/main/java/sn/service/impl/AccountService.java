@@ -3,14 +3,13 @@ package sn.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationDTO;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 import sn.service.MailSenderService;
-import sn.service.exceptions.PersonNotFoundException;
 
 import javax.transaction.Transactional;
 import java.net.InetAddress;
@@ -26,8 +25,7 @@ import java.util.concurrent.CompletableFuture;
  * @version 1.0
  */
 @Slf4j
-@Service
-@Component("account-service")
+@Service("account-service")
 public class AccountService implements IAccountService {
 
     @Autowired
@@ -80,7 +78,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in register method. Person do not registered");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in register method. User with this email is exist.");
             return false;
         }
@@ -115,7 +113,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in recoveryPassword method. Recovery code do not set and/or email do not sent.");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in recoveryPassword method. User with this email do not exist.");
             return false;
         }
@@ -145,7 +143,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in setNewPassword method. Person with recovered password was not saved.");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in setNewPassword method. Person not found by recovery code.");
             return false;
         }
@@ -191,7 +189,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in changeEmail method. Person with changed email was not saved.");
             return false;
-        } catch (PersonNotFoundException exception) {
+        } catch (UsernameNotFoundException exception) {
             log.error("Error in changeEmail method. User with this email is exist.");
             return false;
         }
