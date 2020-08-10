@@ -32,11 +32,11 @@ public class AccountService implements IAccountService {
     @Qualifier("person-service")
     private IPersonService personService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private Authentication authentication;
+//    @Autowired
+//    private PasswordEncoder passwordEncoder;
+//
+//    @Autowired
+//    private Authentication authentication;
 
     @Autowired
     private MailSenderService mailSenderService;
@@ -70,7 +70,8 @@ public class AccountService implements IAccountService {
             Person person = new Person();
             person.setFirstName(userRegistrationDTO.getFirstName());
             person.setLastName(userRegistrationDTO.getLastName());
-            person.setPassword(passwordEncoder.econde(userRegistrationDTO.getPasswd1()));
+            //todo убрать "123" и раскоментить когда появится security
+            person.setPassword(/*passwordEncoder.econde(userRegistrationDTO.getPasswd1())*/ "123");
             person.setEmail(userRegistrationDTO.getEmail());
             if (personService.save(person).isPresent()) {
                 log.info("Person successfully registered");
@@ -100,7 +101,8 @@ public class AccountService implements IAccountService {
                 return false;
             }
             String newPassword = generateNewPassword(9);
-            person.setPassword(passwordEncoder.encode(newPassword));
+            //todo убрать "123" и раскоментить когда появится security
+            person.setPassword(/*passwordEncoder.encode(newPassword)*/ "123");
 
             if (personService.save(person).isPresent()) {
                 log.info("New password set to the person");
@@ -130,8 +132,12 @@ public class AccountService implements IAccountService {
     @Transactional
     public boolean setNewPassword(String password) {
         try {
-            Person person = personService.findByUsername(authentication.getName());
-            person.setPassword(passwordEncoder.encode(password));
+            //todo раскоментить когда появится security
+      //     Person person = personService.findByUsername(authentication.getName());
+            //todo убрать когда появится security
+            Person person = new Person();
+            //todo убрать "123" и раскоментить когда появится security
+            person.setPassword(/*passwordEncoder.encode(password)*/ "123");
             if (personService.save(person).isPresent()) {
                 log.info("Person password successfully recovered.");
                 CompletableFuture.runAsync(() -> {
@@ -181,7 +187,8 @@ public class AccountService implements IAccountService {
                 log.warn("User with email {} is exist.", newEmail);
                 return false;
             }
-            Person person = personService.findByUsername(authentication.getName());
+//            Person person = personService.findByUsername(authentication.getName());
+            Person person = new Person();
             person.setEmail(newEmail);
             if (personService.save(person).isPresent()) {
                 log.info("Person email successfully changed.");
