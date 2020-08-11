@@ -9,8 +9,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import sn.service.JwtUserDetailsService;
@@ -21,10 +23,7 @@ import sn.service.JwtUserDetailsService;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
-    @Autowired
-    private JwtUserDetailsService jwtUserDetailsService;
+    private UserDetailsService jwtUserDetailsService;
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
@@ -48,9 +47,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf().disable()
-            .authorizeRequests().antMatchers("/auth").permitAll()
-            .anyRequest().authenticated().and()
-            .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
+            .authorizeRequests().anyRequest().permitAll()
+           .and()
+            .exceptionHandling().and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 // Add a filter to validate the tokens with every request

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import sn.config.JwtTokenUtil;
 import sn.model.JwtRequest;
+import sn.model.JwtResponse;
 import sn.service.JwtUserDetailsService;
 
 @RestController
@@ -31,11 +32,11 @@ public class JwtAuthenticationController {
     public ResponseEntity<?> createAuthenticationToken(
         @RequestBody JwtRequest authenticationRequest) throws Exception {
         authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+
         final UserDetails userDetails = userDetailsService
             .loadUserByUsername(authenticationRequest.getEmail());
         final String token = jwtTokenUtil.generateToken(userDetails);
-//        return ResponseEntity.ok(new JwtResponse(token, authenticationRequest.getEmail()));
-        return ResponseEntity.ok("test");
+        return ResponseEntity.ok(new JwtResponse(token, authenticationRequest.getEmail()));
     }
 
     private void authenticate(String username, String password) throws Exception {
