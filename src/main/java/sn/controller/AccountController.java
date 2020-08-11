@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
-import sn.model.dto.account.EmailDTO;
-import sn.model.dto.account.PasswordDTO;
 import sn.model.dto.account.UserRegistrationDTO;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
@@ -65,17 +63,16 @@ public class AccountController {
      * Восстановление пароля пользователя.
      * PUT запрос /api/v1/password/recovery
      *
-     * @param emailDTO тело запроса в формате Json.
+     * @param email email, на который отправляется письмо с ссылкой для восстановления.
      * @return 200 - новый пароль отправлен на почту пользователя, 400 - произошла ошибка.
-     * @see sn.model.dto.account.EmailDTO;
      */
     @PutMapping("/password/recovery")
-    public ResponseEntity<ServiceResponse<ResponseDataMessage>> recoveryPassword(@RequestBody EmailDTO emailDTO) {
-        if (Strings.isNullOrEmpty(emailDTO.getEmail())) {
+    public ResponseEntity<ServiceResponse<ResponseDataMessage>> recoveryPassword(@RequestBody String email) {
+        if (Strings.isNullOrEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
-        return accountService.recoveryPassword(emailDTO.getEmail()) ?
+        return accountService.recoveryPassword(email) ?
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ServiceResponse<>(new ResponseDataMessage("Recovery information was sent to e-mail"))
                 ) :
@@ -89,17 +86,16 @@ public class AccountController {
      * Изменение пароля пользователя.
      * PUT запрос /api/v1/password/set
      *
-     * @param passwordDTO тело запроса в формате Json.
+     * @param password новый пароль пользователя.
      * @return 200 - пароль изменен, 400 - произошла ошибка.
-     * @see sn.model.dto.account.PasswordDTO;
      */
     @PutMapping("/password/set")
-    public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody PasswordDTO passwordDTO) {
-        if (Strings.isNullOrEmpty(passwordDTO.getPassword())) {
+    public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody String password) {
+        if (Strings.isNullOrEmpty(password)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("New password null or empty")));
         }
-        return accountService.setNewPassword(passwordDTO.getPassword()) ?
+        return accountService.setNewPassword(password) ?
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ServiceResponse<>(new ResponseDataMessage("Person password successfully recovered"))
                 ) :
@@ -113,17 +109,16 @@ public class AccountController {
      * Изменение почтового адреса пользователя.
      * PUT запрос /api/v1/email
      *
-     * @param emailDTO тело запроса в формате Json.
+     * @param email новый email пользователя.
      * @return 200 - почтовый адрес изменен, 400 - произошла ошибка.
-     * @see sn.model.dto.account.EmailDTO;
      */
     @PutMapping("/email")
-    public ResponseEntity<ServiceResponse<ResponseDataMessage>> setEmail(@RequestBody EmailDTO emailDTO) {
-        if (Strings.isNullOrEmpty(emailDTO.getEmail())) {
+    public ResponseEntity<ServiceResponse<ResponseDataMessage>> setEmail(@RequestBody String email) {
+        if (Strings.isNullOrEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
-        return accountService.changeEmail(emailDTO.getEmail()) ?
+        return accountService.changeEmail(email) ?
                 ResponseEntity.status(HttpStatus.OK).body(
                         new ServiceResponse<>(new ResponseDataMessage("Person email successfully changed"))
                 ) :
