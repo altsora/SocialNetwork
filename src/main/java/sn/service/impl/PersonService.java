@@ -1,7 +1,6 @@
 package sn.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.repositories.PersonRepository;
@@ -27,12 +26,12 @@ public class PersonService implements IPersonService {
      * Поиск по email.
      * @param email - почтовый адрес.
      * @return Person.
-     * @throws UsernameNotFoundException - если пользователь не найден по email.
+     * @throws Exception - если пользователь не найден по email.
      */
     @Override
-    public Person findByEmail(String email) throws UsernameNotFoundException {
+    public Person findByEmail(String email) throws Exception {
         return personRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Person not found by email."));
+                .orElseThrow(() -> new Exception("Person not found by email."));
     }
 
     /**
@@ -40,12 +39,12 @@ public class PersonService implements IPersonService {
      * Поиск по имени пользователя.
      * @param username - имя пользователя.
      * @return Person.
-     * @throws UsernameNotFoundException - если пользователь не найден по имени пользователя.
+     * @throws Exception - если пользователь не найден по имени пользователя.
      */
     @Override
-    public Person findByUsername(String username) throws UsernameNotFoundException {
+    public Person findByUsername(String username) throws Exception {
         return personRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Person not found by username."));
+                .orElseThrow(() -> new Exception("Person not found by username."));
     }
 
     /**

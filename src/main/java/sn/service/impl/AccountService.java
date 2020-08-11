@@ -3,10 +3,9 @@ package sn.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
-import sn.model.dto.account.UserRegistrationDTO;
+import sn.model.dto.account.UserRegistrationRequest;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 import sn.service.MailSenderService;
@@ -45,41 +44,41 @@ public class AccountService implements IAccountService {
      * Метод register.
      * Регистрация нового пользователя.
      *
-     * @param userRegistrationDTO - данные с веб-формы.
+     * @param userRegistrationRequest - данные с веб-формы.
      * @return true - если пользователь сохранен в базу, false - не совпали пароли, есть пользователь с такой же почтой,
      * база данных недоступна.
-     * @see sn.model.dto.account.UserRegistrationDTO;
+     * @see UserRegistrationRequest ;
      */
     @Override
-    public boolean register(UserRegistrationDTO userRegistrationDTO) {
+    public boolean register(UserRegistrationRequest userRegistrationRequest) {
         //todo если заработает на фронте
-//        if (!checkCaptcha(userRegistrationDTO.getCode())) {
+//        if (!checkCaptcha(userRegistrationRequest.getCode())) {
 //            log.warn("Wrong captcha");
 //            return false;
 //        }
-        if (!userRegistrationDTO.getPasswd1().equals(userRegistrationDTO.getPasswd2())) {
+        if (!userRegistrationRequest.getPasswd1().equals(userRegistrationRequest.getPasswd2())) {
             log.warn("Passwords do not match");
             return false;
         }
 
         try {
-            if (personService.findByEmail(userRegistrationDTO.getEmail()) != null) {
-                log.warn("User with email {} is exist.", userRegistrationDTO.getEmail());
+            if (personService.findByEmail(userRegistrationRequest.getEmail()) != null) {
+                log.warn("User with email {} is exist.", userRegistrationRequest.getEmail());
                 return false;
             }
             Person person = new Person();
-            person.setFirstName(userRegistrationDTO.getFirstName());
-            person.setLastName(userRegistrationDTO.getLastName());
+            person.setFirstName(userRegistrationRequest.getFirstName());
+            person.setLastName(userRegistrationRequest.getLastName());
             //todo убрать "123" и раскоментить когда появится security
-            person.setPassword(/*passwordEncoder.econde(userRegistrationDTO.getPasswd1())*/ "123");
-            person.setEmail(userRegistrationDTO.getEmail());
+            person.setPassword(/*passwordEncoder.econde(userRegistrationRequest.getPasswd1())*/ "123");
+            person.setEmail(userRegistrationRequest.getEmail());
             if (personService.save(person).isPresent()) {
                 log.info("Person successfully registered");
                 return true;
             }
             log.error("Error in register method. Person do not registered");
             return false;
-        } catch (UsernameNotFoundException exception) {
+        } catch (Exception exception) {
             log.error("Error in register method. User with this email is exist.");
             return false;
         }
@@ -115,7 +114,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in recoveryPassword method. Recovery code do not set and/or email do not sent.");
             return false;
-        } catch (UsernameNotFoundException exception) {
+        } catch (Exception exception) {
             log.error("Error in recoveryPassword method. User with this email do not exist.");
             return false;
         }
@@ -149,7 +148,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in setNewPassword method. Person with recovered password was not saved.");
             return false;
-        } catch (UsernameNotFoundException exception) {
+        } catch (Exception exception) {
             log.error("Error in setNewPassword method. Person not found by recovery code.");
             return false;
         }
@@ -196,7 +195,7 @@ public class AccountService implements IAccountService {
             }
             log.error("Error in changeEmail method. Person with changed email was not saved.");
             return false;
-        } catch (UsernameNotFoundException exception) {
+        } catch (Exception exception) {
             log.error("Error in changeEmail method. User with this email is exist.");
             return false;
         }

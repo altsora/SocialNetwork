@@ -1,7 +1,7 @@
 package sn.controller;
 
-import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
-import sn.model.dto.account.UserRegistrationDTO;
+import sn.model.dto.account.UserRegistrationRequest;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 
@@ -37,20 +37,14 @@ public class AccountController {
      * Регистрация пользователя.
      * POST запрос /api/v1/register
      *
-     * @param userRegistrationDTO тело запроса в формате Json.
+     * @param userRegistrationRequest тело запроса в формате Json.
      * @return 200 - регистрация прошла успешно, 400 - ошибка во время регистрации.
-     * @throws IllegalAccessException - проверка полей на пустоту и null.
-     * @see sn.model.dto.account.UserRegistrationDTO;
+     * @see UserRegistrationRequest ;
      */
     @PostMapping("/register")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> register(
-            @RequestBody UserRegistrationDTO userRegistrationDTO)
-            throws IllegalAccessException {
-        if (!userRegistrationDTO.selfCheck()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ServiceResponse<>("Bad request", new ResponseDataMessage("Regitstration data empty or null")));
-        }
-        return accountService.register(userRegistrationDTO) ? ResponseEntity.status(HttpStatus.OK).body(
+            @RequestBody UserRegistrationRequest userRegistrationRequest) {
+        return accountService.register(userRegistrationRequest) ? ResponseEntity.status(HttpStatus.OK).body(
                 new ServiceResponse<>(new ResponseDataMessage("Registration successfull"))
         ) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -68,7 +62,7 @@ public class AccountController {
      */
     @PutMapping("/password/recovery")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> recoveryPassword(@RequestBody String email) {
-        if (Strings.isNullOrEmpty(email)) {
+        if (Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
@@ -91,7 +85,7 @@ public class AccountController {
      */
     @PutMapping("/password/set")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody String password) {
-        if (Strings.isNullOrEmpty(password)) {
+        if (Strings.isNotEmpty(password)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("New password null or empty")));
         }
@@ -114,7 +108,7 @@ public class AccountController {
      */
     @PutMapping("/email")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setEmail(@RequestBody String email) {
-        if (Strings.isNullOrEmpty(email)) {
+        if (Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }

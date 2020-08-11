@@ -1,6 +1,6 @@
 package sn.service;
 
-import sn.model.dto.account.UserRegistrationDTO;
+import sn.model.dto.account.UserRegistrationRequest;
 
 /**
  * Интерфейс IAccountService.
@@ -9,7 +9,7 @@ import sn.model.dto.account.UserRegistrationDTO;
 public interface IAccountService {
     boolean setNewPassword(String password);
     boolean changeEmail(String newEmail);
-    boolean register(UserRegistrationDTO userRegistrationDTO);
+    boolean register(UserRegistrationRequest userRegistrationRequest);
     boolean recoveryPassword(String email);
 
 }
