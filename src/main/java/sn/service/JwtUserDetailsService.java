@@ -25,7 +25,7 @@ public class JwtUserDetailsService implements UserDetailsService {
         Optional<Person> personOptional = personRepository.findByEmail(email);
             List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
             authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-            User user = new User(personOptional.get().getEmail(), personOptional.get().getPassword(),authorities);
+        User user = new User(personOptional.get().getEmail(), personOptional.get().getPassword(), authorities);
         return user;
     }
 }
