@@ -3,6 +3,7 @@ package sn.config;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import java.io.IOException;
 import java.util.Date;
 import java.util.stream.Collectors;
 import javax.servlet.FilterChain;
@@ -27,10 +28,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
         HttpServletResponse response) {
-        var username = request.getParameter("username");
+        var username = request.getParameter("email");
         var password = request.getParameter("password");
         var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-
         return authenticationManager.authenticate(authenticationToken);
     }
 

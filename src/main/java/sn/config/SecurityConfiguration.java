@@ -31,11 +31,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 SessionCreationPolicy.STATELESS);
     }
 
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser("user").password(passwordEncoder().encode("password")).authorities("ROLE_USER");
-    }
-    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
