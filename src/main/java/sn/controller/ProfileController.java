@@ -102,7 +102,7 @@ public class ProfileController {
         //TODO: конвертировать время в long
 //        person.setBirthDate(personForm.getBirthDate());
         person.setPhone(personEditBody.getPhone());
-        //TODO: поиск и/или загрузка фото по его ID
+        //TODO: НУЖЕН ИДЕНТИФИКАТОР ФОТО. Поиск и/или загрузка фото по его ID
         String photo = null;
         person.setPhoto(photo);
         person.setAbout(personEditBody.getAbout());
