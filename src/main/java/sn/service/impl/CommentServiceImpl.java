@@ -1,4 +1,4 @@
-package sn.service;
+package sn.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import sn.api.response.CommentResponse;
 import sn.model.Comment;
 import sn.repositories.CommentRepository;
+import sn.service.CommentNotFoundException;
+import sn.service.CommentService;
 import sn.utils.TimeUtil;
 
 import java.util.ArrayList;

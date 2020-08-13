@@ -1,4 +1,4 @@
-package sn.service;
+package sn.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.model.Post;
 import sn.repositories.PostRepository;
+import sn.service.PostNotFoundException;
+import sn.service.PostService;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,11 +1,13 @@
 package sn.utils;
 
-import java.sql.Timestamp;
 import java.time.*;
 
 public final class TimeUtil {
-    public final static ZoneId TIME_ZONE = ZoneId.systemDefault();
-    public final static ZoneOffset ZONE_OFFSET = ZoneOffset.UTC;
+    public static final ZoneId TIME_ZONE = ZoneId.systemDefault();
+    public static final ZoneOffset ZONE_OFFSET = ZoneOffset.UTC;
+
+    private TimeUtil() {
+    }
 
     public static long getTimestampFromLocalDateTime(LocalDateTime localDateTime) {
         return localDateTime.toInstant(ZONE_OFFSET).getEpochSecond();
