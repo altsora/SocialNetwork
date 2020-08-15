@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sn.api.requests.PersonEditBody;
-import sn.api.requests.PostRequestBody;
+import sn.api.ResponseDataMessage;
+import sn.api.requests.PersonEditRequest;
+import sn.api.requests.WallPostRequest;
 import sn.api.response.*;
 import sn.model.Person;
 import sn.model.Post;
-import sn.service.CommentService;
-import sn.service.PostService;
+import sn.service.ICommentService;
+import sn.service.IPersonService;
+import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
@@ -21,143 +23,65 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class ProfileController {
-    private final CommentService commentService;
+    private final ICommentService commentService;
     private final IPersonService personService;
-    private final PostService postService;
+    private final IPostService postService;
 
     //==================================================================================================================
 
     /**
-     * Метод getCurrentUser.
      * Получение текущего пользователя.
      * GET запрос /api/v1/users/me
      *
-     * @return 200 - пользователь успешно получен;
-     * 400 - произошла ошибка; 401 - ошибка авторизации.
+     * @return 200 - пользователь успешно получен; 401 - ошибка авторизации.
      */
     @GetMapping("/me")
     public ResponseEntity<ServiceResponse<AbstractResponse>> getCurrentUser() {
-        //TODO: проверка (в каком случае может быть отрицательный ответ?)
-        if (false) {
-            //TODO: нужно слияние
-            return ResponseEntity.badRequest().
-                    body(new ServiceResponse<>("Invalid request", new ResponseDataMessage("Service unavailable")));
+        if (!authService.isUserAuthorize()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-
-        //TODO: Здесь будет персон из сервиса, которого мы найдём
-        // по ID текущего авторизованного пользователя
-        Person person = new Person();
-
-        //TODO: нет данных, откуда эти объекты берутся
-        CityResponse city = new CityResponse("Москва");
-        CountryResponse country = new CountryResponse("Россия");
-
-        PersonResponse personResponse = PersonResponse.builder()
-                .id(person.getId())
-                .firstName(person.getFirstName())
-                .lastName(person.getLastName())
-                //TODO: конвертировать время в long
-                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
-                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
-                .email(person.getEmail())
-                .phone(person.getPhone())
-                .photo(person.getPhoto())
-                .about(person.getAbout())
-                .city(city)
-                .country(country)
-                .messagesPermission(person.getMessagesPermission())
-                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
-                .isBlocked(person.isBlocked())
-                .build();
-
-        //TODO: нужно слияние с веткой SN-8
+        //TODO: получаем текущего авторизованного пользователя
+        Person person = personService.findById(authService.getAuthorizedUserId());
+        PersonResponse personResponse = personService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
     /**
-     * Метод editCurrentUser.
      * Редактирование текущего пользователя.
      * PUT запрос /api/v1/users/me
      *
-     * @param personEditBody - тело запроса в формате JSON. Содержит данные новые данные пользователя.
-     * @return 200 - пользователь успешно отредактирован;
-     * 400 - произошла ошибка; 401 - ошибка авторизации.
+     * @param personEditRequest - тело запроса в формате JSON. Содержит данные новые данные пользователя.
+     * @return 200 - пользователь успешно отредактирован; 401 - ошибка авторизации.
      */
     @PutMapping("/me")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> editCurrentUser(@RequestBody PersonEditBody personEditBody) {
-        //TODO: проверка (в каком случае может быть отрицательный ответ?)
-        if (false) {
-            //TODO: нужно слияние
-            return ResponseEntity.badRequest().
-                    body(new ServiceResponse<>("Invalid request", new ResponseDataMessage("Service unavailable")));
+    public ResponseEntity<ServiceResponse<AbstractResponse>> editCurrentUser(@RequestBody PersonEditRequest personEditRequest) {
+        if (!authService.isUserAuthorize()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-
-        //TODO: найти человека в базе (узнать, по какому признаку искать);
-        // обновляем пользователя в сервисе и заносим изменённого пользователя
-        // в базу
-        Person person = personService.updatePerson(personEditBody);
-
-        person.setFirstName(personEditBody.getFirstName());
-        person.setLastName(personEditBody.getLastName());
-        //TODO: конвертировать время в long
-//        person.setBirthDate(personForm.getBirthDate());
-        person.setPhone(personEditBody.getPhone());
-        //TODO: НУЖЕН ИДЕНТИФИКАТОР ФОТО. Поиск и/или загрузка фото по его ID
-        String photo = null;
-        person.setPhoto(photo);
-        person.setAbout(personEditBody.getAbout());
-        //TODO: город и страна пока что без изменений, т.к. нет их хранилища
-//        person.setCity();
-//        person.setCountry();
-        person.setMessagesPermission(personEditBody.getMessagesPermission());
-
-        //TODO: нет данных, откуда эти объекты берутся.
-        // По приходящим ID должны устанавливаться новые значения
-        CityResponse city = new CityResponse("Москва");
-        CountryResponse country = new CountryResponse("Россия");
-
-        PersonResponse personResponse = PersonResponse.builder()
-                .id(person.getId())
-                .firstName(person.getFirstName())
-                .lastName(person.getLastName())
-                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
-                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
-                .email(person.getEmail())
-                .phone(person.getPhone())
-                .photo(person.getPhoto())
-                .about(person.getAbout())
-                .city(city)
-                .country(country)
-                .messagesPermission(person.getMessagesPermission())
-                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
-                .isBlocked(person.isBlocked())
-                .build();
-
-        //TODO: нужно слияние с веткой SN-8
+        Person person = personService.updatePerson(authService.getAuthorizedUserId(), personEditRequest);
+        PersonResponse personResponse = personService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
     /**
-     * Метод getUserById.
      * Удаление текущего пользователя.
      * DELETE запрос /api/v1/users/{id}
      *
-     * @return 200 - пользователь удалён;
-     * 400 - произошла ошибка; 401 - ошибка авторизации.
+     * @return 200 - пользователь удалён; 401 - ошибка авторизации.
      */
     @DeleteMapping("/me")
     public ResponseEntity<ServiceResponse<AbstractResponse>> deleteCurrentUser() {
-        //TODO: Получить ID текущего пользователя и по нему удалять в базе
-        boolean personDeleted = personService.deleteById(getCurrentUserId());
-        return personDeleted ?
-                ResponseEntity
-                        .ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
-                ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
+        if (!authService.isUserAuthorize()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
+        }
+        personService.deleteById(authService.getAuthorizedUserId());
+        return ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok")));
     }
 
     /**
-     * Метод getUserById.
      * Получить пользователя по id.
      * GET запрос /api/v1/users/{id}
      *
@@ -171,35 +95,11 @@ public class ProfileController {
         if (person == null) {
             return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
         }
-
-        //TODO: нет данных, откуда эти объекты берутся.
-        // По названию нужно найти эти объекты (где-то)
-        CityResponse city = new CityResponse("Москва");
-        CountryResponse country = new CountryResponse("Россия");
-
-        PersonResponse personResponse = PersonResponse.builder()
-                .id(person.getId())
-                .firstName(person.getFirstName())
-                .lastName(person.getLastName())
-                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
-                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
-                .email(person.getEmail())
-                .phone(person.getPhone())
-                .photo(person.getPhoto())
-                .about(person.getAbout())
-                .city(city)
-                .country(country)
-                .messagesPermission(person.getMessagesPermission())
-                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
-                .isBlocked(person.isBlocked())
-                .build();
-
-        //TODO: нужно слияние с веткой SN-8
+        PersonResponse personResponse = personService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
     /**
-     * Метод getWallEntriesByUserId.
      * Получение записей на стене пользователя.
      * GET запрос /api/v1/users/{id}/wall
      *
@@ -210,13 +110,12 @@ public class ProfileController {
      * 400 - произошла ошибка; 401 - ошибка авторизации.
      */
     @GetMapping("/{id}/wall")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> getWallEntriesByUserId(
+    public ResponseEntity<ServiceResponse<AbstractResponse>> getWallPosts(
             @PathVariable(value = "id") long personId,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "itemPerPage", defaultValue = "20") int itemPerPage
     ) {
-        //TODO: если пользователь не авторизован?
-        if (false) {
+        if (!authService.isUserAuthorize()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
@@ -225,41 +124,11 @@ public class ProfileController {
         if (person == null) {
             return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
         }
-        //TODO: нет данных, откуда эти объекты берутся.
-        // По названию нужно найти эти объекты (где-то)
-        CityResponse city = new CityResponse("Москва");
-        CountryResponse country = new CountryResponse("Россия");
         List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);
-        PersonResponse author = PersonResponse.builder()
-                .id(person.getId())
-                .firstName(person.getFirstName())
-                .lastName(person.getLastName())
-                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
-                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
-                .email(person.getEmail())
-                .phone(person.getPhone())
-                .photo(person.getPhoto())
-                .about(person.getAbout())
-                .city(city)
-                .country(country)
-                .messagesPermission(person.getMessagesPermission())
-                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
-                .isBlocked(person.isBlocked())
-                .build();
+        PersonResponse author = personService.getPersonResponse(person);
         for (Post post : posts) {
             List<CommentResponse> comments = commentService.getCommentsByPostId(post.getId());
-            WallPostResponse wallPostResponse = WallPostResponse.builder()
-                    .id(post.getId())
-                    .time(TimeUtil.getTimestampFromLocalDateTime(post.getTime()))
-                    .author(author)
-                    .title(post.getTitle())
-                    .postText(post.getText())
-                    .isBlocked(post.isBlocked())
-                    .likesCount(post.getLikesCount())
-                    .comments(comments)
-                    //TODO: как определять статус записи на стене?
-//                    .statusWallPost()
-                    .build();
+            WallPostResponse wallPostResponse = postService.getExistsWallPost(post, author, comments);
             wallPosts.add(wallPostResponse);
         }
         int total = postService.getTotalCountPostsByPersonId(personId);
@@ -268,75 +137,43 @@ public class ProfileController {
     }
 
     /**
-     * Метод setWallEntriesByUserId.
      * Добавление публикации на стену пользователя.
      * POST запрос /api/v1/users/{id}/wall
      *
      * @param personId        - ID пользователя, который публикует записи.
      * @param publishDate     - Дата публикации, установленная пользователем.
-     * @param postRequestBody - тело запроса в формате JSON. Содержит данные о новой публикации.
+     * @param wallPostRequest - тело запроса в формате JSON. Содержит данные о новой публикации.
      * @return 200 - запись готова к публикации к назначенному времени;
      * 400 - произошла ошибка; 401 - ошибка авторизации.
      */
     @PostMapping("/{id}/wall")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> setWallEntriesByUserId(
+    public ResponseEntity<ServiceResponse<AbstractResponse>> addWallPost(
             @PathVariable(value = "id") long personId,
             @RequestParam(value = "publish_date", required = false) Long publishDate,
-            @RequestBody PostRequestBody postRequestBody
+            @RequestBody WallPostRequest wallPostRequest
     ) {
-        //TODO: если пользователь не авторизован?
-        if (false) {
+        if (!authService.isUserAuthorize()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
+
         Person person = personService.findById(personId);
         if (person == null) {
-            return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
+            return ResponseEntity.badRequest()
+                    .body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
         }
-        //TODO: нет данных, откуда эти объекты берутся.
-        // По названию нужно найти эти объекты (где-то)
         LocalDateTime postTime = publishDate != null ?
                 TimeUtil.getLocalDateTimeFromTimestamp(publishDate) :
                 LocalDateTime.now(TimeUtil.TIME_ZONE);
-        String title = postRequestBody.getTitle();
-        String text = postRequestBody.getPostText();
+        String title = wallPostRequest.getTitle();
+        String text = wallPostRequest.getPostText();
         Post post = postService.addPost(person, title, text, postTime);
-        //TODO: нет данных, откуда эти объекты берутся.
-        // По названию нужно найти эти объекты (где-то)
-        CityResponse city = new CityResponse("Москва");
-        CountryResponse country = new CountryResponse("Россия");
-        PersonResponse author = PersonResponse.builder()
-                .id(person.getId())
-                .firstName(person.getFirstName())
-                .lastName(person.getLastName())
-                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
-                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
-                .email(person.getEmail())
-                .phone(person.getPhone())
-                .photo(person.getPhoto())
-                .about(person.getAbout())
-                .city(city)
-                .country(country)
-                .messagesPermission(person.getMessagesPermission())
-                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
-                .isBlocked(person.isBlocked())
-                .build();
-        WallPostResponse newPost = WallPostResponse.builder()
-                .id(post.getId())
-                .time(TimeUtil.getTimestampFromLocalDateTime(post.getTime()))
-                .author(author)
-                .title(title)
-                .postText(text)
-                .isBlocked(false)
-                .likesCount(0)
-                .comments(new ArrayList<>())
-                .build();
-
+        PersonResponse author = personService.getPersonResponse(person);
+        WallPostResponse newPost = postService.createNewWallPost(post, author);
         return ResponseEntity.ok(new ServiceResponse<>(newPost));
     }
 
     /**
-     * Метод findUser.
      * Поиск пользователей по указанным параметрам.
      * GET запрос /api/v1/users/search
      *
@@ -363,39 +200,18 @@ public class ProfileController {
             @RequestParam(value = "itemPerPage", defaultValue = "20") Integer itemPerPage
     ) {
         //TODO: без учёта города и страны
-        List<Person> personList = personService.findPersons(firstName, lastName, ageFrom, ageTo, offset, itemPerPage);
+        List<Person> personList = personService.searchPersons(firstName, lastName, ageFrom, ageTo, offset, itemPerPage);
         List<PersonResponse> searchResult = new ArrayList<>();
         for (Person person : personList) {
-            //TODO: нет данных, откуда эти объекты берутся.
-            // По названию нужно найти эти объекты (где-то)
-            CityResponse city = new CityResponse("Москва");
-            CountryResponse country = new CountryResponse("Россия");
-            PersonResponse personResponse = PersonResponse.builder()
-                    .id(person.getId())
-                    .firstName(person.getFirstName())
-                    .lastName(person.getLastName())
-                    .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
-                    .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
-                    .email(person.getEmail())
-                    .phone(person.getPhone())
-                    .photo(person.getPhoto())
-                    .about(person.getAbout())
-                    .city(city)
-                    .country(country)
-                    .messagesPermission(person.getMessagesPermission())
-                    .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
-                    .isBlocked(person.isBlocked())
-                    .build();
-            searchResult.add(personResponse);
+            searchResult.add(personService.getPersonResponse(person));
         }
 
         int total = personService.getTotalCountUsers();
-        //TODO: Результирующий список не наследуется от AbstractResponse
+        //TODO: По заданию фронт ожидает список в поле data
         return ResponseEntity.ok(new ServiceResponse<>(total, offset, itemPerPage, searchResult));
     }
 
     /**
-     * Метод blockUserById.
      * Блокировка пользователя.
      * PUT запрос /api/v1/users/block/{id}
      *
@@ -404,23 +220,16 @@ public class ProfileController {
      */
     @PutMapping("/block/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> blockUserById(@PathVariable(value = "id") long personId) {
-        Person person = personService.findById(personId);
-        person.setBlocked(true);
-        //TODO: ошибка авторизации
-        if (false) {
+        if (!authService.isUserAuthorize()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        //TODO: Если регистрация успешна - boolean method
-        boolean block = personService.changeBlockStatus(personId);
-        return block ?
+        return personService.changeUserLockStatus(personId) ?
                 ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
                 ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
-        ;
     }
 
     /**
-     * Метод unblockUserById.
      * Разблокировка пользователя.
      * DELETE запрос /api/v1/users/block/{id}
      *
@@ -429,18 +238,12 @@ public class ProfileController {
      */
     @DeleteMapping("/block/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> unblockUserById(@PathVariable(value = "id") long personId) {
-        Person person = personService.findById(personId);
-        person.setBlocked(false);
-        //TODO: ошибка авторизации
-        if (false) {
+        if (!authService.isUserAuthorize()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        //TODO: Если регистрация успешна - boolean method
-        boolean unblock = personService.changeBlockStatus(personId);
-        return unblock ?
+        return personService.changeUserLockStatus(personId) ?
                 ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
                 ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
-        ;
     }
 }

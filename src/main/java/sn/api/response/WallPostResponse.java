@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import sn.enums.StatusWallPost;
+import sn.model.enums.StatusWallPost;
 
 import java.util.List;
 

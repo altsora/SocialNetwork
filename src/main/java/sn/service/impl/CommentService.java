@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service;
 import sn.api.response.CommentResponse;
 import sn.model.Comment;
 import sn.repositories.CommentRepository;
-import sn.service.CommentNotFoundException;
-import sn.service.CommentService;
+import sn.service.ICommentService;
 import sn.utils.TimeUtil;
 
 import java.util.ArrayList;
@@ -19,32 +18,43 @@ import java.util.List;
  * Имплементирует CommentService.
  *
  * @version 1.0
- * @see sn.service.CommentService
+ * @see ICommentService
  * @see sn.model.Comment
  */
 
 
 @Service
 @RequiredArgsConstructor
-public class CommentServiceImpl implements CommentService {
+public class CommentService implements ICommentService {
     private final CommentRepository commentRepository;
 
     //==================================================================================================================
 
+    /**
+     * Поиск комментария по его идентификатору.
+     *
+     * @param commentId - идентификатор комментария;
+     * @return - возвращает комментарий, если существует, иначе null.
+     */
     @Override
-    public Comment findById(long commentId) throws CommentNotFoundException {
-        return commentRepository
-                .findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("Comment not fount by id = " + commentId));
+    public Comment findById(long commentId) {
+        return commentRepository.findById(commentId)
+                .orElse(null);
     }
 
+    /**
+     * Формирует коллекцию CommentResponse.
+     *
+     * @param postId - идентификатор поста, комментарии которого надо получить;
+     * @return - возвращает коллекцию комментарий.
+     */
     @Override
     public List<CommentResponse> getCommentsByPostId(long postId) {
         Sort sort = Sort.by(Sort.Direction.ASC, CommentRepository.COMMENT_TIME);
-        List<Comment> commentList = commentRepository.findAllCommentsByPostId(postId, sort);
-        List<CommentResponse> commentResponseList = new ArrayList<>();
+        List<Comment> comments = commentRepository.findAllCommentsByPostId(postId, sort);
+        List<CommentResponse> commentResponses = new ArrayList<>();
 
-        for (Comment comment : commentList) {
+        for (Comment comment : comments) {
             CommentResponse commentResponse = new CommentResponse();
             commentResponse.setId(comment.getId());
             commentResponse.setPostId(comment.getPost().getId());
@@ -57,8 +67,8 @@ public class CommentServiceImpl implements CommentService {
                 commentResponse.setParentId(parent.getParent().getId());
             }
 
-            commentResponseList.add(commentResponse);
+            commentResponses.add(commentResponse);
         }
-        return commentResponseList;
+        return commentResponses;
     }
 }

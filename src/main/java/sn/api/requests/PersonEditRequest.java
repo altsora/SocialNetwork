@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class PersonEditBody {
+public class PersonEditRequest {
     @JsonProperty("first_name")
     private String firstName;
     @JsonProperty("last_name")
@@ -18,7 +18,7 @@ public class PersonEditBody {
     @JsonProperty("phone")
     private String phone;
     @JsonProperty("photo_id")
-    private String photoId;
+    private String photo;
     @JsonProperty("about")
     private String about;
     @JsonProperty("town_id")

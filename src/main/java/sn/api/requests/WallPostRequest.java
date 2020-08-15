@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class PostRequestBody {
+public class WallPostRequest {
     @JsonProperty("title")
     private String title;
     @JsonProperty("post_text")

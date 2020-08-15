@@ -6,13 +6,14 @@ import sn.model.Comment;
 import java.util.List;
 
 /**
- * Интерфейс CommentService.
+ * Интерфейс ICommentService.
  * Методы для работы с классом Comment.
  *
  * @see sn.model.Comment
  */
 
-public interface CommentService {
-    Comment findById(long commentId) throws CommentNotFoundException;
+public interface ICommentService {
+    Comment findById(long commentId);
+
     List<CommentResponse> getCommentsByPostId(long postId);
 }
