@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 
 /**
@@ -56,4 +57,6 @@ public class Person {
     @Column(name = "is_deleted")
     private boolean deleted;
 
+    @OneToMany(mappedBy = "author")
+    private Set<Post> posts;
 }
