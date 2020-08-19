@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
+import sn.security.IAuthenticationFacade;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 import sn.service.MailSenderService;
@@ -33,6 +34,9 @@ public class AccountService implements IAccountService {
     @Autowired
     @Qualifier("person-service")
     private IPersonService personService;
+
+    @Autowired
+    private IAuthenticationFacade authenticationFacade;
 
 //    @Autowired
 //    private PasswordEncoder passwordEncoder;
@@ -231,7 +235,7 @@ public class AccountService implements IAccountService {
      * @return Person или null, если текущий пользователь не аутентифицирован.
      */
     public Person findCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = authenticationFacade.getAuthentication();
         Person person = null;
         if (!(auth instanceof AnonymousAuthenticationToken)) {
             String name = auth.getName();//get logged in username = email
