@@ -47,7 +47,7 @@ public class Comment {
         return post;
     }
 
-    @Column(name = "time", nullable = false)
+    @Column(name = "comment_time", nullable = false)
     public LocalDateTime getTime() {
         return time;
     }
