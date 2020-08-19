@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 
@@ -59,5 +60,5 @@ public class Person {
     private boolean deleted;
 
     @OneToMany(mappedBy = "author")
-    private Set<Post> posts;
+    private List<Post> posts;
 }

@@ -3,9 +3,13 @@ package sn.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
+import sn.security.IAuthenticationFacade;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 import sn.service.MailSenderService;
@@ -30,6 +34,9 @@ public class AccountService implements IAccountService {
     @Autowired
     @Qualifier("person-service")
     private IPersonService personService;
+
+    @Autowired
+    private IAuthenticationFacade authenticationFacade;
 
 //    @Autowired
 //    private PasswordEncoder passwordEncoder;
@@ -132,7 +139,7 @@ public class AccountService implements IAccountService {
     public boolean setNewPassword(String password) {
         try {
             //todo раскоментить когда появится security
-      //     Person person = personService.findByUsername(authentication.getName());
+            //     Person person = personService.findByUsername(authentication.getName());
             //todo убрать когда появится security
             Person person = new Person();
             //todo убрать "123" и раскоментить когда появится security
@@ -219,4 +226,26 @@ public class AccountService implements IAccountService {
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
     }
+
+
+    /**
+     * Метод findCurrentUser.
+     * Получение текущего пользователя.
+     *
+     * @return Person или null, если текущий пользователь не аутентифицирован.
+     */
+    public Person findCurrentUser() {
+        Authentication auth = authenticationFacade.getAuthentication();
+        Person person = null;
+        if (!(auth instanceof AnonymousAuthenticationToken)) {
+            String name = auth.getName();//get logged in username = email
+            try {
+                person = personService.findByEmail(name);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return person;
+    }
+
 }
