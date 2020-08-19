@@ -3,6 +3,8 @@ package sn.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -11,6 +13,7 @@ import java.util.Set;
 @Entity
 @Table(name = "posts")
 @Data
+@EqualsAndHashCode(exclude = {"comments"})
 public class Post {
     private long id;
     private LocalDateTime time;
@@ -18,6 +21,7 @@ public class Post {
     private String title;
     private String text;
     private boolean isBlocked;
+    private boolean isDeleted;
     private int likesCount;
     private Set<Comment> comments;
     //TODO: будет сет с тегами (Tag2Post)
@@ -30,14 +34,15 @@ public class Post {
         return id;
     }
 
-    @Column(name = "time", nullable = false)
+    @CreationTimestamp
+    @Column(name = "time", nullable = false, columnDefinition = "timestamp with time zone")
     public LocalDateTime getTime() {
         return time;
     }
 
     @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "author")
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "author_id")
     public Person getAuthor() {
         return author;
     }
@@ -47,7 +52,7 @@ public class Post {
         return title;
     }
 
-    @Column(name = "text", nullable = false)
+    @Column(name = "post_text", nullable = false)
     public String getText() {
         return text;
     }
@@ -55,6 +60,11 @@ public class Post {
     @Column(name = "is_blocked")
     public boolean isBlocked() {
         return isBlocked;
+    }
+
+    @Column(name = "is_deleted")
+    public boolean isDeleted() {
+        return isDeleted;
     }
 
     @Column(name = "likes")

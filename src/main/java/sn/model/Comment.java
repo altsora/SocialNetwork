@@ -3,6 +3,7 @@ package sn.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.Set;
 @Table(name = "comments")
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(exclude = {"children"})
 public class Comment {
     private long id;
     private Comment parent;
