@@ -10,6 +10,7 @@ import sn.api.requests.WallPostRequest;
 import sn.api.response.*;
 import sn.model.Person;
 import sn.model.Post;
+import sn.service.IAccountService;
 import sn.service.ICommentService;
 import sn.service.IPersonService;
 import sn.service.IPostService;
@@ -23,6 +24,7 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class ProfileController {
+    private final IAccountService accountService;
     private final ICommentService commentService;
     private final IPersonService personService;
     private final IPostService postService;
@@ -37,12 +39,11 @@ public class ProfileController {
      */
     @GetMapping("/me")
     public ResponseEntity<ServiceResponse<AbstractResponse>> getCurrentUser() {
-        if (!authService.isUserAuthorize()) {
+        Person person = accountService.findCurrentUser();
+        if (person == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        //TODO: получаем текущего авторизованного пользователя
-        Person person = personService.findById(authService.getAuthorizedUserId());
         PersonResponse personResponse = personService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
@@ -56,11 +57,12 @@ public class ProfileController {
      */
     @PutMapping("/me")
     public ResponseEntity<ServiceResponse<AbstractResponse>> editCurrentUser(@RequestBody PersonEditRequest personEditRequest) {
-        if (!authService.isUserAuthorize()) {
+        Person person = accountService.findCurrentUser();
+        if (person == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        Person person = personService.updatePerson(authService.getAuthorizedUserId(), personEditRequest);
+        person = personService.updatePerson(person, personEditRequest);
         PersonResponse personResponse = personService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
@@ -73,11 +75,12 @@ public class ProfileController {
      */
     @DeleteMapping("/me")
     public ResponseEntity<ServiceResponse<AbstractResponse>> deleteCurrentUser() {
-        if (!authService.isUserAuthorize()) {
+        Person person = accountService.findCurrentUser();
+        if (person == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        personService.deleteById(authService.getAuthorizedUserId());
+        personService.deleteById(person.getId());
         return ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok")));
     }
 
@@ -110,20 +113,17 @@ public class ProfileController {
      * 400 - произошла ошибка; 401 - ошибка авторизации.
      */
     @GetMapping("/{id}/wall")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> getWallPosts(
+    public ResponseEntity<ServiceResponseDataList<WallPostResponse>> getWallPosts(
             @PathVariable(value = "id") long personId,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "itemPerPage", defaultValue = "20") int itemPerPage
     ) {
-        if (!authService.isUserAuthorize()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
-        }
-        List<WallPostResponse> wallPosts = new ArrayList<>();
         Person person = personService.findById(personId);
         if (person == null) {
-            return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
+            return ResponseEntity.badRequest()
+                    .body(new ServiceResponseDataList<>(ErrorResponse.builder().error("Bad request").build()));
         }
+        List<WallPostResponse> wallPosts = new ArrayList<>();
         List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);
         PersonResponse author = personService.getPersonResponse(person);
         for (Post post : posts) {
@@ -132,8 +132,7 @@ public class ProfileController {
             wallPosts.add(wallPostResponse);
         }
         int total = postService.getTotalCountPostsByPersonId(personId);
-        //TODO: Список с постами не наследуется от AbstractResponse
-        return ResponseEntity.ok(new ServiceResponse<>(total, offset, itemPerPage, wallPosts));
+        return ResponseEntity.ok(new ServiceResponseDataList<>(total, offset, itemPerPage, wallPosts));
     }
 
     /**
@@ -152,11 +151,6 @@ public class ProfileController {
             @RequestParam(value = "publish_date", required = false) Long publishDate,
             @RequestBody WallPostRequest wallPostRequest
     ) {
-        if (!authService.isUserAuthorize()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
-        }
-
         Person person = personService.findById(personId);
         if (person == null) {
             return ResponseEntity.badRequest()
@@ -189,7 +183,7 @@ public class ProfileController {
      * 400 - произошла ошибка; 401 - ошибка авторизации.
      */
     @GetMapping("/search")
-    public ResponseEntity<Object> findUser(
+    public ResponseEntity<ServiceResponseDataList<PersonResponse>> findUser(
             @RequestParam(value = "first_name", required = false) String firstName,
             @RequestParam(value = "last_name", required = false) String lastName,
             @RequestParam(value = "age_from", required = false) Integer ageFrom,
@@ -207,8 +201,7 @@ public class ProfileController {
         }
 
         int total = personService.getTotalCountUsers();
-        //TODO: По заданию фронт ожидает список в поле data
-        return ResponseEntity.ok(new ServiceResponse<>(total, offset, itemPerPage, searchResult));
+        return ResponseEntity.ok(new ServiceResponseDataList<>(total, offset, itemPerPage, searchResult));
     }
 
     /**
@@ -220,10 +213,6 @@ public class ProfileController {
      */
     @PutMapping("/block/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> blockUserById(@PathVariable(value = "id") long personId) {
-        if (!authService.isUserAuthorize()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
-        }
         return personService.changeUserLockStatus(personId) ?
                 ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
                 ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
@@ -238,10 +227,6 @@ public class ProfileController {
      */
     @DeleteMapping("/block/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> unblockUserById(@PathVariable(value = "id") long personId) {
-        if (!authService.isUserAuthorize()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
-        }
         return personService.changeUserLockStatus(personId) ?
                 ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
                 ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));

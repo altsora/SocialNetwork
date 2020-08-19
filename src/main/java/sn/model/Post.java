@@ -24,7 +24,6 @@ public class Post {
     private boolean isDeleted;
     private int likesCount;
     private Set<Comment> comments;
-    //TODO: будет сет с тегами (Tag2Post)
 
     //==================================================================================================================
 

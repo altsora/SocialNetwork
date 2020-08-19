@@ -19,7 +19,7 @@ public interface IPersonService {
 
     Person findById(long personId);
 
-    Person updatePerson(long personId, PersonEditRequest personEditRequest);
+    Person updatePerson(Person person, PersonEditRequest personEditRequest);
 
     void deleteById(long personId);
 

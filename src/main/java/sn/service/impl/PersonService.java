@@ -84,12 +84,11 @@ public class PersonService implements IPersonService {
     /**
      * Обновление данных о пользователе.
      *
-     * @param personId - идентификатор пользователя;
+     * @param person - пользователя;
      * @return - возвращается обновлённый пользователь.
      */
     @Override
-    public Person updatePerson(long personId, PersonEditRequest personEditRequest) {
-        Person person = findById(personId);
+    public Person updatePerson(Person person, PersonEditRequest personEditRequest) {
         person.setFirstName(personEditRequest.getFirstName());
         person.setLastName(personEditRequest.getLastName());
         person.setBirthDate(TimeUtil.getLocalDateFromTimestamp(personEditRequest.getBirthDate()));
