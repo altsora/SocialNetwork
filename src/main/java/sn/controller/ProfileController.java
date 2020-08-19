@@ -120,8 +120,7 @@ public class ProfileController {
     ) {
         Person person = personService.findById(personId);
         if (person == null) {
-            return ResponseEntity.badRequest()
-                    .body(new ServiceResponseDataList<>(ErrorResponse.builder().error("Bad request").build()));
+            return ResponseEntity.badRequest().body(new ServiceResponseDataList<>("Service unavailable"));
         }
         List<WallPostResponse> wallPosts = new ArrayList<>();
         List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);

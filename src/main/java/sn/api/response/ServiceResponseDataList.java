@@ -10,14 +10,14 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServiceResponseDataList<T extends AbstractResponse> {
-    private ErrorResponse error;
+    private String error;
     private long timestamp;
     private int total;
     private int offset;
     private int perPage;
     private List<T> data;
 
-    public ServiceResponseDataList(ErrorResponse error) {
+    public ServiceResponseDataList(String error) {
         this.timestamp = TimeUtil.getTimestampFromLocalDateTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
         this.error = error;
     }
