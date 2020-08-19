@@ -7,7 +7,7 @@ create table posts
     post_text varchar(255) not null,
     is_blocked boolean not null,
     is_deleted boolean not null,
-    likes int8 not null,
+    likes int4 not null,
     primary key (id)
 );
 
