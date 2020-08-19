@@ -1,5 +1,6 @@
 package sn.service;
 
+import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
 
 /**

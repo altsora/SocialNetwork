@@ -1,11 +1,14 @@
 package sn.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.repositories.PersonRepository;
 import sn.service.IPersonService;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 
 /**
@@ -15,6 +18,7 @@ import java.util.Optional;
  * @see sn.service.IPersonService
  * @version 1.0
  */
+@Slf4j
 @Service("person-service")
 public class PersonService implements IPersonService {
 
@@ -29,9 +33,9 @@ public class PersonService implements IPersonService {
      * @throws Exception - если пользователь не найден по email.
      */
     @Override
-    public Person findByEmail(String email) throws Exception {
+    public Person findByEmail(String email) throws UsernameNotFoundException {
         return personRepository.findByEmail(email)
-                .orElseThrow(() -> new Exception("Person not found by email."));
+                .orElseThrow(() -> new UsernameNotFoundException("Person not found by email."));
     }
 
     /**
@@ -42,9 +46,9 @@ public class PersonService implements IPersonService {
      * @throws Exception - если пользователь не найден по имени пользователя.
      */
     @Override
-    public Person findByUsername(String username) throws Exception {
+    public Person findByUsername(String username) throws UsernameNotFoundException {
         return personRepository.findByEmail(username)
-                .orElseThrow(() -> new Exception("Person not found by username."));
+                .orElseThrow(() -> new UsernameNotFoundException("Person not found by username."));
     }
 
     /**

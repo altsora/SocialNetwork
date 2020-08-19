@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
+import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
@@ -62,7 +64,7 @@ public class AccountController {
      */
     @PutMapping("/password/recovery")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> recoveryPassword(@RequestBody String email) {
-        if (Strings.isNotEmpty(email)) {
+        if (!Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
@@ -85,7 +87,7 @@ public class AccountController {
      */
     @PutMapping("/password/set")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody String password) {
-        if (Strings.isNotEmpty(password)) {
+        if (!Strings.isNotEmpty(password)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("New password null or empty")));
         }
@@ -108,7 +110,7 @@ public class AccountController {
      */
     @PutMapping("/email")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setEmail(@RequestBody String email) {
-        if (Strings.isNotEmpty(email)) {
+        if (!Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
