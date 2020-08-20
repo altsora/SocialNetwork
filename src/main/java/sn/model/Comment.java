@@ -4,26 +4,26 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "comments")
+@NoArgsConstructor
 @Data
-@EqualsAndHashCode(exclude = {"comments"})
-public class Post {
+@EqualsAndHashCode(exclude = {"children"})
+public class Comment {
     private long id;
+    private Comment parent;
+    private Post post;
     private LocalDateTime time;
     private Person author;
-    private String title;
     private String text;
     private boolean isBlocked;
-    private boolean isDeleted;
-    private int likesCount;
-    private Set<Comment> comments;
+    private Set<Comment> children;
 
     //==================================================================================================================
 
@@ -33,25 +33,33 @@ public class Post {
         return id;
     }
 
-    @CreationTimestamp
-    @Column(name = "time", nullable = false, columnDefinition = "timestamp with time zone")
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    public Comment getParent() {
+        return parent;
+    }
+
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "post_id")
+    public Post getPost() {
+        return post;
+    }
+
+    @Column(name = "comment_time", nullable = false)
     public LocalDateTime getTime() {
         return time;
     }
 
     @JsonBackReference
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id")
     public Person getAuthor() {
         return author;
     }
 
-    @Column(name = "title", nullable = false)
-    public String getTitle() {
-        return title;
-    }
-
-    @Column(name = "post_text", nullable = false)
+    @Column(name = "comment_text", nullable = false)
     public String getText() {
         return text;
     }
@@ -61,19 +69,9 @@ public class Post {
         return isBlocked;
     }
 
-    @Column(name = "is_deleted")
-    public boolean isDeleted() {
-        return isDeleted;
-    }
-
-    @Column(name = "likes")
-    public int getLikesCount() {
-        return likesCount;
-    }
-
     @JsonManagedReference
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    public Set<Comment> getComments() {
-        return comments;
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    public Set<Comment> getChildren() {
+        return children;
     }
 }
