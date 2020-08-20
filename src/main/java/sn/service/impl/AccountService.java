@@ -1,7 +1,6 @@
 package sn.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
@@ -10,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
-import sn.repositories.PersonRepository;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
 import sn.service.MailSenderService;

@@ -6,11 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
-import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
 import sn.service.IAccountService;
 import sn.service.IPersonService;
@@ -25,10 +23,6 @@ import sn.service.IPersonService;
 @RestController
 @RequestMapping("/account")
 public class AccountController {
-
-    @Autowired
-    @Qualifier("person-service")
-    private IPersonService personService;
 
     @Autowired
     @Qualifier("account-service")
@@ -47,7 +41,7 @@ public class AccountController {
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> register(
             @RequestBody UserRegistrationRequest userRegistrationRequest) {
         return accountService.register(userRegistrationRequest) ? ResponseEntity.status(HttpStatus.OK).body(
-                new ServiceResponse<>(new ResponseDataMessage("Registration successfull"))
+                new ServiceResponse<>(new ResponseDataMessage("Registration successful"))
         ) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
@@ -93,7 +87,7 @@ public class AccountController {
         }
         return accountService.setNewPassword(password) ?
                 ResponseEntity.status(HttpStatus.OK).body(
-                        new ServiceResponse<>(new ResponseDataMessage("Person password successfully recovered"))
+                        new ServiceResponse<>(new ResponseDataMessage("Person password successfully changed"))
                 ) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
