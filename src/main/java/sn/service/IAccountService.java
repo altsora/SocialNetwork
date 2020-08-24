@@ -12,5 +12,6 @@ public interface IAccountService {
     boolean changeEmail(String newEmail);
     boolean register(UserRegistrationRequest userRegistrationRequest);
     boolean recoveryPassword(String email);
+    Person findCurrentUser();
 
 }

@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
@@ -36,6 +39,9 @@ public class AccountService implements IAccountService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private Authentication authentication;
 
     @Autowired
     private MailSenderService mailSenderService;
@@ -197,4 +203,26 @@ public class AccountService implements IAccountService {
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
     }
+
+
+    /**
+     * Метод findCurrentUser.
+     * Получение текущего пользователя.
+     *
+     * @return Person или null, если текущий пользователь не аутентифицирован.
+     */
+    public Person findCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Person person = null;
+        if (!(auth instanceof AnonymousAuthenticationToken)) {
+            String name = auth.getName();//get logged in username = email
+            try {
+                person = personService.findByEmail(name);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return person;
+    }
+
 }
