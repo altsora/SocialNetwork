@@ -46,9 +46,6 @@ public class AccountService implements IAccountService {
     @Autowired
     private MailSenderService mailSenderService;
 
-    @Autowired
-    private Authentication authentication;
-
     /**
      * Метод register.
      * Регистрация нового пользователя.
