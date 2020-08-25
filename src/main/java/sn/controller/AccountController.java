@@ -25,10 +25,6 @@ import sn.service.IPersonService;
 public class AccountController {
 
     @Autowired
-    @Qualifier("person-service")
-    private IPersonService personService;
-
-    @Autowired
     @Qualifier("account-service")
     private IAccountService accountService;
 
@@ -45,7 +41,7 @@ public class AccountController {
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> register(
             @RequestBody UserRegistrationRequest userRegistrationRequest) {
         return accountService.register(userRegistrationRequest) ? ResponseEntity.status(HttpStatus.OK).body(
-                new ServiceResponse<>(new ResponseDataMessage("Registration successfull"))
+                new ServiceResponse<>(new ResponseDataMessage("Registration successful"))
         ) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
@@ -62,7 +58,7 @@ public class AccountController {
      */
     @PutMapping("/password/recovery")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> recoveryPassword(@RequestBody String email) {
-        if (Strings.isNotEmpty(email)) {
+        if (!Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
@@ -85,13 +81,13 @@ public class AccountController {
      */
     @PutMapping("/password/set")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody String password) {
-        if (Strings.isNotEmpty(password)) {
+        if (!Strings.isNotEmpty(password)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("New password null or empty")));
         }
         return accountService.setNewPassword(password) ?
                 ResponseEntity.status(HttpStatus.OK).body(
-                        new ServiceResponse<>(new ResponseDataMessage("Person password successfully recovered"))
+                        new ServiceResponse<>(new ResponseDataMessage("Person password successfully changed"))
                 ) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
@@ -108,7 +104,7 @@ public class AccountController {
      */
     @PutMapping("/email")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setEmail(@RequestBody String email) {
-        if (Strings.isNotEmpty(email)) {
+        if (!Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
