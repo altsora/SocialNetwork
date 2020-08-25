@@ -1,5 +1,7 @@
 package sn.service;
 
+
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import sn.api.requests.PersonEditRequest;
 import sn.api.response.PersonResponse;
 import sn.model.Person;
@@ -13,8 +15,8 @@ import java.util.Optional;
  */
 public interface IPersonService {
 
-    Person findByEmail(String email) throws Exception;
-    Person findByUsername(String username) throws Exception;
+    Person findByEmail(String email) throws UsernameNotFoundException;
+    Person findByUsername(String username) throws UsernameNotFoundException;
     Optional<Person> save(Person person);
 
     Person findById(long personId);

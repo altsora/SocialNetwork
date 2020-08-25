@@ -35,7 +35,7 @@ public class ServiceResponse<T extends AbstractResponse> {
     }
 
     public ServiceResponse(T data) {
-        this();
+        this.timestamp = Timestamp.valueOf(LocalDateTime.now()).getTime();
         this.data = data;
     }
 

@@ -28,6 +28,8 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     Optional<Person> findByEmail(String email);
 
     Optional<Person> findByPhone(String phone);
+    void deleteByEmail(String email);
+
 
     @Query("SELECT COUNT(p) FROM Person p")
     int getTotalCountUsers();
