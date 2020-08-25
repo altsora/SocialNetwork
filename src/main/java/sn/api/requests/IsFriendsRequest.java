@@ -1,6 +1,14 @@
 package sn.api.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class IsFriendsRequest {
 
-    //TODO SN-25
+    @JsonProperty("user_ids")
+    List<Integer> userIds;
 }
