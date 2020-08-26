@@ -1,6 +1,7 @@
 package sn.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sn.api.response.CommentResponse;
@@ -22,7 +23,7 @@ import java.util.List;
  * @see sn.model.Comment
  */
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService implements ICommentService {
