@@ -1,8 +1,11 @@
 package sn.service;
 
+import java.util.List;
 import sn.api.requests.IsFriendsRequest;
 import sn.api.response.AbstractResponse;
+import sn.api.response.IsFriendResponse;
 import sn.api.response.ServiceResponse;
+import sn.model.Person;
 
 public interface IFriendService {
 
@@ -12,11 +15,15 @@ public interface IFriendService {
 
     ServiceResponse<AbstractResponse> addFriend(String id);
 
-    ServiceResponse<AbstractResponse> getFriendRequestList(String name, Integer offset,
-        int itemPerPage);
+    List<Person> getFriendRequestList(long personId, String name, Integer offset,
+      int itemPerPage);
 
-    ServiceResponse<AbstractResponse> getFriendRecommendationList(Integer offset, int itemPerPage);
+    int getTotalCountOfRequest(long personId);
 
-    ServiceResponse<AbstractResponse> isFriend(IsFriendsRequest request);
+    List<Person> getFriendRecommendationList(long personId, Integer offset, int itemPerPage);
+
+    int getTotalCountOfRecommendationList(long peronId);
+
+    List<IsFriendResponse> isFriend(long personId, IsFriendsRequest request);
 
 }
