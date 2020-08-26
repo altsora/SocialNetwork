@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import sn.api.requests.IsFriendsRequest;
 import sn.api.response.AbstractResponse;
 import sn.api.response.ServiceResponse;
+import sn.api.response.ServiceResponseDataList;
 import sn.service.impl.FriendService;
 
 @RestController
@@ -22,9 +23,9 @@ public class FriendController {
     private FriendService friendService;
 
     @GetMapping("/friends")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> getFriendList(
+    public ResponseEntity<ServiceResponseDataList<AbstractResponse>> getFriendList(
         @RequestParam(required = false) String name,
-        @RequestParam(required = false) Integer offset,
+        @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
 
@@ -52,7 +53,7 @@ public class FriendController {
     @GetMapping("/friends/request")
     public ResponseEntity<ServiceResponse<AbstractResponse>> getFriendRequestList(
         @RequestParam(required = false) String name,
-        @RequestParam(required = false) Integer offset,
+        @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
         return new ResponseEntity<>(
