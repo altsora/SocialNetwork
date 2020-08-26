@@ -24,5 +24,5 @@ flyway:
 
 server:
   servlet:
-    contextPath: /api/
+    contextPath: /api/v1
 
