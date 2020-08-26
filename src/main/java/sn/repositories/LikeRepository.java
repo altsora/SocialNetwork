@@ -14,19 +14,19 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     @Query("SELECT l FROM Like l WHERE l.person.id = :personId AND l.likeType = :likeType AND l.itemId = :itemId")
     Like findLike(
             @Param("personId") long personId,
-            @Param("type") LikeType likeType,
+            @Param("likeType") LikeType likeType,
             @Param("itemId") long itemId
     );
 
     @Query("SELECT l FROM Like l WHERE l.likeType = :likeType AND l.itemId = :itemId")
     List<Like> findAllByTypeAndItemId(
-            @Param("type") LikeType likeType,
+            @Param("likeType") LikeType likeType,
             @Param("itemId") long itemId
     );
 
     @Query("SELECT COUNT(l) FROM Like l WHERE l.likeType = :likeType AND l.itemId = :itemId")
     int getCountByTypeAndItemId(
-            @Param("type") LikeType likeType,
+            @Param("likeType") LikeType likeType,
             @Param("itemId") long itemId
     );
 }
