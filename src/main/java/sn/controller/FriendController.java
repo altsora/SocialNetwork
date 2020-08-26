@@ -20,6 +20,7 @@ import sn.api.response.ServiceResponse;
 import sn.api.response.ServiceResponseDataList;
 import sn.model.Person;
 import sn.service.impl.AccountService;
+import sn.api.response.ServiceResponseDataList;
 import sn.service.impl.FriendService;
 import sn.service.impl.PersonService;
 
@@ -36,9 +37,9 @@ public class FriendController {
     private PersonService personService;
 
     @GetMapping("/friends")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> getFriendList(
+    public ResponseEntity<ServiceResponseDataList<AbstractResponse>> getFriendList(
         @RequestParam(required = false) String name,
-        @RequestParam(required = false) Integer offset,
+        @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
 
@@ -66,7 +67,7 @@ public class FriendController {
     @GetMapping("/friends/request")
     public ResponseEntity<ServiceResponseDataList<PersonResponse>> getFriendRequestList(
         @RequestParam(required = false) String name,
-        @RequestParam(required = false) Integer offset,
+        @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
         Person person = accountService.findCurrentUser();
@@ -89,7 +90,7 @@ public class FriendController {
 
     @GetMapping("/friends/recommendations")
     public ResponseEntity<ServiceResponseDataList<PersonResponse>> getFriendRecommendationList(
-        @RequestParam(required = false) Integer offset,
+        @RequestParam(defaultValue = "0") Integer offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
         Person person = accountService.findCurrentUser();

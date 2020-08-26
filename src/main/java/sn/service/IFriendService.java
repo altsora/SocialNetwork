@@ -6,10 +6,11 @@ import sn.api.response.AbstractResponse;
 import sn.api.response.IsFriendResponse;
 import sn.api.response.ServiceResponse;
 import sn.model.Person;
+import sn.api.response.ServiceResponseDataList;
 
 public interface IFriendService {
 
-    ServiceResponse<AbstractResponse> getFriendList(String name, Integer offset, int itemPerPage);
+    ServiceResponseDataList<AbstractResponse> getFriendList(String name, int offset, int itemPerPage);
 
     ServiceResponse<AbstractResponse> deleteFriend(String id);
 
