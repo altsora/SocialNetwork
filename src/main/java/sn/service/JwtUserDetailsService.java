@@ -1,6 +1,7 @@
 package sn.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.User.UserBuilder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,20 +9,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
-import sn.service.impl.PersonService;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private PersonService personService;
+    @Qualifier("account-service")
+    private IAccountService accountService;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         Person person = null;
         UserBuilder builder = null;
         try {
-            person = personService.findByEmail(username);
+            person = accountService.findByEmail(username);
         } catch (Exception e) {
             e.printStackTrace();
         }
