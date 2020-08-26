@@ -36,6 +36,7 @@ public class ServiceResponse<T extends AbstractResponse> {
 
     public ServiceResponse(T data) {
         this.timestamp = Timestamp.valueOf(LocalDateTime.now()).getTime();
+        this.data = data;
     }
 
     public ServiceResponse(String error, T data) {
@@ -44,5 +45,11 @@ public class ServiceResponse<T extends AbstractResponse> {
         this.data = data;
     }
 
+    public ServiceResponse(int total, int offset, int perPage, T data) {
+        this.total = total;
+        this.offset = offset;
+        this.perPage = perPage;
+        this.data = data;
+    }
 
 }

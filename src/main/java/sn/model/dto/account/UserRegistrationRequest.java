@@ -2,6 +2,7 @@ package sn.model.dto.account;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Field;
 
@@ -13,6 +14,7 @@ import java.lang.reflect.Field;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserRegistrationRequest {
 
     private String email;

@@ -1,5 +1,6 @@
 package sn.service;
 
+import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
 
 /**
@@ -11,5 +12,6 @@ public interface IAccountService {
     boolean changeEmail(String newEmail);
     boolean register(UserRegistrationRequest userRegistrationRequest);
     boolean recoveryPassword(String email);
+    Person findCurrentUser();
 
 }

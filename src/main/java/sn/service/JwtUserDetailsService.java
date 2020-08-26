@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.User.UserBuilder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
 import sn.service.impl.PersonService;
@@ -30,7 +29,7 @@ public class JwtUserDetailsService implements UserDetailsService {
                 throw new UsernameNotFoundException(username);
             } else {
             builder = User.withUsername(username);
-            builder.password(new BCryptPasswordEncoder().encode(person.getPassword()));
+            builder.password(person.getPassword());
             builder.roles("USER");
         }
             return builder.build();

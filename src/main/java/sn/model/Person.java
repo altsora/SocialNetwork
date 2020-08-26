@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 
@@ -46,7 +47,8 @@ public class Person {
     private String confirmationCode;
     @Column(name = "is_approved")
     private boolean approved;
-    private String messages_permission;
+    @Column(name = "messages_permission")
+    private String messagesPermission;
     @UpdateTimestamp
     @Column(name = "last_online_time", columnDefinition = "timestamp with time zone")
     private LocalDateTime lastOnlineTime;
@@ -58,5 +60,5 @@ public class Person {
     private boolean deleted;
 
     @OneToMany(mappedBy = "author")
-    private Set<Post> posts;
+    private List<Post> posts;
 }
