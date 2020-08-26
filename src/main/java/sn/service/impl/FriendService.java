@@ -1,9 +1,12 @@
 package sn.service.impl;
 
+import java.util.List;
 import org.springframework.stereotype.Service;
 import sn.api.requests.IsFriendsRequest;
 import sn.api.response.AbstractResponse;
+import sn.api.response.IsFriendResponse;
 import sn.api.response.ServiceResponse;
+import sn.model.Person;
 import sn.service.IFriendService;
 
 @Service
@@ -36,7 +39,7 @@ public class FriendService implements IFriendService {
     }
 
     @Override
-    public ServiceResponse<AbstractResponse> getFriendRequestList(String name, Integer offset,
+    public List<Person> getFriendRequestList(long personId, String name, Integer offset,
         int itemPerPage) {
 
         //TODO SN-25
@@ -45,7 +48,12 @@ public class FriendService implements IFriendService {
     }
 
     @Override
-    public ServiceResponse<AbstractResponse> getFriendRecommendationList(Integer offset,
+    public int getTotalCountOfRequest(long personId) {
+        return 0;
+    }
+
+    @Override
+    public List<Person> getFriendRecommendationList(long personId, Integer offset,
         int itemPerPage) {
 
         //TODO SN-25
@@ -54,7 +62,12 @@ public class FriendService implements IFriendService {
     }
 
     @Override
-    public ServiceResponse<AbstractResponse> isFriend(IsFriendsRequest request) {
+    public int getTotalCountOfRecommendationList(long peronId) {
+        return 0;
+    }
+
+    @Override
+    public List<IsFriendResponse> isFriend(long personId,IsFriendsRequest request) {
 
         //TODO SN-25
 
