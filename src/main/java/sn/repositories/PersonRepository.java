@@ -51,15 +51,13 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query(value = "SELECT person.* FROM person "
         + "LEFT JOIN friendship ON person.id = friendship.src_person_id "
-        + "LEFT JOIN friendship_status ON friendship.status_id = friendship_status.id "
         + "WHERE dst_person_id = :id "
-        + "AND code = 'FRIEND' "
+        + "AND status = 'FRIEND' "
         + "UNION "
         + "SELECT person.* FROM person "
         + "LEFT JOIN friendship ON person.id = friendship.dst_person_id "
-        + "LEFT JOIN friendship_status ON friendship.status_id = friendship_status.id "
         + "WHERE src_person_id = :id "
-        + "AND code = 'FRIEND' "
+        + "AND status = 'FRIEND' "
         + "LIMIT :itemPerPage OFFSET :offset"
         , nativeQuery = true)
     List<Person> findFriends(
@@ -69,16 +67,14 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query(value = "SELECT person.* FROM person "
         + "LEFT JOIN friendship ON person.id = friendship.src_person_id "
-        + "LEFT JOIN friendship_status ON friendship.status_id = friendship_status.id "
         + "WHERE dst_person_id = :id "
-        + "AND code = 'FRIEND' "
+        + "AND status = 'FRIEND' "
         + "AND first_name LIKE %:name% OR last_name LIKE %:name% "
         + "UNION "
         + "SELECT person.* FROM person "
         + "LEFT JOIN friendship ON person.id = friendship.dst_person_id "
-        + "LEFT JOIN friendship_status ON friendship.status_id = friendship_status.id "
         + "WHERE src_person_id = :id "
-        + "AND code = 'FRIEND' "
+        + "AND status = 'FRIEND' "
         + "AND first_name LIKE %:name% OR last_name LIKE %:name% "
         + "LIMIT :itemPerPage OFFSET :offset"
         , nativeQuery = true)

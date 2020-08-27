@@ -9,9 +9,8 @@ import sn.model.Friendship;
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     @Query(value = "SELECT COUNT(*) FROM friendship"
-        + " LEFT JOIN friendship_status on friendship.status_id = friendship_status.id"
         + " WHERE src_person_id = ?1 OR dst_person_id = ?1"
-        + " AND code = 'FRIEND'",
+        + " AND status = 'FRIEND'",
         nativeQuery = true)
     int findFriendsByPersonIdCount(long id);
 }
