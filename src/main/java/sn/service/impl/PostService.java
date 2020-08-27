@@ -129,4 +129,18 @@ public class PostService implements IPostService {
                 .statusWallPost(StatusWallPost.POSTED)
                 .build();
     }
+
+    @Override
+    public void putLike(long postId) {
+        Post post = findById(postId);
+        post.setLikesCount(post.getLikesCount() + 1);
+        postRepository.saveAndFlush(post);
+    }
+
+    @Override
+    public void removeLike(long postId) {
+        Post post = findById(postId);
+        post.setLikesCount(post.getLikesCount() - 1);
+        postRepository.saveAndFlush(post);
+    }
 }

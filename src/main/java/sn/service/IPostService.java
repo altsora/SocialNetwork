@@ -28,4 +28,8 @@ public interface IPostService {
     WallPostResponse createNewWallPost(Post post, PersonResponse author);
 
     WallPostResponse getExistsWallPost(Post post, PersonResponse author, List<CommentResponse> comments);
+
+    void putLike(long postId);
+
+    void removeLike(long postId);
 }
