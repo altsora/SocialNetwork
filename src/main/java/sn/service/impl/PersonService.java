@@ -100,6 +100,7 @@ public class PersonService implements IPersonService {
         person.setAbout(personEditRequest.getAbout());
         //TODO: город и страна без изменений
         person.setMessagesPermission(personEditRequest.getMessagesPermission());
+        log.info("Update data for user with id {}.", person.getId());
         return personRepository.saveAndFlush(person);
     }
 
@@ -111,6 +112,7 @@ public class PersonService implements IPersonService {
     @Override
     public void deleteById(long personId) {
         personRepository.deleteById(personId);
+        log.info("User with id {} delete.", personId);
     }
 
     /**
@@ -123,10 +125,12 @@ public class PersonService implements IPersonService {
     public boolean changeUserLockStatus(long personId) {
         Person person = findById(personId);
         if (person == null) {
+            log.warn("User with id {} do not exist. Lock status didn't changed", personId);
             return false;
         }
         person.setBlocked(!person.isBlocked());
         personRepository.saveAndFlush(person);
+        log.info("User with id {} changed lock status", personId);
         return true;
     }
 

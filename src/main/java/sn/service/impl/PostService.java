@@ -1,6 +1,7 @@
 package sn.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService implements IPostService {
@@ -69,6 +71,7 @@ public class PostService implements IPostService {
         post.setAuthor(author);
         post.setTitle(title);
         post.setText(text);
+        log.info("User with id {} add new post. Time: {}", author.getId(), postTime);
         return postRepository.saveAndFlush(post);
     }
 
@@ -125,5 +128,19 @@ public class PostService implements IPostService {
                 .comments(comments)
                 .statusWallPost(StatusWallPost.POSTED)
                 .build();
+    }
+
+    @Override
+    public void putLike(long postId) {
+        Post post = findById(postId);
+        post.setLikesCount(post.getLikesCount() + 1);
+        postRepository.saveAndFlush(post);
+    }
+
+    @Override
+    public void removeLike(long postId) {
+        Post post = findById(postId);
+        post.setLikesCount(post.getLikesCount() - 1);
+        postRepository.saveAndFlush(post);
     }
 }
