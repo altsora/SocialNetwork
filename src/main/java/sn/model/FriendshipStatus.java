@@ -29,6 +29,6 @@ public class FriendshipStatus {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "enum(\"FRIEND\", \"REQUEST\", \"BLOCKED\", \"DECLINED\", \"SUBSCRIBED\")")
+    @Column(columnDefinition = "enum('FRIEND', 'REQUEST', 'BLOCKED', 'DECLINED', 'SUBSCRIBED')")
     private FriendshipStatusCode code;
 }
