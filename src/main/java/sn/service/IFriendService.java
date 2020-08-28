@@ -18,9 +18,9 @@ public interface IFriendService {
 
     int getTotalCountOfRequest(long personId);
 
-    List<Person> getFriendRecommendationList(long personId, Integer offset, int itemPerPage);
+    List<Person> getFriendRecommendationList(long id, String city, Integer offset, int itemPerPage);
 
-    int getTotalCountOfRecommendationList(long peronId);
+    int getTotalCountOfRecommendationList(long id, String city);
 
     List<IsFriendResponse> isFriend(long personId, IsFriendsRequest request);
 

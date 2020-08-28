@@ -14,6 +14,12 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
         nativeQuery = true)
     int getFriendsCount(long id);
 
+    @Query(value = "SELECT COUNT(*) FROM friendship"
+        + " WHERE dst_person_id = ?1"
+        + " AND status = 'REQUEST'",
+        nativeQuery = true)
+    int getRequestsCount(long id);
+
     @Query(value = "SELECT * FROM friendship WHERE "
         + "src_person_id = :id AND dst_person_id =:friendId) "
         + "OR (src_person_id = :friendId AND dst_person_id =:id)) "

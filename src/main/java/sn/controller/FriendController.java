@@ -140,7 +140,7 @@ public class FriendController {
         }
 
         List<Person> recommendationList = friendService
-            .getFriendRecommendationList(person.getId(), offset, itemPerPage);
+            .getFriendRecommendationList(person.getId(), person.getCity(), offset, itemPerPage);
 
         if (recommendationList == null) {
             return ResponseEntity.badRequest()
@@ -150,7 +150,7 @@ public class FriendController {
         List<PersonResponse> responseList = new ArrayList<>();
         recommendationList.forEach(p -> responseList.add(personService.getPersonResponse(p)));
 
-        int total = friendService.getTotalCountOfRecommendationList(person.getId());
+        int total = friendService.getTotalCountOfRecommendationList(person.getId(), person.getCity());
         return ResponseEntity
             .ok(new ServiceResponseDataList<>(total, offset, itemPerPage, responseList));
     }
@@ -167,7 +167,7 @@ public class FriendController {
 
         List<IsFriendResponse> responseList = friendService.isFriend(person.getId(), request);
 
-        if (responseList == null) {
+        if (responseList == null || request==null || request.getUserIds().size()==0) {
             return ResponseEntity.badRequest()
                 .body(new ServiceResponseDataList<>("Service unavailable"));
         }

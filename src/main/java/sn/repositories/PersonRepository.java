@@ -54,13 +54,13 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
         + "LEFT JOIN friendship ON person.id = friendship.src_person_id "
         + "WHERE dst_person_id = :id "
         + "AND status = 'FRIEND' "
-        + "AND first_name LIKE %:name% OR last_name LIKE %:name% "
+        + "AND (first_name LIKE %:name% OR last_name LIKE %:name%) "
         + "UNION "
         + "SELECT person.* FROM person "
         + "LEFT JOIN friendship ON person.id = friendship.dst_person_id "
         + "WHERE src_person_id = :id "
         + "AND status = 'FRIEND' "
-        + "AND first_name LIKE %:name% OR last_name LIKE %:name% "
+        + "AND (first_name LIKE %:name% OR last_name LIKE %:name%) "
         + "LIMIT :itemPerPage OFFSET :offset"
         , nativeQuery = true)
     List<Person> findFriends(
@@ -68,4 +68,26 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
         @Param("offset") int offset,
         @Param("itemPerPage") int itemPerPage,
         @Param("name") String name);
+
+    @Query(value = "SELECT person.* FROM person "
+        + "LEFT JOIN friendship ON person.id = friendship.src_person_id "
+        + "WHERE dst_person_id = :id "
+        + "AND status = 'REQUEST' "
+        + "AND (first_name LIKE %:name% OR last_name LIKE %:name%) "
+        + "LIMIT :itemPerPage OFFSET :offset"
+        , nativeQuery = true)
+
+    List<Person> findRequests(
+        @Param("id") long id,
+        @Param("offset") int offset,
+        @Param("itemPerPage") int itemPerPage,
+        @Param("name") String name);
+
+    @Query(value = "SELECT person.* FROM person "
+        + "LEFT JOIN friendship ON (person.id != friendship.src_person_id AND person.id != friendship.dst_person_id)"
+        + "WHERE person.city = :city"
+        + "LIMIT :itemPerPage OFFSET :offset"
+        , nativeQuery = true)
+
+    List<Person> findRecommendedFriends(long id, String city, Integer offset, int itemPerPage);
 }

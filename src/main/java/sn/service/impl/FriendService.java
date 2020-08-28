@@ -27,11 +27,7 @@ public class FriendService implements IFriendService {
     @Override
     public List<Person> getFriendList(long id, String name, int offset,
         int itemPerPage) {
-
-        if (name == null){
-            name = "";
-        }
-        return personRepository.findFriends(id, offset, itemPerPage, name);
+        return personRepository.findFriends(id, offset, itemPerPage, (name == null) ? "" : name);
     }
 
     public int getFriendsCount(long id) {
@@ -77,27 +73,24 @@ public class FriendService implements IFriendService {
     public List<Person> getFriendRequestList(long id, String name, Integer offset,
         int itemPerPage) {
 
-        //TODO SN-25
-
-        return null;
+        return personRepository.findRequests(id, offset, itemPerPage, (name == null) ? "" : name);
     }
 
     @Override
     public int getTotalCountOfRequest(long id) {
-        return 0;
+        return friendshipRepository.getRequestsCount(id);
     }
 
     @Override
-    public List<Person> getFriendRecommendationList(long personId, Integer offset,
+    public List<Person> getFriendRecommendationList(long id, String city, Integer offset,
         int itemPerPage) {
 
-        //TODO SN-25
+        return personRepository.findRecommendedFriends(id, city, offset,itemPerPage);
 
-        return null;
     }
 
     @Override
-    public int getTotalCountOfRecommendationList(long id) {
+    public int getTotalCountOfRecommendationList(long id, String city) {
         return 0;
     }
 
