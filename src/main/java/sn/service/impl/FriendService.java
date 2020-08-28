@@ -56,6 +56,10 @@ public class FriendService implements IFriendService {
 
     @Override
     public boolean addFriend(long id, long friendId) {
+        if (personRepository.findById(friendId).isEmpty()) {
+            return false;
+        }
+
         Friendship friendship = friendshipRepository
             .getFriendship(id, friendId, FriendshipStatusCode.REQUEST.toString());
 
