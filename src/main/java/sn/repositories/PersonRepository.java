@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 import sn.model.Person;
 
@@ -28,8 +29,8 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     Optional<Person> findByEmail(String email);
 
     Optional<Person> findByPhone(String phone);
-    void deleteByEmail(String email);
 
+    void deleteByEmail(String email);
 
     @Query("SELECT COUNT(p) FROM Person p")
     int getTotalCountUsers();
@@ -61,9 +62,10 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
         + "LIMIT :itemPerPage OFFSET :offset"
         , nativeQuery = true)
     List<Person> findFriends(
+        @Param("id") long id,
         @Param("offset") int offset,
-        @Param("itemPerPage") int itemPerPage,
-        @Param("id") long id);
+        @Param("itemPerPage") int itemPerPage);
+
 
     @Query(value = "SELECT person.* FROM person "
         + "LEFT JOIN friendship ON person.id = friendship.src_person_id "
@@ -79,8 +81,9 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
         + "LIMIT :itemPerPage OFFSET :offset"
         , nativeQuery = true)
     List<Person> findFriendsByName(
-        @Param("offset") int offset,
-        @Param("itemPerPage") int itemPerPage,
         @Param("id") long id,
-        @Param("name") String name);
+        @Param("name") String name,
+        @Param("offset") int offset,
+        @Param("itemPerPage") int itemPerPage);
+
 }

@@ -7,11 +7,11 @@ import sn.model.Person;
 
 public interface IFriendService {
 
-    List<Person> getFriendList(String name, int offset, int itemPerPage, long currentUserId);
+    List<Person> getFriendList(long id, String name, int offset, int itemPerPage);
 
-    boolean deleteFriend(long id, long currentUserId);
+    boolean deleteFriend(long id, long friendId);
 
-    boolean addFriend(String id, long currentUserId);
+    boolean addFriend(long id, long friendId);
 
     List<Person> getFriendRequestList(long personId, String name, Integer offset,
       int itemPerPage);

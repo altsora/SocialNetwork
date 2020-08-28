@@ -13,12 +13,13 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
         + " WHERE src_person_id = ?1 OR dst_person_id = ?1"
         + " AND status = 'FRIEND'",
         nativeQuery = true)
-    int findFriendsByPersonIdCount(long id);
+    int getFriendsCount(long id);
 
-    @Query(value = "SELECT * FROM friendship"
-        + " WHERE (src_person_id = ?1 OR dst_person_id = ?1)"
-        + " AND (src_person_id = ?2 OR dst_person_id = ?2)"
-        + " AND status = 'FRIEND'",
-        nativeQuery = true)
-    Optional<Friendship> findByFriendId(long currentUserId, long id);
+    @Query(value = "SELECT * FROM friendship WHERE "
+        + "src_person_id = :id AND dst_person_id =:friendId) "
+        + "OR (src_person_id = :friendId AND dst_person_id =:id)) "
+        + "AND status = :status")
+
+    Friendship getFriendship(long id, long friendId, String status);
+
 }

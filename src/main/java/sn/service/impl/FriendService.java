@@ -26,53 +26,50 @@ public class FriendService implements IFriendService {
     private PersonRepository personRepository;
 
     @Override
-    public List<Person> getFriendList(String name, int offset,
-        int itemPerPage, long currentUserId) {
+    public List<Person> getFriendList(long id, String name, int offset,
+        int itemPerPage) {
 
-        List<Person> friendList;
-        if (name == null) {
-            friendList = personRepository
-                .findFriends(offset, itemPerPage, currentUserId);
-        } else {
-            friendList = personRepository
-                .findFriendsByName(offset, itemPerPage, currentUserId, name);
-        }
-
-        return friendList;
+        return name == null ? personRepository.findFriends(id, offset, itemPerPage)
+            : personRepository.findFriendsByName(id, name, offset, itemPerPage);
     }
 
     public int getFriendsCount(long id) {
-        return friendshipRepository.findFriendsByPersonIdCount(id);
+        return friendshipRepository.getFriendsCount(id);
     }
 
     @Override
-    public boolean deleteFriend(long id, long currentUserId) {
-
-        Optional<Friendship> friendshipOptional = friendshipRepository
-            .findByFriendId(currentUserId, id);
-        if (friendshipOptional.isEmpty()) {
+    public boolean deleteFriend(long id, long friendId) {
+        Friendship friendship = friendshipRepository
+            .getFriendship(id, friendId, FriendshipStatusCode.FRIEND.toString());
+        if (friendship == null) {
             return false;
-        } else {
-            System.out.println(id);
-            Friendship friendship = friendshipOptional.get();
-            System.out.println("1 - " + friendship.getStatus());
-            friendship.setStatus(FriendshipStatusCode.SUBSCRIBED);
-            System.out.println("2 - " + friendship.getStatus());
-            friendshipRepository.save(friendship);
-            System.out.println("3 - " + friendship.getStatus());
-            return true;
         }
+
+        if (friendship.getSrcPerson() == id) {
+            friendshipRepository.delete(friendship);
+        } else {
+            friendship.setStatus(FriendshipStatusCode.SUBSCRIBED);
+            friendshipRepository.save(friendship);
+        }
+        return true;
     }
 
     @Override
-    public boolean addFriend(String id, long currentUserId) {
+    public boolean addFriend(long id, long friendId) {
+        Friendship friendship = friendshipRepository
+            .getFriendship(id, friendId, FriendshipStatusCode.REQUEST.toString());
 
-        //TODO SN-25
-        return false;
+        if (friendship == null) {
+            friendship = new Friendship(id, friendId, FriendshipStatusCode.REQUEST);
+        } else {
+            friendship.setStatus(FriendshipStatusCode.FRIEND);
+        }
+        friendshipRepository.save(friendship);
+        return true;
     }
 
     @Override
-    public List<Person> getFriendRequestList(long personId, String name, Integer offset,
+    public List<Person> getFriendRequestList(long id, String name, Integer offset,
         int itemPerPage) {
 
         //TODO SN-25
@@ -81,7 +78,7 @@ public class FriendService implements IFriendService {
     }
 
     @Override
-    public int getTotalCountOfRequest(long personId) {
+    public int getTotalCountOfRequest(long id) {
         return 0;
     }
 
@@ -95,12 +92,12 @@ public class FriendService implements IFriendService {
     }
 
     @Override
-    public int getTotalCountOfRecommendationList(long peronId) {
+    public int getTotalCountOfRecommendationList(long id) {
         return 0;
     }
 
     @Override
-    public List<IsFriendResponse> isFriend(long personId, IsFriendsRequest request) {
+    public List<IsFriendResponse> isFriend(long id, IsFriendsRequest request) {
 
         //TODO SN-25
 
