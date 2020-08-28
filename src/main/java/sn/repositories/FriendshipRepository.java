@@ -1,6 +1,5 @@
 package sn.repositories;
 
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,7 +17,8 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     @Query(value = "SELECT * FROM friendship WHERE "
         + "src_person_id = :id AND dst_person_id =:friendId) "
         + "OR (src_person_id = :friendId AND dst_person_id =:id)) "
-        + "AND status = :status")
+        + "AND status = :status",
+        nativeQuery = true)
 
     Friendship getFriendship(long id, long friendId, String status);
 

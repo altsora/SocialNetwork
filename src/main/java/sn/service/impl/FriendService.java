@@ -1,7 +1,6 @@
 package sn.service.impl;
 
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sn.api.requests.IsFriendsRequest;
@@ -29,8 +28,10 @@ public class FriendService implements IFriendService {
     public List<Person> getFriendList(long id, String name, int offset,
         int itemPerPage) {
 
-        return name == null ? personRepository.findFriends(id, offset, itemPerPage)
-            : personRepository.findFriendsByName(id, name, offset, itemPerPage);
+        if (name == null){
+            name = "";
+        }
+        return personRepository.findFriends(id, offset, itemPerPage, name);
     }
 
     public int getFriendsCount(long id) {
