@@ -47,7 +47,7 @@ public class FriendController {
                 .body(new ServiceResponseDataList<>("Unauthorized"));
         }
 
-        List<Person> requestList = friendService.getFriendList(name, offset, itemPerPage);
+        List<Person> requestList = friendService.getFriendList(name, offset, itemPerPage, person.getId());
 
         if (requestList == null) {
             return ResponseEntity.badRequest()
@@ -64,7 +64,7 @@ public class FriendController {
 
     @DeleteMapping("/friends/{id}")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> deleteFriend(
-        @PathVariable String id
+        @PathVariable long id
     ) {
         Person person = accountService.findCurrentUser();
         if (person == null) {
@@ -73,7 +73,7 @@ public class FriendController {
                     new ResponseDataMessage("User is not authorized")));
         }
 
-        return friendService.deleteFriend(id) ?
+        return friendService.deleteFriend(id, person.getId()) ?
             ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))
             ) :
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -83,7 +83,7 @@ public class FriendController {
 
     @PostMapping("/friends/{id}")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> addFriend(
-        @PathVariable String id
+        @PathVariable long id
     ) {
         Person person = accountService.findCurrentUser();
         if (person == null) {
@@ -92,7 +92,7 @@ public class FriendController {
                     new ResponseDataMessage("User is not authorized")));
         }
 
-        return friendService.deleteFriend(id) ?
+        return friendService.deleteFriend(id, person.getId()) ?
             ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))
             ) :
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
