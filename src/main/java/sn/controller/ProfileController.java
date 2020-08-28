@@ -1,6 +1,7 @@
 package sn.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import sn.api.requests.WallPostRequest;
 import sn.api.response.*;
 import sn.model.Person;
 import sn.model.Post;
+import sn.repositories.PersonRepository;
 import sn.service.IAccountService;
 import sn.service.ICommentService;
 import sn.service.IPostService;
@@ -18,6 +20,7 @@ import sn.utils.TimeUtil;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -26,6 +29,9 @@ public class ProfileController {
     private final IAccountService accountService;
     private final ICommentService commentService;
     private final IPostService postService;
+
+    @Autowired
+    private PersonRepository personRepository;
 
     //==================================================================================================================
 
@@ -78,7 +84,7 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        accountService.deleteById(person.getId());
+        personRepository.deleteById(person.getId());
         return ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok")));
     }
 
@@ -92,9 +98,10 @@ public class ProfileController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> getUserById(@PathVariable(value = "id") long personId) {
-        Person person = accountService.findById(personId);
+        Person person = personRepository.findById(personId).orElse(null);
         if (person == null) {
-            return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
+            return ResponseEntity.badRequest()
+                    .body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
         }
         PersonResponse personResponse = accountService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
@@ -116,10 +123,11 @@ public class ProfileController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "itemPerPage", defaultValue = "20") int itemPerPage
     ) {
-        Person person = accountService.findById(personId);
-        if (person == null) {
+        Optional<Person> personOpt = personRepository.findById(personId);
+        if (personOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(new ServiceResponseDataList<>("Service unavailable"));
         }
+        Person person = personOpt.get();
         List<WallPostResponse> wallPosts = new ArrayList<>();
         List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);
         PersonResponse author = accountService.getPersonResponse(person);
@@ -148,7 +156,7 @@ public class ProfileController {
             @RequestParam(value = "publish_date", required = false) Long publishDate,
             @RequestBody WallPostRequest wallPostRequest
     ) {
-        Person person = accountService.findById(personId);
+        Person person = personRepository.findById(personId).orElse(null);
         if (person == null) {
             return ResponseEntity.badRequest()
                     .body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
@@ -197,7 +205,7 @@ public class ProfileController {
             searchResult.add(accountService.getPersonResponse(person));
         }
 
-        int total = accountService.getTotalCountUsers();
+        int total = personRepository.getTotalCountUsers();
         return ResponseEntity.ok(new ServiceResponseDataList<>(total, offset, itemPerPage, searchResult));
     }
 

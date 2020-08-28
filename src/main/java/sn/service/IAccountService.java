@@ -14,22 +14,14 @@ import java.util.List;
  */
 public interface IAccountService {
 
-    Person findByEmail(String email) throws UsernameNotFoundException;
-
-    Person findById(long personId);
-
     boolean changeUserLockStatus(long personId);
 
     Person updatePerson(Person person, PersonEditRequest personEditRequest);
 
     PersonResponse getPersonResponse(Person person);
 
-    int getTotalCountUsers();
-
     List<Person> searchPersons(String firstName, String lastName, Integer ageFrom,
                                Integer ageTo, Integer offset, Integer itemPerPage);
-
-    void deleteById(long personId);
 
     boolean setNewPassword(String password);
 

@@ -26,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import sn.api.response.LoginResponse;
 import sn.api.response.PersonResponse;
 import sn.api.response.PersonResponseWithToken;
+import sn.repositories.PersonRepository;
 import sn.service.IAccountService;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -35,6 +36,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Autowired
     @Qualifier("account-service")
     private IAccountService accountService;
+
+    @Autowired
+    private PersonRepository personRepository;
 
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, ApplicationContext ctx) {
@@ -90,7 +94,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         PersonResponse personResponse = null;
         try {
-            personResponse = accountService.getPersonResponse(accountService.findById(1));
+            personResponse = accountService.getPersonResponse(personRepository.findById(1L).orElse(null));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -52,32 +52,6 @@ public class AccountService implements IAccountService {
     private MailSenderService mailSenderService;
 
     /**
-     * Метод findByEmail.
-     * Поиск по email.
-     *
-     * @param email - почтовый адрес.
-     * @return Person.
-     * @throws Exception - если пользователь не найден по email.
-     */
-    @Override
-    public Person findByEmail(String email) throws UsernameNotFoundException {
-        return personRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Person not found by email."));
-    }
-
-    /**
-     * Поиск пользователя по его идентификатору.
-     *
-     * @param personId - идентификатор пользователя.
-     * @return - возврат пользователя, если существует, иначе null.
-     */
-    @Override
-    public Person findById(long personId) {
-        return personRepository.findById(personId)
-                .orElse(null);
-    }
-
-    /**
      * Изменяет статус блокировки пользователя на противоположный.
      *
      * @param personId - идентификатор пользователя.
@@ -85,7 +59,7 @@ public class AccountService implements IAccountService {
      */
     @Override
     public boolean changeUserLockStatus(long personId) {
-        Person person = findById(personId);
+        Person person = personRepository.findById(personId).orElse(null);
         if (person == null) {
             log.warn("User with id {} do not exist. Lock status didn't changed", personId);
             return false;
@@ -144,16 +118,6 @@ public class AccountService implements IAccountService {
     }
 
     /**
-     * Возвращает общее количество пользователей в базе.
-     *
-     * @return - целое число, равное количеству пользователей.
-     */
-    @Override
-    public int getTotalCountUsers() {
-        return personRepository.getTotalCountUsers();
-    }
-
-    /**
      * Осуществляет поиск пользователей по заданным параметрам.
      *
      * @param firstName   - имя пользователя;
@@ -169,17 +133,6 @@ public class AccountService implements IAccountService {
         int pageNumber = offset / itemPerPage;
         Pageable pageable = PageRequest.of(pageNumber, itemPerPage);
         return personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
-    }
-
-    /**
-     * Удаление пользователя по его идентификатору.
-     *
-     * @param personId - идентификатор пользователя.
-     */
-    @Override
-    public void deleteById(long personId) {
-        personRepository.deleteById(personId);
-        log.info("User with id {} delete.", personId);
     }
 
 
