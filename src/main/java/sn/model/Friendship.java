@@ -25,21 +25,26 @@ public class Friendship {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "src_person_id")
-    private Person srcPerson;
+    @Column(name = "src_person_id")
+    private long srcPerson;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dst_person_id")
-    private Person dstPerson;
+    @Column(name = "dst_person_id")
+    private long dstPerson;
 
     @CreationTimestamp
     @Column(columnDefinition = "timestamp with time zone")
     private LocalDateTime time;
 
-    private String name;
-
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "enum('FRIEND', 'REQUEST', 'BLOCKED', 'DECLINED', 'SUBSCRIBED')")
     private FriendshipStatusCode status;
+
+    public Friendship() {
+    }
+
+    public Friendship(long srcPerson, long dstPerson, FriendshipStatusCode status) {
+        this.srcPerson = srcPerson;
+        this.dstPerson = dstPerson;
+        this.status = status;
+    }
 }
