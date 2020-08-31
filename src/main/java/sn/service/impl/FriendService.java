@@ -1,6 +1,8 @@
 package sn.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sn.api.requests.IsFriendsRequest;
@@ -85,7 +87,7 @@ public class FriendService implements IFriendService {
     public List<Person> getFriendRecommendationList(long id, String city, Integer offset,
         int itemPerPage) {
 
-        return personRepository.findRecommendedFriends(id, city, offset,itemPerPage);
+        return personRepository.findRecommendedFriends(city, offset, itemPerPage);
 
     }
 
@@ -96,9 +98,10 @@ public class FriendService implements IFriendService {
 
     @Override
     public List<IsFriendResponse> isFriend(long id, IsFriendsRequest request) {
-
-        //TODO SN-25
-
-        return null;
+        List<Long> friends = getFriendList(id, null, 0, getFriendsCount(id)).stream().map(Person::getId).collect(
+            Collectors.toList());
+        friends.retainAll(request.getUserIds());
+        return friends.stream().map(f -> new IsFriendResponse(f, FriendshipStatusCode.FRIEND))
+            .collect(Collectors.toList());
     }
 }
