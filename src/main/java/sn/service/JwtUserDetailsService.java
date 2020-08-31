@@ -8,20 +8,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import sn.model.Person;
-import sn.service.impl.PersonService;
+import sn.repositories.PersonRepository;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private PersonService personService;
+    private PersonRepository personRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         Person person = null;
         UserBuilder builder = null;
         try {
-            person = personService.findByEmail(username);
+            person = personRepository.findByEmail(username).orElse(null);
         } catch (Exception e) {
             e.printStackTrace();
         }
