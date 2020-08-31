@@ -1,12 +1,13 @@
 package sn.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sn.model.Like;
 import sn.model.enums.LikeType;
 import sn.repositories.LikeRepository;
+import sn.repositories.PersonRepository;
 import sn.service.ILikeService;
-import sn.service.IPersonService;
 import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
@@ -17,9 +18,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class LikeService implements ILikeService {
-    private final IPersonService personService;
+    private final AccountService personService;
     private final IPostService postService;
     private final LikeRepository likeRepository;
+
+    @Autowired
+    private final PersonRepository personRepository;
 
     //==================================================================================================================
 
@@ -48,7 +52,8 @@ public class LikeService implements ILikeService {
         like.setItemId(itemId);
         like.setLikeType(likeType);
         like.setTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
-        like.setPerson(personService.findById(personId));
+        // TODO Топорно попоравлено, чтобы запускалось, поправить get
+        like.setPerson(personRepository.findById(personId).get());
         likeRepository.saveAndFlush(like);
         if (likeType == LikeType.POST) {
             postService.putLike(itemId);

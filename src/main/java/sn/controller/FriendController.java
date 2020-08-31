@@ -22,7 +22,6 @@ import sn.api.response.ServiceResponseDataList;
 import sn.model.Person;
 import sn.service.impl.AccountService;
 import sn.service.impl.FriendService;
-import sn.service.impl.PersonService;
 
 /**
  * Класс FriendController.
@@ -38,9 +37,6 @@ public class FriendController {
 
     @Autowired
     private AccountService accountService;
-
-    @Autowired
-    private PersonService personService;
 
     /**
      * Метод getFriendList. Получить список друзей пользователя.
@@ -69,7 +65,7 @@ public class FriendController {
 
         return ResponseEntity
             .ok(new ServiceResponseDataList<>(friendService.getFriendsCount(person.getId()), offset, itemPerPage,
-                friendList.stream().map(personService::getPersonResponse).collect(Collectors.toList())));
+                friendList.stream().map(accountService::getPersonResponse).collect(Collectors.toList())));
     }
 
     /**
@@ -154,7 +150,7 @@ public class FriendController {
         return ResponseEntity
             .ok(new ServiceResponseDataList<>(friendService.getTotalCountOfRequest(person.getId()), offset,
                 itemPerPage,
-                requestList.stream().map(personService::getPersonResponse).collect(Collectors.toList())));
+                requestList.stream().map(accountService::getPersonResponse).collect(Collectors.toList())));
     }
 
     /**
@@ -182,7 +178,7 @@ public class FriendController {
             .getFriendRecommendationList(person.getId(), person.getCity(), offset, itemPerPage);
 
         List<PersonResponse> responseList = new ArrayList<>();
-        recommendationList.forEach(p -> responseList.add(personService.getPersonResponse(p)));
+        recommendationList.forEach(p -> responseList.add(accountService.getPersonResponse(p)));
 
         int total = friendService.getTotalCountOfRecommendationList(person.getId(), person.getCity());
         return ResponseEntity
