@@ -114,8 +114,20 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
      */
 
     @Query(value = "SELECT person.* FROM person "
-        + "LEFT JOIN friendship ON (person.id != friendship.src_person_id AND person.id != friendship.dst_person_id)"
-        + "WHERE person.city = :city"
+        + "LEFT JOIN friendship ON person.id = friendship.src_person_id "
+        + "WHERE person.city = :city "
+        + "AND person.id != :id "
+        + "AND status != 'FRIEND' "
+        + "UNION "
+        + "SELECT person.* FROM person "
+        + "LEFT JOIN friendship ON person.id = friendship.dst_person_id "
+        + "WHERE person.city = :city "
+        + "AND person.id != :id "
+        + "AND status != 'FRIEND' "
+        + "UNION "
+        + "SELECT person.* FROM person "
+        + "WHERE person.city = :city "
+        + "AND person.id != :id "
         + "LIMIT :itemPerPage OFFSET :offset"
         , nativeQuery = true)
     List<Person> findRecommendedFriends(long id, String city, Integer offset, int itemPerPage);
