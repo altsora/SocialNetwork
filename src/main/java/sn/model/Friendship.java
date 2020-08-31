@@ -16,6 +16,12 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import sn.model.enums.FriendshipStatusCode;
 
+/**
+ * Class Friendship.
+ * Entity Friendship.
+ *
+ */
+
 @Data
 @Entity
 @Table(name = "friendship")

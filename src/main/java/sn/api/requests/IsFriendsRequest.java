@@ -12,5 +12,5 @@ import lombok.Setter;
 public class IsFriendsRequest {
 
     @JsonProperty("user_ids")
-    List<Integer> userIds;
+    List<Long> userIds;
 }
