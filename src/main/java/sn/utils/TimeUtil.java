@@ -9,12 +9,12 @@ public final class TimeUtil {
     private TimeUtil() {
     }
 
-    public static long getTimestampFromLocalDateTime(LocalDateTime localDateTime) {
-        return localDateTime.toInstant(ZONE_OFFSET).getEpochSecond();
+    public static Long getTimestampFromLocalDateTime(LocalDateTime localDateTime) {
+        return localDateTime != null ? localDateTime.toInstant(ZONE_OFFSET).getEpochSecond() : null;
     }
 
-    public static long getTimestampFromLocalDate(LocalDate localDate) {
-        return getTimestampFromLocalDateTime(localDate.atStartOfDay());
+    public static Long getTimestampFromLocalDate(LocalDate localDate) {
+        return localDate != null ? getTimestampFromLocalDateTime(localDate.atStartOfDay()) : null;
     }
 
     public static LocalDateTime getLocalDateTimeFromTimestamp(long timestamp) {

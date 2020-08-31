@@ -1,6 +1,6 @@
 package sn.controller;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.requests.LikeRequest;
@@ -12,10 +12,16 @@ import sn.service.ILikeService;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 public class LikeController {
     private final IAccountService accountService;
     private final ILikeService likeService;
+
+    public LikeController(
+            @Qualifier("account-service") IAccountService accountService,
+            ILikeService likeService) {
+        this.accountService = accountService;
+        this.likeService = likeService;
+    }
 
     //==================================================================================================================
 

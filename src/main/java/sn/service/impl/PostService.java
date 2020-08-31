@@ -130,6 +130,11 @@ public class PostService implements IPostService {
                 .build();
     }
 
+    /**
+     * Метод ставит лайк под постом.
+     *
+     * @param postId - идентификатор поста;
+     */
     @Override
     public void putLike(long postId) {
         Post post = findById(postId);
@@ -137,6 +142,11 @@ public class PostService implements IPostService {
         postRepository.saveAndFlush(post);
     }
 
+    /**
+     * Метод убирает лайк под постом.
+     *
+     * @param postId - идентификатор поста;
+     */
     @Override
     public void removeLike(long postId) {
         Post post = findById(postId);
