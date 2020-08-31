@@ -1,7 +1,10 @@
 package sn.service;
 
 import sn.api.requests.PostEditRequest;
-import sn.api.response.*;
+import sn.api.response.CommentResponse;
+import sn.api.response.PersonResponse;
+import sn.api.response.PostResponse;
+import sn.api.response.WallPostResponse;
 import sn.model.Person;
 import sn.model.Post;
 
@@ -37,12 +40,4 @@ public interface IPostService {
 
     PostResponse editPost
             (long id, long publishDate, PostEditRequest postEditRequest);
-
-    IdResponse deletePost(long id);
-
-    PostResponse recoverPost(long id);
-
-    MessageResponse complaintPost(long id);
-
-    MessageResponse complaintComment(long id, long commentId);
 }
