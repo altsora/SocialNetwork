@@ -1,30 +1,49 @@
 package sn.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import sn.api.requests.PostEditRequest;
 import sn.api.response.CommentResponse;
 import sn.api.response.PersonResponse;
+import sn.api.response.PostResponse;
 import sn.api.response.WallPostResponse;
 import sn.model.Person;
 import sn.model.Post;
 import sn.model.enums.StatusWallPost;
 import sn.repositories.PostRepository;
+import sn.service.IAccountService;
+import sn.service.ICommentService;
+import sn.service.IPersonService;
 import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService implements IPostService {
     private final PostRepository postRepository;
+
+    @Autowired
+    @Qualifier("account-service")
+    private IAccountService accountService;
+
+    @Autowired
+    @Qualifier("person-service")
+    private IPersonService personService;
+
+    @Autowired
+    private ICommentService commentService;
 
     /**
      * Поиск поста по его идентификатору.
@@ -71,7 +90,6 @@ public class PostService implements IPostService {
         post.setAuthor(author);
         post.setTitle(title);
         post.setText(text);
-        log.info("User with id {} add new post. Time: {}", author.getId(), postTime);
         return postRepository.saveAndFlush(post);
     }
 
@@ -131,26 +149,133 @@ public class PostService implements IPostService {
     }
 
     /**
-     * Метод ставит лайк под постом.
+     * Метод findCurrentUser.
+     * Получение текущего пользователя.
      *
-     * @param postId - идентификатор поста;
+     * @return Person или null, если текущий пользователь не аутентифицирован.
      */
     @Override
-    public void putLike(long postId) {
-        Post post = findById(postId);
-        post.setLikesCount(post.getLikesCount() + 1);
-        postRepository.saveAndFlush(post);
+    public Person findCurrentUser() {
+        return accountService.findCurrentUser();
     }
 
     /**
-     * Метод убирает лайк под постом.
+     * Метод findPosts.
+     * Поиск публикации.
      *
-     * @param postId - идентификатор поста;
+     * @param text текст публикации.
+     * @param dateFrom Дата публикации ОТ.
+     * @param dateTo Дата публикации ДО.
+     * @param offset Отступ от начала списка.
+     * @param itemPerPage Количество элементов на страницу.
+     * @return возвращает список публикации
      */
     @Override
-    public void removeLike(long postId) {
-        Post post = findById(postId);
-        post.setLikesCount(post.getLikesCount() - 1);
+    public List<PostResponse> findPosts(String text, long dateFrom, long dateTo,
+                                        int offset, int itemPerPage) {
+        int pageNumber = offset / itemPerPage;
+        Sort sort = Sort.by(Sort.Direction.DESC, PostRepository.POST_TIME);
+        Pageable pageable = PageRequest.of(pageNumber, itemPerPage, sort);
+
+        // если время в посте не будем менять на лонг, то оставляем так
+        LocalDateTime localDateFrom = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(dateFrom), ZoneId.systemDefault());
+        LocalDateTime localDateTo = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(dateTo), ZoneId.systemDefault());
+        List<Post> posts = postRepository.findAllByTextAndTime
+                (text, localDateFrom, localDateTo, pageable);
+
+        List<PostResponse> response = new ArrayList<>();
+        for (Post post : posts) {
+            PostResponse postResponse = new PostResponse();
+            postResponse.setId(post.getId());
+
+            // если время в посте не будем менять на лонг, то оставляем так:
+            ZonedDateTime zdt = ZonedDateTime.of(post.getTime(),
+                    ZoneId.systemDefault());
+            postResponse.setTime(zdt.toInstant().toEpochMilli());
+
+            postResponse.setAuthor(personService
+                    .getPersonResponse(post.getAuthor()));
+            postResponse.setTitle(post.getTitle());
+            postResponse.setPostText(post.getText());
+            postResponse.setBlocked(post.isBlocked());
+            postResponse.setLikes(post.getLikesCount());
+            postResponse.setComments(commentService.getCommentsByPostId(
+                    post.getId()));
+        }
+        return response;
+    }
+
+    /**
+     * Метод findPostById.
+     * Поиск публикации.
+     *
+     * @param id ID публикации.
+     * @return возвращает публикацию.
+     */
+    @Override
+    public PostResponse findPostById(long id) {
+        Post post = findById(id);
+        PostResponse postResponse = new PostResponse();
+        postResponse.setId(post.getId());
+
+        // если время в посте не будем менять на лонг, то оставляем так:
+        ZonedDateTime zdt = ZonedDateTime.of(post.getTime(),
+                ZoneId.systemDefault());
+        postResponse.setTime(zdt.toInstant().toEpochMilli());
+
+        postResponse.setAuthor(personService
+                .getPersonResponse(post.getAuthor()));
+        postResponse.setTitle(post.getTitle());
+        postResponse.setPostText(post.getText());
+        postResponse.setBlocked(post.isBlocked());
+        postResponse.setLikes(post.getLikesCount());
+        postResponse.setComments(commentService.getCommentsByPostId(
+                post.getId()));
+
+        return postResponse;
+    }
+
+    /**
+     * Метод editPost.
+     * Редактирование публикации.
+     *
+     * @param id ID публикации.
+     * @param publishDate Отложить до определённой даты.
+     * @return возвращает публикацию.
+     */
+    @Override
+    public PostResponse editPost
+    (long id, long publishDate, PostEditRequest postEditRequest) {
+        Post post = postRepository.getOne(id);
+
+        // если время в посте не будем менять на лонг, то оставляем так
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(publishDate), ZoneId.systemDefault());
+        post.setTime(localDateTime);
+
+        post.setText(postEditRequest.getPostText());
+        post.setTitle(postEditRequest.getTitle());
         postRepository.saveAndFlush(post);
+
+        PostResponse postResponse = new PostResponse();
+        postResponse.setId(post.getId());
+
+        // если время в посте не будем менять на лонг, то оставляем так:
+        ZonedDateTime zdt = ZonedDateTime.of(post.getTime(),
+                ZoneId.systemDefault());
+        postResponse.setTime(zdt.toInstant().toEpochMilli());
+
+        postResponse.setAuthor(personService
+                .getPersonResponse(post.getAuthor()));
+        postResponse.setTitle(post.getTitle());
+        postResponse.setPostText(post.getText());
+        postResponse.setBlocked(post.isBlocked());
+        postResponse.setLikes(post.getLikesCount());
+        postResponse.setComments(commentService.getCommentsByPostId(
+                post.getId()));
+
+        return postResponse;
     }
 }

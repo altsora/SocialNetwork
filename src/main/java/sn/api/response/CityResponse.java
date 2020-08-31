@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@Builder
+//@Builder
 @RequiredArgsConstructor
 public class CityResponse {
     private final int id = 1;

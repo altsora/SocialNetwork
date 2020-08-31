@@ -1,7 +1,9 @@
 package sn.service;
 
+import sn.api.requests.PostEditRequest;
 import sn.api.response.CommentResponse;
 import sn.api.response.PersonResponse;
+import sn.api.response.PostResponse;
 import sn.api.response.WallPostResponse;
 import sn.model.Person;
 import sn.model.Post;
@@ -29,7 +31,13 @@ public interface IPostService {
 
     WallPostResponse getExistsWallPost(Post post, PersonResponse author, List<CommentResponse> comments);
 
-    void putLike(long postId);
+    Person findCurrentUser();
 
-    void removeLike(long postId);
+    List<PostResponse> findPosts(String text, long dateFrom, long dateTo,
+                           int offset, int itemPerPage);
+
+    PostResponse findPostById(long id);
+
+    PostResponse editPost
+            (long id, long publishDate, PostEditRequest postEditRequest);
 }
