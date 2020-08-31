@@ -15,6 +15,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,20 +26,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import sn.api.response.LoginResponse;
 import sn.api.response.PersonResponse;
 import sn.api.response.PersonResponseWithToken;
-import sn.service.impl.PersonService;
+import sn.repositories.PersonRepository;
+import sn.service.IAccountService;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
 
     @Autowired
-    private PersonService personService;
+    @Qualifier("account-service")
+    private IAccountService accountService;
+
+    @Autowired
+    private PersonRepository personRepository;
 
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, ApplicationContext ctx) {
         this.authenticationManager = authenticationManager;
         setFilterProcessesUrl(SecurityConstants.AUTH_LOGIN_URL);
-        this.personService = ctx.getBean(PersonService.class);
+        this.accountService = ctx.getBean(IAccountService.class);
     }
 
 
@@ -88,7 +94,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         PersonResponse personResponse = null;
         try {
-            personResponse = personService.getPersonResponse(personService.findById(1));
+            personResponse = accountService.getPersonResponse(personRepository.findById(1L).orElse(null));
         } catch (Exception e) {
             e.printStackTrace();
         }

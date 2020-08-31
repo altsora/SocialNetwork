@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
+import sn.repositories.PersonRepository;
 import sn.service.IAccountService;
 import sn.service.MailSenderService;
 
@@ -35,7 +36,7 @@ class AccountServiceTest {
     private IAccountService accountService;
 
     @MockBean
-    private PersonService personService;
+    private PersonRepository personRepository;
 
     @MockBean
     private PasswordEncoder passwordEncoder;
@@ -60,13 +61,10 @@ class AccountServiceTest {
         person.setLastName(userRegistrationRequest.getLastName());
         person.setPassword(passwordEncoder.encode(userRegistrationRequest.getPasswd1()));
         person.setEmail(userRegistrationRequest.getEmail());
-        Mockito.doThrow(new UsernameNotFoundException("Person not found by email."))
-                .when(personService).findByEmail(USER_EMAIL);
-        Mockito.doReturn(Optional.of(person)).when(personService).save(person);
+        Mockito.doReturn(Optional.empty()).when(personRepository).findByEmail(USER_EMAIL);
         boolean isPersonRegistered = accountService.register(userRegistrationRequest);
         Assert.assertTrue(isPersonRegistered);
-        Mockito.verify(personService, Mockito.times(1)).findByEmail(USER_EMAIL);
-        Mockito.verify(personService, Mockito.times(1)).save(person);
+        Mockito.verify(personRepository, Mockito.times(1)).findByEmail(USER_EMAIL);
     }
 
     /**
@@ -80,7 +78,7 @@ class AccountServiceTest {
         userRegistrationRequest.setPasswd2(NEW_USER_PASSWD);
         boolean isPersonRegistered = accountService.register(userRegistrationRequest);
         Assert.assertFalse(isPersonRegistered);
-        Mockito.verify(personService, Mockito.times(0)).findByEmail(USER_EMAIL);
+        Mockito.verify(personRepository, Mockito.times(0)).findByEmail(USER_EMAIL);
     }
 
     /**
@@ -94,10 +92,10 @@ class AccountServiceTest {
         userRegistrationRequest.setPasswd2(USER_PASSWD2);
         Person person = new Person();
         person.setEmail(USER_EMAIL);
-        Mockito.doReturn(person).when(personService).findByEmail(USER_EMAIL);
+        Mockito.doReturn(Optional.of(person)).when(personRepository).findByEmail(USER_EMAIL);
         boolean isPersonRegistered = accountService.register(userRegistrationRequest);
         Assert.assertFalse(isPersonRegistered);
-        Mockito.verify(personService, Mockito.times(1)).findByEmail(USER_EMAIL);
+        Mockito.verify(personRepository, Mockito.times(1)).findByEmail(USER_EMAIL);
     }
 
     /**
@@ -108,13 +106,11 @@ class AccountServiceTest {
         Person person = new Person();
         person.setEmail(USER_EMAIL);
         person.setPassword(USER_PASSWD1);
-        Mockito.doReturn(person).when(personService).findByEmail(USER_EMAIL);
+        Mockito.doReturn(Optional.of(person)).when(personRepository).findByEmail(USER_EMAIL);
         person.setPassword(NEW_USER_PASSWD);
-        Mockito.doReturn(Optional.of(person)).when(personService).save(person);
         boolean isRecoveryPasswordEmailSend = accountService.recoveryPassword(USER_EMAIL);
         Assert.assertTrue(isRecoveryPasswordEmailSend);
-        Mockito.verify(personService, Mockito.times(1)).findByEmail(USER_EMAIL);
-        Mockito.verify(personService, Mockito.times(1)).save(person);
+        Mockito.verify(personRepository, Mockito.times(1)).findByEmail(USER_EMAIL);
     }
 
     /**
@@ -125,12 +121,11 @@ class AccountServiceTest {
         Person person = new Person();
         person.setEmail(USER_EMAIL);
         person.setPassword(USER_PASSWD1);
-        Mockito.doThrow(new UsernameNotFoundException("Person not found by email."))
-                .when(personService).findByEmail(USER_EMAIL);
+        Mockito.doReturn(Optional.empty()).when(personRepository).findByEmail(USER_EMAIL);
         boolean isRecoveryPasswordEmailSend = accountService.recoveryPassword(USER_EMAIL);
         Assert.assertFalse(isRecoveryPasswordEmailSend);
-        Mockito.verify(personService, Mockito.times(1)).findByEmail(USER_EMAIL);
-        Mockito.verify(personService, Mockito.times(0)).save(person);
+        Mockito.verify(personRepository, Mockito.times(1)).findByEmail(USER_EMAIL);
+        Mockito.verify(personRepository, Mockito.times(0)).save(person);
     }
 
     /**
@@ -141,12 +136,10 @@ class AccountServiceTest {
         Person person = new Person();
         person.setEmail(USER_EMAIL);
         Mockito.doReturn(USER_EMAIL).when(authentication).getName();
-        Mockito.doReturn(person).when(personService).findByEmail(USER_EMAIL);
-        Mockito.doReturn(Optional.of(person)).when(personService).save(person);
+        Mockito.doReturn(Optional.of(person)).when(personRepository).findByEmail(USER_EMAIL);
         Assert.assertTrue(accountService.setNewPassword(NEW_USER_PASSWD));
         Mockito.verify(authentication, Mockito.times(1)).getName();
-        Mockito.verify(personService, Mockito.times(1)).findByEmail(USER_EMAIL);
-        Mockito.verify(personService, Mockito.times(1)).save(person);
+        Mockito.verify(personRepository, Mockito.times(1)).findByEmail(USER_EMAIL);
     }
 
     /**
@@ -158,12 +151,10 @@ class AccountServiceTest {
         person.setEmail(USER_EMAIL);
         person.setPassword(USER_PASSWD1);
         Mockito.doReturn(USER_EMAIL).when(authentication).getName();
-        Mockito.doReturn(person).when(personService).findByEmail(USER_EMAIL);
-        Mockito.doReturn(Optional.of(person)).when(personService).save(person);
+        Mockito.doReturn(Optional.of(person)).when(personRepository).findByEmail(USER_EMAIL);
         Assert.assertTrue(accountService.changeEmail("some@email.ru"));
         Mockito.verify(authentication, Mockito.times(1)).getName();
-        Mockito.verify(personService, Mockito.times(1)).findByEmail(USER_EMAIL);
-        Mockito.verify(personService, Mockito.times(1)).save(person);
+        Mockito.verify(personRepository, Mockito.times(1)).findByEmail(USER_EMAIL);
     }
 
 

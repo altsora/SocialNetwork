@@ -1,6 +1,7 @@
 package sn.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,15 +11,16 @@ import sn.api.requests.WallPostRequest;
 import sn.api.response.*;
 import sn.model.Person;
 import sn.model.Post;
+import sn.repositories.PersonRepository;
 import sn.service.IAccountService;
 import sn.service.ICommentService;
-import sn.service.IPersonService;
 import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -26,8 +28,10 @@ import java.util.List;
 public class ProfileController {
     private final IAccountService accountService;
     private final ICommentService commentService;
-    private final IPersonService personService;
     private final IPostService postService;
+
+    @Autowired
+    private PersonRepository personRepository;
 
     //==================================================================================================================
 
@@ -44,7 +48,7 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        PersonResponse personResponse = personService.getPersonResponse(person);
+        PersonResponse personResponse = accountService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
@@ -62,8 +66,8 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        person = personService.updatePerson(person, personEditRequest);
-        PersonResponse personResponse = personService.getPersonResponse(person);
+        person = accountService.updatePerson(person, personEditRequest);
+        PersonResponse personResponse = accountService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
@@ -80,7 +84,7 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ServiceResponse<>("Unauthorized", new ResponseDataMessage("User is not authorized")));
         }
-        personService.deleteById(person.getId());
+        personRepository.deleteById(person.getId());
         return ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok")));
     }
 
@@ -94,11 +98,12 @@ public class ProfileController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> getUserById(@PathVariable(value = "id") long personId) {
-        Person person = personService.findById(personId);
+        Person person = personRepository.findById(personId).orElse(null);
         if (person == null) {
-            return ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
+            return ResponseEntity.badRequest()
+                    .body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
         }
-        PersonResponse personResponse = personService.getPersonResponse(person);
+        PersonResponse personResponse = accountService.getPersonResponse(person);
         return ResponseEntity.ok(new ServiceResponse<>(personResponse));
     }
 
@@ -118,13 +123,14 @@ public class ProfileController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "itemPerPage", defaultValue = "20") int itemPerPage
     ) {
-        Person person = personService.findById(personId);
-        if (person == null) {
+        Optional<Person> personOpt = personRepository.findById(personId);
+        if (personOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(new ServiceResponseDataList<>("Service unavailable"));
         }
+        Person person = personOpt.get();
         List<WallPostResponse> wallPosts = new ArrayList<>();
         List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);
-        PersonResponse author = personService.getPersonResponse(person);
+        PersonResponse author = accountService.getPersonResponse(person);
         for (Post post : posts) {
             List<CommentResponse> comments = commentService.getCommentsByPostId(post.getId());
             WallPostResponse wallPostResponse = postService.getExistsWallPost(post, author, comments);
@@ -150,7 +156,7 @@ public class ProfileController {
             @RequestParam(value = "publish_date", required = false) Long publishDate,
             @RequestBody WallPostRequest wallPostRequest
     ) {
-        Person person = personService.findById(personId);
+        Person person = personRepository.findById(personId).orElse(null);
         if (person == null) {
             return ResponseEntity.badRequest()
                     .body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
@@ -161,7 +167,7 @@ public class ProfileController {
         String title = wallPostRequest.getTitle();
         String text = wallPostRequest.getPostText();
         Post post = postService.addPost(person, title, text, postTime);
-        PersonResponse author = personService.getPersonResponse(person);
+        PersonResponse author = accountService.getPersonResponse(person);
         WallPostResponse newPost = postService.createNewWallPost(post, author);
         return ResponseEntity.ok(new ServiceResponse<>(newPost));
     }
@@ -193,13 +199,13 @@ public class ProfileController {
             @RequestParam(value = "itemPerPage", defaultValue = "20") Integer itemPerPage
     ) {
         //TODO: без учёта города и страны
-        List<Person> personList = personService.searchPersons(firstName, lastName, ageFrom, ageTo, offset, itemPerPage);
+        List<Person> personList = accountService.searchPersons(firstName, lastName, ageFrom, ageTo, offset, itemPerPage);
         List<PersonResponse> searchResult = new ArrayList<>();
         for (Person person : personList) {
-            searchResult.add(personService.getPersonResponse(person));
+            searchResult.add(accountService.getPersonResponse(person));
         }
 
-        int total = personService.getTotalCountUsers();
+        int total = personRepository.getTotalCountUsers();
         return ResponseEntity.ok(new ServiceResponseDataList<>(total, offset, itemPerPage, searchResult));
     }
 
@@ -212,7 +218,7 @@ public class ProfileController {
      */
     @PutMapping("/block/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> blockUserById(@PathVariable(value = "id") long personId) {
-        return personService.changeUserLockStatus(personId) ?
+        return accountService.changeUserLockStatus(personId) ?
                 ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
                 ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
     }
@@ -226,7 +232,7 @@ public class ProfileController {
      */
     @DeleteMapping("/block/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> unblockUserById(@PathVariable(value = "id") long personId) {
-        return personService.changeUserLockStatus(personId) ?
+        return accountService.changeUserLockStatus(personId) ?
                 ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))) :
                 ResponseEntity.badRequest().body(new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable")));
     }

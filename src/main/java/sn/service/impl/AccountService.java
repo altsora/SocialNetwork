@@ -2,24 +2,30 @@ package sn.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import sn.api.requests.PersonEditRequest;
+import sn.api.response.CityResponse;
+import sn.api.response.CountryResponse;
+import sn.api.response.PersonResponse;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
+import sn.repositories.PersonRepository;
 import sn.service.IAccountService;
-import sn.service.IPersonService;
 import sn.service.MailSenderService;
+import sn.utils.TimeUtil;
 
 import javax.transaction.Transactional;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,8 +40,7 @@ import java.util.concurrent.CompletableFuture;
 public class AccountService implements IAccountService {
 
     @Autowired
-    @Qualifier("person-service")
-    private IPersonService personService;
+    private PersonRepository personRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -45,6 +50,91 @@ public class AccountService implements IAccountService {
 
     @Autowired
     private MailSenderService mailSenderService;
+
+    /**
+     * Изменяет статус блокировки пользователя на противоположный.
+     *
+     * @param personId - идентификатор пользователя.
+     * @return - возврат true, если статус изменён, иначе false.
+     */
+    @Override
+    public boolean changeUserLockStatus(long personId) {
+        Person person = personRepository.findById(personId).orElse(null);
+        if (person == null) {
+            log.warn("User with id {} do not exist. Lock status didn't changed", personId);
+            return false;
+        }
+        person.setBlocked(!person.isBlocked());
+        personRepository.saveAndFlush(person);
+        log.info("User with id {} changed lock status", personId);
+        return true;
+    }
+
+    /**
+     * Обновление данных о пользователе.
+     *
+     * @param person - пользователя;
+     * @return - возвращается обновлённый пользователь.
+     */
+    @Override
+    public Person updatePerson(Person person, PersonEditRequest personEditRequest) {
+        person.setFirstName(personEditRequest.getFirstName());
+        person.setLastName(personEditRequest.getLastName());
+        person.setBirthDate(TimeUtil.getLocalDateFromTimestamp(personEditRequest.getBirthDate()));
+        person.setPhone(personEditRequest.getPhone());
+        person.setPhoto(personEditRequest.getPhoto());
+        person.setAbout(personEditRequest.getAbout());
+        //TODO: город и страна без изменений
+        person.setMessagesPermission(personEditRequest.getMessagesPermission());
+        log.info("Update data for user with id {}.", person.getId());
+        return personRepository.saveAndFlush(person);
+    }
+
+    /**
+     * Формирует PersonResponse на основе Person.
+     *
+     * @param person - объект класса Person.
+     * @return - возврат true, если статус изменён, иначе false.
+     */
+    @Override
+    public PersonResponse getPersonResponse(Person person) {
+        //TODO: Нет данных, откуда берутся город и страна
+        return PersonResponse.builder()
+                .id(person.getId())
+                .firstName(person.getFirstName())
+                .lastName(person.getLastName())
+                .regDate(TimeUtil.getTimestampFromLocalDateTime(person.getRegDate()))
+                .birthDate(TimeUtil.getTimestampFromLocalDate(person.getBirthDate()))
+                .email(person.getEmail())
+                .phone(person.getPhone())
+                .photo(person.getPhoto())
+                .about(person.getAbout())
+                .city(new CityResponse("Москва"))
+                .country(new CountryResponse("Россия"))
+                .messagesPermission(person.getMessagesPermission())
+                .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                .isBlocked(person.isBlocked())
+                .build();
+    }
+
+    /**
+     * Осуществляет поиск пользователей по заданным параметрам.
+     *
+     * @param firstName   - имя пользователя;
+     * @param lastName    - фамилия пользователя;
+     * @param ageFrom     - минимальный возраст пользователя;
+     * @param ageTo       - максимальный возраст пользователя;
+     * @param offset      - отступ от начала списка;
+     * @param itemPerPage - количество элементов на страницу;
+     * @return - возвращает список пользователей, подходящих по заданным параметрам.
+     */
+    @Override
+    public List<Person> searchPersons(String firstName, String lastName, Integer ageFrom, Integer ageTo, Integer offset, Integer itemPerPage) {
+        int pageNumber = offset / itemPerPage;
+        Pageable pageable = PageRequest.of(pageNumber, itemPerPage);
+        return personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
+    }
+
 
     /**
      * Метод register.
@@ -57,33 +147,22 @@ public class AccountService implements IAccountService {
      */
     @Override
     public boolean register(UserRegistrationRequest userRegistrationRequest) {
-        //todo если заработает на фронте
-//        if (!checkCaptcha(userRegistrationRequest.getCode())) {
-//            log.warn("Wrong captcha");
-//            return false;
-//        }
         if (!userRegistrationRequest.getPasswd1().equals(userRegistrationRequest.getPasswd2())) {
-            log.warn("Passwords do not match");
+            log.warn("Passwords mismatch. Registration cancelled.");
             return false;
         }
-
-        try {
-            personService.findByEmail(userRegistrationRequest.getEmail());
-        } catch (UsernameNotFoundException exception) {
-            Person person = new Person();
-            person.setFirstName(userRegistrationRequest.getFirstName());
-            person.setLastName(userRegistrationRequest.getLastName());
-            person.setPassword(passwordEncoder.encode(userRegistrationRequest.getPasswd1()));
-            person.setEmail(userRegistrationRequest.getEmail());
-            if (personService.save(person).isPresent()) {
-                log.info("Person successfully registered");
-                return true;
-            }
-            log.error("Error in register method. Person do not registered");
+        if (personRepository.findByEmail(userRegistrationRequest.getEmail()).isPresent()) {
+            log.error("User [{}] is exists.", userRegistrationRequest.getEmail());
             return false;
-        }
-        log.error("User [{}] is exists.", userRegistrationRequest.getEmail());
-        return false;
+        };
+        Person person = new Person();
+        person.setFirstName(userRegistrationRequest.getFirstName());
+        person.setLastName(userRegistrationRequest.getLastName());
+        person.setPassword(passwordEncoder.encode(userRegistrationRequest.getPasswd1()));
+        person.setEmail(userRegistrationRequest.getEmail());
+        personRepository.save(person);
+        log.info("Person successfully registered");
+        return true;
     }
 
     /**
@@ -95,23 +174,19 @@ public class AccountService implements IAccountService {
      */
     @Override
     public boolean recoveryPassword(String email) {
-        try {
-            Person person = personService.findByEmail(email);
-            String newPassword = generateNewPassword(9);
-            person.setPassword(passwordEncoder.encode(newPassword));
-
-            if (personService.save(person).isPresent()) {
-                log.info("New password set to the person");
-                CompletableFuture.runAsync(() -> mailSenderService.send(person.getEmail(), "Password recovery",
-                        "Your new password: " + newPassword));
-                return true;
-            }
-            log.error("Error in recoveryPassword method. Recovery code do not set and/or email do not sent.");
-            return false;
-        } catch (UsernameNotFoundException exception) {
-            log.error("Error in recoveryPassword method. User with this email do not exist.");
+        Optional<Person> personOpt = personRepository.findByEmail(email);
+        if (personOpt.isEmpty()) {
+            log.warn("Person [{}] not found for password recovery." , email);
             return false;
         }
+        Person person = personOpt.get();
+        String newPassword = generateNewPassword(9);
+        person.setPassword(passwordEncoder.encode(newPassword));
+        personRepository.save(person);
+        log.info("New password set to the person.");
+        CompletableFuture.runAsync(() -> mailSenderService.send(person.getEmail(), "Password recovery",
+                "Your new password: " + newPassword));
+        return true;
     }
 
     /**
@@ -124,37 +199,19 @@ public class AccountService implements IAccountService {
     @Override
     @Transactional
     public boolean setNewPassword(String password) {
-        try {
-            Person person = personService.findByEmail(authentication.getName());
-            person.setPassword(passwordEncoder.encode(password));
-            if (personService.save(person).isPresent()) {
-                log.info("Person password successfully recovered.");
-                CompletableFuture.runAsync(() -> mailSenderService.send(person.getEmail(), "Password recovery",
-                        new StringBuffer("Your password has been changed successfully from ")
-                                .append(getIpAddress()).append(" at ").append(LocalDateTime.now()).toString()));
-                return true;
-            }
-        } catch (UsernameNotFoundException exception) {
-            log.error(exception.getMessage());
-            log.error("Password change cancelled. Person not found in database by email: [{}]", authentication.getName());
+        Optional<Person> personOpt = personRepository.findByEmail(authentication.getName());
+        if (personOpt.isEmpty()) {
+            log.warn("Person not found by email [{}].", authentication.getName());
+            return false;
         }
-        return false;
-    }
-
-    /**
-     * Метод getIpAddress.
-     * Получение ip-адреса пользователя.
-     *
-     * @return ip-алрес пользователя.
-     */
-    private InetAddress getIpAddress() {
-        try {
-            return InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            log.error("Can't get ip address.");
-            e.printStackTrace();
-        }
-        return null;
+        Person person = personOpt.get();
+        person.setPassword(passwordEncoder.encode(password));
+        personRepository.save(person);
+        log.info("Person password successfully recovered.");
+        CompletableFuture.runAsync(() -> mailSenderService.send(person.getEmail(), "Password recovery",
+                new StringBuffer("Your password has been changed successfully from ")
+                        .append(getIpAddress()).append(" at ").append(LocalDateTime.now()).toString()));
+        return true;
     }
 
     /**
@@ -168,18 +225,35 @@ public class AccountService implements IAccountService {
     @Override
     @Transactional
     public boolean changeEmail(String newEmail) {
-        try {
-            Person person = personService.findByEmail(authentication.getName());
-            person.setEmail(newEmail);
-            if (personService.save(person).isPresent()) {
-                log.info("Person email successfully changed.");
-                return true;
-            }
-        } catch (UsernameNotFoundException exception) {
-            log.error(exception.getMessage());
-            log.error("Email change cancelled. Person not found in database by email: [{}]", authentication.getName());
+        Optional<Person> personOpt = personRepository.findByEmail(authentication.getName());
+        if (personOpt.isEmpty()) {
+            log.warn("Person not found by email [{}].", authentication.getName());
+            return false;
         }
-        return false;
+        Person person = personOpt.get();
+        person.setEmail(newEmail);
+        personRepository.save(person);
+        log.info("Person email successfully changed.");
+        return true;
+    }
+
+    /**
+     * Метод findCurrentUser.
+     * Получение текущего пользователя.
+     *
+     * @return Person или null, если текущий пользователь не аутентифицирован.
+     */
+    public Person findCurrentUser() {
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            log.warn("Anonymous user authenticated");
+            return null;
+        }
+        Optional<Person> personOpt = personRepository.findByEmail(authentication.getName());
+        if (personOpt.isEmpty()) {
+            log.warn("Person not found by email [{}].", authentication.getName());
+            return null;
+        }
+        return personOpt.get();
     }
 
     /**
@@ -201,25 +275,20 @@ public class AccountService implements IAccountService {
                 .toString();
     }
 
-
     /**
-     * Метод findCurrentUser.
-     * Получение текущего пользователя.
+     * Метод getIpAddress.
+     * Получение ip-адреса пользователя.
      *
-     * @return Person или null, если текущий пользователь не аутентифицирован.
+     * @return ip-алрес пользователя.
      */
-    public Person findCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Person person = null;
-        if (!(auth instanceof AnonymousAuthenticationToken)) {
-            String name = auth.getName();//get logged in username = email
-            try {
-                person = personService.findByEmail(name);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    private InetAddress getIpAddress() {
+        try {
+            return InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            log.error("Can't get ip address.");
+            e.printStackTrace();
         }
-        return person;
+        return null;
     }
 
 }
