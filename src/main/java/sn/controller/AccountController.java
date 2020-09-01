@@ -11,7 +11,6 @@ import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
 import sn.model.dto.account.UserRegistrationRequest;
 import sn.service.IAccountService;
-import sn.service.IPersonService;
 
 /**
  * Класс AccountController.

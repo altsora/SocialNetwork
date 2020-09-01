@@ -1,6 +1,8 @@
 package sn.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -22,6 +24,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "person")
+@EqualsAndHashCode(exclude = {"posts", "likes"})
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +61,10 @@ public class Person {
     private boolean online;
     @Column(name = "is_deleted")
     private boolean deleted;
-
+    @JsonManagedReference
     @OneToMany(mappedBy = "author")
     private List<Post> posts;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "person")
+    private Set<Like> likes;
 }
