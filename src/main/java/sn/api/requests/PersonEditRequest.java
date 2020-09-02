@@ -14,7 +14,7 @@ public class PersonEditRequest {
     @JsonProperty("last_name")
     private String lastName;
     @JsonProperty("birth_date")
-    private long birthDate;
+    private Long birthDate;
     @JsonProperty("phone")
     private String phone;
     @JsonProperty("photo_id")

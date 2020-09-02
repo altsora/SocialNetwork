@@ -22,7 +22,7 @@ public class CommentResponse {
     @JsonProperty("parent_id")
     private Long parentId;
     @JsonProperty("time")
-    private long time;
+    private Long time;
     @JsonProperty("is_blocked")
     private boolean isBlocked;
 }
