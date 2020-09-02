@@ -25,7 +25,7 @@ import sn.service.impl.FriendService;
 
 /**
  * Класс FriendController.
- *
+ * <p>
  * REST-контроллер для работы с друзьями.
  */
 
@@ -39,8 +39,7 @@ public class FriendController {
     private AccountService accountService;
 
     /**
-     * Метод getFriendList. Получить список друзей пользователя.
-     * GET запрос /api/v1/friends
+     * Метод getFriendList. Получить список друзей пользователя. GET запрос /api/v1/friends
      *
      * @param name        - поиск по характерному имени
      * @param offset      - Отступ от начала результирующего списка пользователей.
@@ -55,22 +54,17 @@ public class FriendController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
-        Person person = accountService.findCurrentUser();
-        if (person == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ServiceResponseDataList<>("Unauthorized"));
-        }
 
-        List<Person> friendList = friendService.getFriendList(person.getId(), name, offset, itemPerPage);
-
+        List<Person> friendList = friendService
+            .getFriendList(accountService.findCurrentUser().getId(), name, offset, itemPerPage);
         return ResponseEntity
-            .ok(new ServiceResponseDataList<>(friendService.getFriendsCount(person.getId()), offset, itemPerPage,
+            .ok(new ServiceResponseDataList<>(
+                friendService.getFriendsCount(accountService.findCurrentUser().getId()), offset, itemPerPage,
                 friendList.stream().map(accountService::getPersonResponse).collect(Collectors.toList())));
     }
 
     /**
-     * Метод deleteFriend. Удалить друга из друзей.
-     * DELETE запрос /api/v1/friends/{friendId}
+     * Метод deleteFriend. Удалить друга из друзей. DELETE запрос /api/v1/friends/{friendId}
      *
      * @param friendId - ID друга для удаления из друзей
      * @return 200 друг удален, 401 - пользователь не авторизирован, 400 - friendId не дружит с пользователем
@@ -80,14 +74,7 @@ public class FriendController {
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> deleteFriend(
         @PathVariable long friendId
     ) {
-        Person person = accountService.findCurrentUser();
-        if (person == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new ServiceResponse<>("Unauthorized",
-                    new ResponseDataMessage("User is not authorized")));
-        }
-
-        return friendService.deleteFriend(person.getId(), friendId) ?
+        return friendService.deleteFriend(accountService.findCurrentUser().getId(), friendId) ?
             ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))
             ) :
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -96,8 +83,8 @@ public class FriendController {
     }
 
     /**
-     * Метод addFriend. Добавить друга в друзья или отправить запрос на дружбу.
-     * POST запрос /api/v1/friends/{friendId}
+     * Метод addFriend. Добавить друга в друзья или отправить запрос на дружбу. POST запрос
+     * /api/v1/friends/{friendId}
      *
      * @param friendId - ID друга дла добавления
      * @return 200 друг добавлен, 401 - пользователь не авторизирован, 400 - пользователя с friendId не существует
@@ -107,13 +94,7 @@ public class FriendController {
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> addFriend(
         @PathVariable long friendId
     ) {
-        Person person = accountService.findCurrentUser();
-        if (person == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                new ServiceResponse<>("Unauthorized",
-                    new ResponseDataMessage("User is not authorized")));
-        }
-        return friendService.addFriend(person.getId(), friendId) ?
+        return friendService.addFriend(accountService.findCurrentUser().getId(), friendId) ?
             ResponseEntity.ok(new ServiceResponse<>(new ResponseDataMessage("ok"))
             ) :
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -122,8 +103,7 @@ public class FriendController {
     }
 
     /**
-     * Метод getFriendRequestList. Получить список заявок в друзья.
-     * GET запрос /api/v1/friends/request
+     * Метод getFriendRequestList. Получить список заявок в друзья. GET запрос /api/v1/friends/request
      *
      * @param name        - поиск по характерному имени
      * @param offset      - Отступ от начала результирующего списка пользователей.
@@ -138,24 +118,19 @@ public class FriendController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
-        Person person = accountService.findCurrentUser();
-        if (person == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ServiceResponseDataList<>("Unauthorized"));
-        }
-
         List<Person> requestList = friendService
-            .getFriendRequestList(person.getId(), name, offset, itemPerPage);
+            .getFriendRequestList(accountService.findCurrentUser().getId(), name, offset, itemPerPage);
 
         return ResponseEntity
-            .ok(new ServiceResponseDataList<>(friendService.getTotalCountOfRequest(person.getId()), offset,
+            .ok(new ServiceResponseDataList<>(
+                friendService.getTotalCountOfRequest(accountService.findCurrentUser().getId()), offset,
                 itemPerPage,
                 requestList.stream().map(accountService::getPersonResponse).collect(Collectors.toList())));
     }
 
     /**
-     * Метод getFriendRecommendationList. Получить спискок рекомендованных друзей.
-     * GET запрос /api/v1/friends/recommendations
+     * Метод getFriendRecommendationList. Получить спискок рекомендованных друзей. GET запрос
+     * /api/v1/friends/recommendations
      *
      * @param offset      - Отступ от начала результирующего списка пользователей.
      * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для
@@ -168,29 +143,24 @@ public class FriendController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int itemPerPage
     ) {
-        Person person = accountService.findCurrentUser();
-        if (person == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ServiceResponseDataList<>("Unauthorized"));
-        }
 
         List<Person> recommendationList = friendService
-            .getFriendRecommendationList(person.getId(), person.getCity(), offset, itemPerPage);
+            .getFriendRecommendationList(accountService.findCurrentUser().getId(),
+                accountService.findCurrentUser().getCity(), offset, itemPerPage);
 
         List<PersonResponse> responseList = new ArrayList<>();
         recommendationList.forEach(p -> responseList.add(accountService.getPersonResponse(p)));
 
-        int total = friendService.getTotalCountOfRecommendationList(person.getId(), person.getCity());
+        int total = friendService.getTotalCountOfRecommendationList(accountService.findCurrentUser().getId(),
+            accountService.findCurrentUser().getCity());
         return ResponseEntity
             .ok(new ServiceResponseDataList<>(total, offset, itemPerPage, responseList));
     }
 
     /**
-     * Метод isFriend. Проверка списка id на дружбу с пользвателем
-     * POST запрос /api/v1/is/friends"
+     * Метод isFriend. Проверка списка id на дружбу с пользвателем POST запрос /api/v1/is/friends"
      *
      * @param request - список id для проверки, @see IsFriendResponse
-     *
      * @return 200 список рекомедаций получен успешно, 401 - пользователь не авторизирован, 400 - если проверяемый
      * список пуст или null
      */
@@ -199,16 +169,9 @@ public class FriendController {
     public ResponseEntity<ServiceResponseDataList<IsFriendResponse>> isFriend(
         @RequestBody IsFriendsRequest request
     ) {
-        Person person = accountService.findCurrentUser();
-        if (person == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ServiceResponseDataList<>("Unauthorized"));
-        }
-
-        if (request == null || request.getUserIds().size() == 0) {
-            return ResponseEntity.badRequest()
-                .body(new ServiceResponseDataList<>("Service unavailable"));
-        }
-        return ResponseEntity.ok(new ServiceResponseDataList<>(friendService.isFriend(person.getId(), request)));
+        return (request == null || request.getUserIds().size() == 0) ?
+            ResponseEntity.badRequest().body(new ServiceResponseDataList<>("Service unavailable"))
+            : ResponseEntity.ok(new ServiceResponseDataList<>(
+                friendService.isFriend(accountService.findCurrentUser().getId(), request)));
     }
 }
