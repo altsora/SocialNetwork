@@ -25,7 +25,7 @@ import sn.service.impl.FriendService;
 
 /**
  * Класс FriendController.
- * <p>
+ *
  * REST-контроллер для работы с друзьями.
  */
 
@@ -45,7 +45,7 @@ public class FriendController {
      * @param offset      - Отступ от начала результирующего списка пользователей.
      * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для
      *                    отображения.
-     * @return 200 список друзей получен успешно (может быть пустым), 401 - пользователь не авторизирован
+     * @return 200 - список друзей получен успешно (может быть пустым)
      */
 
     @GetMapping("/friends")
@@ -67,7 +67,7 @@ public class FriendController {
      * Метод deleteFriend. Удалить друга из друзей. DELETE запрос /api/v1/friends/{friendId}
      *
      * @param friendId - ID друга для удаления из друзей
-     * @return 200 друг удален, 401 - пользователь не авторизирован, 400 - friendId не дружит с пользователем
+     * @return 200 - друг удален, 400 - friendId не дружит с пользователем
      */
 
     @DeleteMapping("/friends/{friendId}")
@@ -87,7 +87,7 @@ public class FriendController {
      * /api/v1/friends/{friendId}
      *
      * @param friendId - ID друга дла добавления
-     * @return 200 друг добавлен, 401 - пользователь не авторизирован, 400 - пользователя с friendId не существует
+     * @return 200 - друг добавлен, 400 - пользователя с friendId не существует
      */
 
     @PostMapping("/friends/{friendId}")
@@ -109,7 +109,7 @@ public class FriendController {
      * @param offset      - Отступ от начала результирующего списка пользователей.
      * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для
      *                    отображения.
-     * @return 200 список заявок получен успешно (может быть пустым), 401 - пользователь не авторизирован
+     * @return 200 - список заявок получен успешно (может быть пустым)
      */
 
     @GetMapping("/friends/request")
@@ -135,7 +135,7 @@ public class FriendController {
      * @param offset      - Отступ от начала результирующего списка пользователей.
      * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для
      *                    отображения.
-     * @return 200 список рекомендаций получен успешно (может быть пустым), 401 - пользователь не авторизирован
+     * @return 200 - список рекомендаций получен успешно (может быть пустым)
      */
 
     @GetMapping("/friends/recommendations")
@@ -160,9 +160,9 @@ public class FriendController {
     /**
      * Метод isFriend. Проверка списка id на дружбу с пользвателем POST запрос /api/v1/is/friends"
      *
-     * @param request - список id для проверки, @see IsFriendResponse
-     * @return 200 список рекомедаций получен успешно, 401 - пользователь не авторизирован, 400 - если проверяемый
-     * список пуст или null
+     * @param request - список id для проверки,
+     * @see IsFriendResponse
+     * @return 200 - список рекомедаций получен успешно, 400 - если проверяемый список пуст или null
      */
 
     @PostMapping("/is/friends")
