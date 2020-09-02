@@ -11,7 +11,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServiceResponseDataList<T extends AbstractResponse> {
     private String error;
-    private long timestamp;
+    private Long timestamp;
     private int total;
     private int offset;
     private int perPage;

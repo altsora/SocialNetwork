@@ -1,7 +1,7 @@
 package sn.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +24,23 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class ProfileController {
     private final IAccountService accountService;
     private final ICommentService commentService;
     private final IPostService postService;
+    private final PersonRepository personRepository;
 
     @Autowired
-    private PersonRepository personRepository;
+    public ProfileController(
+            @Qualifier("account-service") IAccountService accountService,
+            ICommentService commentService,
+            IPostService postService,
+            PersonRepository personRepository) {
+        this.accountService = accountService;
+        this.commentService = commentService;
+        this.postService = postService;
+        this.personRepository = personRepository;
+    }
 
     //==================================================================================================================
 
