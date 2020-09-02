@@ -1,19 +1,25 @@
 package sn.service;
 
+import sn.model.enums.LikeType;
+
 import java.util.List;
 
 /**
  * Интерфейс ILikeService.
- * Методы для работы с лайками постов и лайками комментариев.
+ * Методы для работы с классом Like.
+ *
+ * @see sn.model.Like
  */
 public interface ILikeService {
-    boolean likeExists(long personId, String likeType, long itemId);
+    boolean likeExists(long personId, LikeType likeType, long itemId);
 
-    int getCount(String likeType, long itemId);
+    int getCount(LikeType likeType, long itemId);
 
-    List<Long> getUsersOfLike(String likeType, long itemId);
+    List<Long> getUsersOfLike(LikeType likeType, long itemId);
 
-    void putLike(long personId, String likeType, long itemId);
+//    void putLike(long personId, LikeType likeType, long itemId);
 
-    void removeLike(long personId, String likeType, long itemId);
+    LikeType getLikeType(String type);
+
+//    void removeLike(long personId, LikeType likeType, long itemId);
 }
