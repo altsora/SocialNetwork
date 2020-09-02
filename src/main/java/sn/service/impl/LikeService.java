@@ -6,7 +6,7 @@ import sn.model.Like;
 import sn.model.enums.LikeType;
 import sn.repositories.LikeRepository;
 import sn.service.ILikeService;
-import sn.service.IPersonService;
+//import sn.service.IPersonService;
 import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class LikeService implements ILikeService {
-    private final IPersonService personService;
+//    private final IPersonService personService;
     private final IPostService postService;
     private final LikeRepository likeRepository;
 
@@ -42,18 +42,18 @@ public class LikeService implements ILikeService {
         return users;
     }
 
-    @Override
-    public void putLike(long personId, LikeType likeType, long itemId) {
-        Like like = new Like();
-        like.setItemId(itemId);
-        like.setLikeType(likeType);
-        like.setTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
-        like.setPerson(personService.findById(personId));
-        likeRepository.saveAndFlush(like);
-        if (likeType == LikeType.POST) {
-            postService.putLike(itemId);
-        }
-    }
+//    @Override
+//    public void putLike(long personId, LikeType likeType, long itemId) {
+//        Like like = new Like();
+//        like.setItemId(itemId);
+//        like.setLikeType(likeType);
+//        like.setTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
+//        like.setPerson(personService.findById(personId));
+//        likeRepository.saveAndFlush(like);
+//        if (likeType == LikeType.POST) {
+//            postService.putLike(itemId);
+//        }
+//    }
 
     @Override
     public LikeType getLikeType(String type) {
@@ -67,12 +67,12 @@ public class LikeService implements ILikeService {
         }
     }
 
-    @Override
-    public void removeLike(long personId, LikeType likeType, long itemId) {
-        Like like = likeRepository.findLike(personId, likeType, itemId);
-        likeRepository.deleteById(like.getId());
-        if (likeType == LikeType.POST) {
-            postService.removeLike(itemId);
-        }
-    }
+//    @Override
+//    public void removeLike(long personId, LikeType likeType, long itemId) {
+//        Like like = likeRepository.findLike(personId, likeType, itemId);
+//        likeRepository.deleteById(like.getId());
+//        if (likeType == LikeType.POST) {
+//            postService.removeLike(itemId);
+//        }
+//    }
 }

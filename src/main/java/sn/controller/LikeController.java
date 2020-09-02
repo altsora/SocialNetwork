@@ -62,40 +62,40 @@ public class LikeController {
         return ResponseEntity.ok(new ServiceResponse<>(new LikeCountResponse(likes, users)));
     }
 
-    @PutMapping("/likes")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> putLike(@RequestBody LikeRequest likeRequest) {
-        long personId = accountService.findCurrentUser().getId();
-        long itemId = likeRequest.getItemId();
-        LikeType likeType = likeService.getLikeType(likeRequest.getType());
-        if (likeType == null) {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .error("Bad request")
-                    .errorDescription("Unknown type: " + likeRequest.getType())
-                    .build();
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        likeService.putLike(personId, likeType, likeRequest.getItemId());
-        int likes = likeService.getCount(likeType, itemId);
-        List<Long> users = likeService.getUsersOfLike(likeType, itemId);
-        return ResponseEntity.ok(new ServiceResponse<>(new LikeCountResponse(likes, users)));
-    }
+//    @PutMapping("/likes")
+//    public ResponseEntity<ServiceResponse<AbstractResponse>> putLike(@RequestBody LikeRequest likeRequest) {
+//        long personId = accountService.findCurrentUser().getId();
+//        long itemId = likeRequest.getItemId();
+//        LikeType likeType = likeService.getLikeType(likeRequest.getType());
+//        if (likeType == null) {
+//            ErrorResponse errorResponse = ErrorResponse.builder()
+//                    .error("Bad request")
+//                    .errorDescription("Unknown type: " + likeRequest.getType())
+//                    .build();
+//            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
+//        }
+//        likeService.putLike(personId, likeType, likeRequest.getItemId());
+//        int likes = likeService.getCount(likeType, itemId);
+//        List<Long> users = likeService.getUsersOfLike(likeType, itemId);
+//        return ResponseEntity.ok(new ServiceResponse<>(new LikeCountResponse(likes, users)));
+//    }
 
-    @DeleteMapping("/likes")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> removeLike(
-            @RequestParam(value = "item_id") long itemId,
-            @RequestParam(value = "type") String type
-    ) {
-        long personId = accountService.findCurrentUser().getId();
-        LikeType likeType = likeService.getLikeType(type);
-        if (likeType == null) {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .error("Bad request")
-                    .errorDescription("Unknown type: " + type)
-                    .build();
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        likeService.removeLike(personId, likeType, itemId);
-        int likes = likeService.getCount(likeType, itemId);
-        return ResponseEntity.ok(new ServiceResponse<>(new LikeCountResponse(likes)));
-    }
+//    @DeleteMapping("/likes")
+//    public ResponseEntity<ServiceResponse<AbstractResponse>> removeLike(
+//            @RequestParam(value = "item_id") long itemId,
+//            @RequestParam(value = "type") String type
+//    ) {
+//        long personId = accountService.findCurrentUser().getId();
+//        LikeType likeType = likeService.getLikeType(type);
+//        if (likeType == null) {
+//            ErrorResponse errorResponse = ErrorResponse.builder()
+//                    .error("Bad request")
+//                    .errorDescription("Unknown type: " + type)
+//                    .build();
+//            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
+//        }
+//        likeService.removeLike(personId, likeType, itemId);
+//        int likes = likeService.getCount(likeType, itemId);
+//        return ResponseEntity.ok(new ServiceResponse<>(new LikeCountResponse(likes)));
+//    }
 }

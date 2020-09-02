@@ -17,9 +17,9 @@ public interface ILikeService {
 
     List<Long> getUsersOfLike(LikeType likeType, long itemId);
 
-    void putLike(long personId, LikeType likeType, long itemId);
+//    void putLike(long personId, LikeType likeType, long itemId);
 
     LikeType getLikeType(String type);
 
-    void removeLike(long personId, LikeType likeType, long itemId);
+//    void removeLike(long personId, LikeType likeType, long itemId);
 }

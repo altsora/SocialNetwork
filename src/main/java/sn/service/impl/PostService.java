@@ -18,7 +18,6 @@ import sn.model.enums.StatusWallPost;
 import sn.repositories.PostRepository;
 import sn.service.IAccountService;
 import sn.service.ICommentService;
-import sn.service.IPersonService;
 import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
@@ -37,10 +36,6 @@ public class PostService implements IPostService {
     @Autowired
     @Qualifier("account-service")
     private IAccountService accountService;
-
-    @Autowired
-    @Qualifier("person-service")
-    private IPersonService personService;
 
     @Autowired
     private ICommentService commentService;
@@ -195,8 +190,10 @@ public class PostService implements IPostService {
                     ZoneId.systemDefault());
             postResponse.setTime(zdt.toInstant().toEpochMilli());
 
-            postResponse.setAuthor(personService
-                    .getPersonResponse(post.getAuthor()));
+            // С учётом удаления PersonService:
+            postResponse.setAuthor
+                    (accountService.getPersonResponse(post.getAuthor()));
+
             postResponse.setTitle(post.getTitle());
             postResponse.setPostText(post.getText());
             postResponse.setBlocked(post.isBlocked());
@@ -225,8 +222,10 @@ public class PostService implements IPostService {
                 ZoneId.systemDefault());
         postResponse.setTime(zdt.toInstant().toEpochMilli());
 
-        postResponse.setAuthor(personService
-                .getPersonResponse(post.getAuthor()));
+        // С учётом удаления PersonService:
+        postResponse.setAuthor
+                (accountService.getPersonResponse(post.getAuthor()));
+
         postResponse.setTitle(post.getTitle());
         postResponse.setPostText(post.getText());
         postResponse.setBlocked(post.isBlocked());
@@ -267,8 +266,10 @@ public class PostService implements IPostService {
                 ZoneId.systemDefault());
         postResponse.setTime(zdt.toInstant().toEpochMilli());
 
-        postResponse.setAuthor(personService
-                .getPersonResponse(post.getAuthor()));
+        // С учётом удаления PersonService:
+        postResponse.setAuthor
+                (accountService.getPersonResponse(post.getAuthor()));
+
         postResponse.setTitle(post.getTitle());
         postResponse.setPostText(post.getText());
         postResponse.setBlocked(post.isBlocked());
