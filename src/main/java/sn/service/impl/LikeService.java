@@ -22,9 +22,6 @@ public class LikeService implements ILikeService {
     private final IPostService postService;
     private final LikeRepository likeRepository;
 
-    @Autowired
-    private final PersonRepository personRepository;
-
     //==================================================================================================================
 
     /**
