@@ -29,4 +29,9 @@ public class ServiceResponseDataList<T extends AbstractResponse> {
         this.perPage = perPage;
         this.data = data;
     }
+
+    public ServiceResponseDataList(List<T> data) {
+        this.timestamp = TimeUtil.getTimestampFromLocalDateTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
+        this.data = data;
+    }
 }
