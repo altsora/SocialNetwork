@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.ResponseDataMessage;
 import sn.api.requests.PostEditRequest;
-import sn.api.response.AbstractResponse;
-import sn.api.response.PostListResponse;
-import sn.api.response.PostResponse;
-import sn.api.response.ServiceResponse;
+import sn.api.response.*;
 import sn.model.Person;
 import sn.service.IPostService;
 
@@ -131,4 +128,67 @@ public class PostController {
             }
         }
     }
+
+    /**
+     * Метод deletePost.
+     * Удаление публикации.
+     * DELETE запрос /api/v1/post/{id}
+     *
+     * @param id ID публикации.
+     * @return 200 - успешное удаление публикации, 400 - bad request,
+     * 401 - unauthorized.
+     * @see IdResponse
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ServiceResponse<AbstractResponse>> deletePost(
+            @PathVariable(value = "id") long id) {
+        Person person = postService.findCurrentUser();
+        if (person == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ServiceResponse<>("Unauthorized",
+                            new ResponseDataMessage("User is not authorized")));
+        else {
+            IdResponse deletePost = postService.deletePost(id);
+            if (deletePost == null)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ServiceResponse<>("Bad request",
+                                new ResponseDataMessage("Service unavailable")));
+            else {
+                ServiceResponse response = new ServiceResponse(deletePost);
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+        }
+    }
+
+    /**
+     * Метод recoverPost.
+     * Восстановление публикации.
+     * PUT запрос /api/v1/post/{id}/recover
+     *
+     * @param id ID публикации.
+     * @return 200 - успешное восстановление публикации, 400 - bad request,
+     * 401 - unauthorized.
+     * @see PostResponse
+     */
+    @PutMapping("/{id}/recover")
+    public ResponseEntity<ServiceResponse<AbstractResponse>> recoverPost(
+            @PathVariable(value = "id") long id) {
+        Person person = postService.findCurrentUser();
+        if (person == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ServiceResponse<>("Unauthorized",
+                            new ResponseDataMessage("User is not authorized")));
+        else {
+            PostResponse post = postService.recoverPost(id);
+            if (post == null)
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ServiceResponse<>("Bad request",
+                                new ResponseDataMessage("Service unavailable")));
+            else {
+                ServiceResponse response = new ServiceResponse(post);
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+        }
+    }
+
 }

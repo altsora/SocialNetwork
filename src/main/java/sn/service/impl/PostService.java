@@ -8,10 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sn.api.requests.PostEditRequest;
-import sn.api.response.CommentResponse;
-import sn.api.response.PersonResponse;
-import sn.api.response.PostResponse;
-import sn.api.response.WallPostResponse;
+import sn.api.response.*;
 import sn.model.Person;
 import sn.model.Post;
 import sn.model.enums.StatusWallPost;
@@ -256,6 +253,59 @@ public class PostService implements IPostService {
 
         post.setText(postEditRequest.getPostText());
         post.setTitle(postEditRequest.getTitle());
+        postRepository.saveAndFlush(post);
+
+        PostResponse postResponse = new PostResponse();
+        postResponse.setId(post.getId());
+
+        // если время в посте не будем менять на лонг, то оставляем так:
+        ZonedDateTime zdt = ZonedDateTime.of(post.getTime(),
+                ZoneId.systemDefault());
+        postResponse.setTime(zdt.toInstant().toEpochMilli());
+
+        // С учётом удаления PersonService:
+        postResponse.setAuthor
+                (accountService.getPersonResponse(post.getAuthor()));
+
+        postResponse.setTitle(post.getTitle());
+        postResponse.setPostText(post.getText());
+        postResponse.setBlocked(post.isBlocked());
+        postResponse.setLikes(post.getLikesCount());
+        postResponse.setComments(commentService.getCommentsByPostId(
+                post.getId()));
+
+        return postResponse;
+    }
+
+    /**
+     * Метод deletePost.
+     * Удаление публикации.
+     * DELETE запрос /api/v1/post/{id}
+     *
+     * @param id ID публикации.
+     * @return id удалённой публикации.
+     */
+    @Override
+    public IdResponse deletePost(long id) {
+        Post post = postRepository.getOne(id);
+        post.setDeleted(true);
+        postRepository.saveAndFlush(post);
+        IdResponse idResponse = new IdResponse();
+        idResponse.setId(id);
+        return idResponse;
+    }
+
+    /**
+     * Метод recoverPost.
+     * Восстановление публикации.
+     *
+     * @param id ID публикации.
+     * @return возвращает публикацию.
+     */
+    @Override
+    public PostResponse recoverPost(long id) {
+        Post post = postRepository.getOne(id);
+        post.setDeleted(false);
         postRepository.saveAndFlush(post);
 
         PostResponse postResponse = new PostResponse();
