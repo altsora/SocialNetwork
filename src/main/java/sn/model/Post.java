@@ -13,7 +13,7 @@ import java.util.Set;
 @Entity
 @Table(name = "posts")
 @Data
-@EqualsAndHashCode(exclude = {"comments"})
+@EqualsAndHashCode(exclude = {"comments", "personLikes"})
 public class Post {
     private long id;
     private LocalDateTime time;
@@ -24,6 +24,7 @@ public class Post {
     private boolean isDeleted;
     private int likesCount;
     private Set<Comment> comments;
+    private Set<PostLike> personLikes;
 
     //==================================================================================================================
 
@@ -75,5 +76,11 @@ public class Post {
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     public Set<Comment> getComments() {
         return comments;
+    }
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    public Set<PostLike> getPersonLikes() {
+        return personLikes;
     }
 }
