@@ -1,4 +1,4 @@
-package sn.model;
+package sn.model.enums;
 
 /**
  * @author Andrey.Kazakov
