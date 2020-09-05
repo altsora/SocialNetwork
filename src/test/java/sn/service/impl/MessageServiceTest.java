@@ -13,12 +13,22 @@ import sn.model.Dialog;
 import sn.model.Message;
 import sn.model.Person;
 import sn.model.enums.MessageStatus;
+import sn.repositories.DialogRepository;
 import sn.repositories.MessageRepository;
+import sn.service.IDialogService;
 import sn.service.IMessageService;
+import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+
+/**
+ * Модульные тесты для MessageService.
+ *
+ * @see MessageService;
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MessageServiceTest {
@@ -27,8 +37,12 @@ public class MessageServiceTest {
     private IMessageService messageService;
     @MockBean
     private MessageRepository messageRepository;
+    @MockBean
+    private DialogRepository dialogRepository;
 
     private static long messageId = 1;
+
+    //==================================================================================================================
 
     /**
      * Поиск сообщения. Сообщение найдено в БД.
@@ -36,14 +50,13 @@ public class MessageServiceTest {
     @Test
     public void findById() {
         Message message = new Message();
-        long id = 1;
-        Mockito.doReturn(Optional.of(message)).when(messageRepository).findById(id);
+        Mockito.doReturn(Optional.of(message)).when(messageRepository).findById(messageId);
 
-        Message messageInDb = messageService.findById(id);
+        Message messageInDb = messageService.findById(messageId);
 
         Assert.assertSame(messageInDb, message);
-        Mockito.verify(messageRepository, Mockito.times(1)).findById(id);
-        System.err.println(message);
+        Mockito.verify(messageRepository, Mockito.times(1)).findById(messageId);
+        System.out.println(message);
     }
 
     /**
@@ -74,6 +87,23 @@ public class MessageServiceTest {
 
         long expectedMessageId = messageService.removeMessage(messageId);
         Assert.assertEquals(messageId, expectedMessageId);
+
+        Mockito.verify(messageRepository, Mockito.times(1)).findById(messageId);
+        Mockito.verify(messageRepository, Mockito.times(1)).saveAndFlush(message);
+    }
+
+    @Test
+    public void recoverMessage() {
+        Message message = new Message();
+        message.setId(messageId);
+        message.setAuthor(Mockito.mock(Person.class));
+        message.setStatus(MessageStatus.READ);
+
+        Mockito.when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+        Mockito.when(messageRepository.saveAndFlush(message)).thenReturn(message);
+
+        MessageFullResponse messageFullResponse = messageService.recoverMessage(messageId);
+        Assert.assertNotNull(messageFullResponse);
 
         Mockito.verify(messageRepository, Mockito.times(1)).findById(messageId);
         Mockito.verify(messageRepository, Mockito.times(1)).saveAndFlush(message);
@@ -118,4 +148,43 @@ public class MessageServiceTest {
         Assert.assertEquals(status.name(), messageFullResponse.getReadStatus());
     }
 
+    /**
+     * Отправить сообщение
+     */
+    @Test
+    public void sendMessage() {
+        Person author = new Person();
+        author.setId(4);
+
+        long dialogId = 3;
+        Dialog dialog = new Dialog();
+        dialog.setId(dialogId);
+
+        String messageText = "send new text";
+
+        Message message = new Message();
+        message.setId(1);
+        message.setTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
+        message.setAuthor(author);
+        message.setRecipient(null);
+        message.setMessageText(messageText);
+        message.setStatus(MessageStatus.SENT);
+        message.setDialog(dialog);
+        message.setDeleted(false);
+
+        Mockito.when(dialogRepository.findById(dialogId)).thenReturn(Optional.of(dialog));
+        Mockito.when(messageRepository.saveAndFlush(any())).thenReturn(message);
+
+        MessageFullResponse messageFullResponse = messageService.sendMessage(author, dialogId, messageText);
+
+        Assert.assertNotNull(messageFullResponse);
+        Assert.assertEquals(message.getId(), messageFullResponse.getId());
+        Assert.assertEquals(message.getAuthor().getId(), messageFullResponse.getAuthorId());
+        Assert.assertNull(messageFullResponse.getRecipientId());
+        Assert.assertEquals(message.getMessageText(), messageFullResponse.getMessageText());
+        Assert.assertEquals(message.getStatus().name(), messageFullResponse.getReadStatus());
+
+        Mockito.verify(dialogRepository, Mockito.times(1)).findById(dialogId);
+        Mockito.verify(messageRepository, Mockito.times(1)).saveAndFlush(any());
+    }
 }
