@@ -14,4 +14,8 @@ public interface Person2DialogRepository extends JpaRepository<Person2Dialog, Lo
             @Param("personId") long personId,
             @Param("dialogId") long dialogId
     );
+
+    @Query("delete from Person2Dialog pd WHERE pd.person.id = :personId AND pd.dialog.id = :dialogId")
+    void deleleByPersonIdAndDialogId(@Param("personId") long personId, @Param("dialogId") long dialogId);
+
 }

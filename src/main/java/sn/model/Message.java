@@ -10,11 +10,10 @@ import sn.model.enums.MessageStatus;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "messages")
-@NoArgsConstructor
-@Data
-@EqualsAndHashCode
 public class Message {
     private long id;
     private LocalDateTime time;

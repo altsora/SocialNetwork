@@ -8,11 +8,10 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Set;
-
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "dialogs")
-@NoArgsConstructor
-@Data
 @EqualsAndHashCode(exclude = {"messages", "persons"})
 public class Dialog {
     private long id;
@@ -63,5 +62,12 @@ public class Dialog {
     @OneToMany(mappedBy = "dialog", fetch = FetchType.LAZY)
     public Set<Person2Dialog> getPersons() {
         return persons;
+    }
+
+    @Override
+    public String toString() {
+        return "Dialog{" +
+                "id=" + id +
+                '}';
     }
 }

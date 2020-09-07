@@ -6,4 +6,6 @@ import sn.model.Dialog;
 
 @Repository
 public interface DialogRepository extends JpaRepository<Dialog, Long> {
+
+    Dialog findByInviteCode(String inviteCode);
 }

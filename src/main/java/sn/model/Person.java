@@ -79,4 +79,14 @@ public class Person {
     @JsonManagedReference
     @OneToMany(mappedBy = "recipient")
     private Set<Message> receivedMessages;
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }
