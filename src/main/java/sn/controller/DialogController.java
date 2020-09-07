@@ -10,6 +10,7 @@ import sn.api.response.*;
 import sn.model.Person;
 import sn.service.IAccountService;
 import sn.service.IDialogService;
+import sn.service.IErrorService;
 import sn.service.IMessageService;
 
 @RestController
@@ -17,31 +18,33 @@ import sn.service.IMessageService;
 public class DialogController {
     private final IAccountService accountService;
     private final IDialogService dialogService;
+    private final IErrorService errorService;
     private final IMessageService messageService;
 
     @Autowired
     public DialogController(
             @Qualifier("account-service") IAccountService accountService,
             IDialogService dialogService,
-            IMessageService messageService
-    ) {
+            IErrorService errorService,
+            IMessageService messageService) {
         this.accountService = accountService;
         this.dialogService = dialogService;
+        this.errorService = errorService;
         this.messageService = messageService;
     }
-
+    
     @PostMapping("/{id}/messages")
     public ResponseEntity<ServiceResponse<AbstractResponse>> sendMessage(
             @PathVariable("id") long dialogId,
             @RequestBody MessageSendRequest sendRequest
     ) {
         if (!dialogService.exists(dialogId)) {
-            ErrorResponse errorResponse = dialogService.dialogNotFoundResponse(dialogId);
+            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         Person author = accountService.findCurrentUser();
         if (author == null) {
-            ErrorResponse errorResponse = accountService.unauthorizedResponse();
+            ErrorResponse errorResponse = errorService.unauthorized();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServiceResponse<>(errorResponse));
         }
         MessageFullResponse messageFullResponse = messageService.sendMessage(author, dialogId, sendRequest.getMessageText());
@@ -54,7 +57,7 @@ public class DialogController {
             @PathVariable("message_id ") long messageId
     ) {
         if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = messageService.notFound(messageId);
+            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         long id = messageService.removeMessage(messageId);
@@ -69,7 +72,7 @@ public class DialogController {
             @RequestBody MessageSendRequest messageSendRequest
     ) {
         if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = messageService.notFound(messageId);
+            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         MessageFullResponse messageFullResponse = messageService.editMessage(messageId, messageSendRequest.getMessageText());
@@ -82,7 +85,7 @@ public class DialogController {
             @PathVariable("message_id") long messageId
     ) {
         if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = messageService.notFound(messageId);
+            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         MessageFullResponse messageFullResponse = messageService.recoverMessage(messageId);
@@ -95,15 +98,17 @@ public class DialogController {
             @PathVariable("message_id") long messageId
     ) {
         if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = messageService.notFound(messageId);
+            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         if (!dialogService.exists(dialogId)) {
-            ErrorResponse errorResponse = dialogService.dialogNotFoundResponse(dialogId);
+            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         messageService.readMessage(messageId);
-        dialogService.decreaseUnreadCount(dialogId);
+        //TODO: Если количество непрочитанных сообщений у всех пока что равно нулю,
+        // то уменьшать не надо. Раскомментировать позже
+//        dialogService.decreaseUnreadCount(dialogId);
         return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
     }
 
@@ -113,18 +118,34 @@ public class DialogController {
             @PathVariable("user_id") long personId
     ) {
         if (!accountService.exists(personId)) {
-            ErrorResponse errorResponse = accountService.notFoundByIdResponse(personId);
+            ErrorResponse errorResponse = errorService.personNotFoundById(personId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         if (!dialogService.exists(dialogId)) {
-            ErrorResponse errorResponse = dialogService.dialogNotFoundResponse(dialogId);
+            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         if (!dialogService.userExistsInDialog(personId, dialogId)) {
-            ErrorResponse errorResponse = dialogService.userNotFoundInDialogResponse(personId, dialogId);
+            ErrorResponse errorResponse = errorService.userNotFoundInDialog(personId, dialogId);
             return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         UserActivityResponse userActivityResponse = dialogService.getActivity(personId, dialogId);
         return ResponseEntity.ok(new ServiceResponse<>(userActivityResponse));
+    }
+
+    @PostMapping("/{id}/activity/{user_id}")
+    public ResponseEntity<ServiceResponse<AbstractResponse>> changeTypingStatus(
+            @PathVariable("id") long dialogId,
+            @PathVariable("user_id") long personId
+    ) {
+        if (!accountService.exists(personId)) {
+            ErrorResponse errorResponse = errorService.personNotFoundById(personId);
+            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
+        }
+        if (!dialogService.exists(dialogId)) {
+            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
+            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
+        }
+        return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
     }
 }

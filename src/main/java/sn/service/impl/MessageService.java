@@ -35,7 +35,6 @@ public class MessageService implements IMessageService {
     @Override
     public long removeMessage(long messageId) {
         Message message = findById(messageId);
-        //TODO: Что из себя представляет удаление сообщения в диалоге?
         message.setDeleted(true);
         return messageRepository.saveAndFlush(message).getId();
     }
@@ -43,7 +42,6 @@ public class MessageService implements IMessageService {
     @Override
     public MessageFullResponse recoverMessage(long messageId) {
         Message message = findById(messageId);
-        //TODO: Что из себя представляет восстановление сообщения в диалоге?
         message.setDeleted(false);
         return getMessageFullResponse(messageRepository.saveAndFlush(message));
     }
@@ -77,14 +75,6 @@ public class MessageService implements IMessageService {
 
         message = messageRepository.saveAndFlush(message);
         return getMessageFullResponse(message);
-    }
-
-    @Override
-    public ErrorResponse notFound(long messageId) {
-        return ErrorResponse.builder()
-                .error("Bad request")
-                .errorDescription("Message with ID = " + messageId + " not found")
-                .build();
     }
 
     private MessageFullResponse getMessageFullResponse(Message message) {

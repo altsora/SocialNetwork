@@ -1,6 +1,5 @@
 package sn.service;
 
-import sn.api.response.ErrorResponse;
 import sn.api.response.MessageFullResponse;
 import sn.model.Message;
 import sn.model.Person;
@@ -19,6 +18,4 @@ public interface IMessageService {
     MessageFullResponse recoverMessage(long messageId);
 
     void readMessage(long messageId);
-
-    ErrorResponse notFound(long messageId);
 }

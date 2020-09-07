@@ -52,19 +52,5 @@ public class DialogService implements IDialogService {
                 .build();
     }
 
-    @Override
-    public ErrorResponse dialogNotFoundResponse(long dialogId) {
-        return ErrorResponse.builder()
-                .error("Bad request")
-                .errorDescription("Dialog with ID = " + dialogId + " not found")
-                .build();
-    }
 
-    @Override
-    public ErrorResponse userNotFoundInDialogResponse(long personId, long dialogId) {
-        return ErrorResponse.builder()
-                .error("Bad request")
-                .errorDescription(String.format("User (ID = %d) not found in dialog (ID = %d)", personId, dialogId))
-                .build();
-    }
 }

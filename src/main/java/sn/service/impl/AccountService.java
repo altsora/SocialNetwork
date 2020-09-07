@@ -261,22 +261,6 @@ public class AccountService implements IAccountService {
         return personOpt.get();
     }
 
-    @Override
-    public ErrorResponse notFoundByIdResponse(long personId) {
-        return ErrorResponse.builder()
-                .error("Bad request")
-                .errorDescription("Person with ID = " + personId + " not found")
-                .build();
-    }
-
-    @Override
-    public ErrorResponse unauthorizedResponse() {
-        return ErrorResponse.builder()
-                .error("Invalid request")
-                .errorDescription("Person not authorized")
-                .build();
-    }
-
     /**
      * Метод generateNewPassword.
      * Генератор пароля.

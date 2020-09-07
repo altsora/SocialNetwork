@@ -36,7 +36,4 @@ public interface IAccountService {
 
     Person findCurrentUser();
 
-    ErrorResponse notFoundByIdResponse(long personId);
-
-    ErrorResponse unauthorizedResponse();
 }
