@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import sn.api.response.ErrorResponse;
 import sn.api.response.UserActivityResponse;
 import sn.model.Dialog;
 import sn.model.Message;
@@ -28,7 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
+@Service("dialog-service")
 @RequiredArgsConstructor
 public class DialogService implements IDialogService {
 
@@ -40,8 +39,6 @@ public class DialogService implements IDialogService {
     private PersonRepository personRepository;
     @Autowired
     private Person2DialogRepository person2DialogRepository;
-    @Autowired
-    private DialogRepository dialogRepository;
 
     @Override
     public Dialog findById(long dialogId) {
@@ -74,8 +71,6 @@ public class DialogService implements IDialogService {
                 .lastActivity(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
                 .build();
     }
-
-
 
     @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> findPersonDialogsWithQuery(
@@ -184,7 +179,7 @@ public class DialogService implements IDialogService {
                     new ServiceResponse<>("recipients not specified", null));
         }
         Optional<Dialog> dialogOpt = dialogRepository.findById(dialogId);
-        if (dialogRepository.findById(dialogId).isEmpty()) {
+        if (dialogOpt.isEmpty()) {
             log.warn("dialog id:{} not found", dialogId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("dialog id:" + dialogId + " not found", null));
@@ -226,7 +221,7 @@ public class DialogService implements IDialogService {
                     new ServiceResponse<>("recipients not specified", null));
         }
         Optional<Dialog> dialogOpt = dialogRepository.findById(dialogId);
-        if (dialogRepository.findById(dialogId).isEmpty()) {
+        if (dialogOpt.isEmpty()) {
             log.warn("dialog id:{} not found", dialogId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     new ServiceResponse<>("dialog id:" + dialogId + " not found", null));
