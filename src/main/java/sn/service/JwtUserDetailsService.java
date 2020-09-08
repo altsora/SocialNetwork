@@ -2,7 +2,6 @@ package sn.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.User.UserBuilder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,21 +16,14 @@ public class JwtUserDetailsService implements UserDetailsService {
     private PersonRepository personRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) {
-        Person person = null;
-        UserBuilder builder = null;
-        try {
-            person = personRepository.findByEmail(username).orElse(null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (person == null){
-                throw new UsernameNotFoundException(username);
-            } else {
-            builder = User.withUsername(username);
-            builder.password(person.getPassword());
-            builder.roles("USER");
-        }
-            return builder.build();
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
+        Person person = personRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Username: " + email + " not found"));
+
+        return User.withUsername(email)
+                .password(person.getPassword())
+                .roles("USER")
+                .build();
     }
 }
