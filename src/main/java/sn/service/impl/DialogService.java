@@ -3,11 +3,12 @@ package sn.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import sn.api.response.UserActivityResponse;
+import sn.api.requests.MessageSendRequest;
+import sn.api.response.*;
+import sn.controller.DialogController;
 import sn.model.Dialog;
 import sn.model.Message;
 import sn.model.Person;
@@ -17,10 +18,9 @@ import sn.repositories.DialogRepository;
 import sn.repositories.Person2DialogRepository;
 import sn.repositories.PersonRepository;
 import sn.service.IDialogService;
+import sn.service.IMessageService;
+import sn.utils.ErrorUtil;
 import sn.utils.TimeUtil;
-import sn.api.response.DialogResponse;
-import sn.api.response.ServiceResponse;
-import sn.controller.DialogController;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -30,15 +30,18 @@ import java.util.stream.Collectors;
 @Service("dialog-service")
 @RequiredArgsConstructor
 public class DialogService implements IDialogService {
+    private final DialogRepository dialogRepository;
+    private final AccountService accountService;
+    private final PersonRepository personRepository;
+    private final Person2DialogRepository person2DialogRepository;
+    private final IMessageService messageService;
 
-    @Autowired
-    private DialogRepository dialogRepository;
-    @Autowired
-    private AccountService accountService;
-    @Autowired
-    private PersonRepository personRepository;
-    @Autowired
-    private Person2DialogRepository person2DialogRepository;
+    private static final String DIALOG_NOT_FOUND_FORMAT = "Dialog with ID = %d not found";
+    private static final String MESSAGE_NOT_FOUND_FORMAT = "Message with ID = %d not found";
+    private static final String PERSON_NOT_FOUND_FORMAT = "Person with ID = %d not found";
+    private static final String USER_NOT_EXISTS_IN_DIALOG = "User (ID = %d) not found in dialog (ID = %d)";
+
+    //==================================================================================================================
 
     @Override
     public Dialog findById(long dialogId) {
@@ -50,26 +53,26 @@ public class DialogService implements IDialogService {
         return dialogRepository.existsById(dialogId);
     }
 
-    @Override
-    public boolean userExistsInDialog(long personId, long dialogId) {
+    /**
+     * Метод проверяет, находится ли пользователь в диалоге.
+     *
+     * @param personId - ID пользователя.
+     * @param dialogId - ID диалога.
+     * @return true, если пользователь есть в диалоге, иначе false.
+     */
+    private boolean userExistsInDialog(long personId, long dialogId) {
         return person2DialogRepository.find(personId, dialogId) != null;
     }
 
-    @Override
+    /**
+     * Метод уменьшает количество непрочитанных сообщений в диалоге на единицу.
+     *
+     * @param dialogId - ID диалога.
+     */
     public void decreaseUnreadCount(long dialogId) {
         Dialog dialog = findById(dialogId);
         dialog.setUnreadCount(dialog.getUnreadCount() - 1);
         dialogRepository.saveAndFlush(dialog);
-    }
-
-    @Override
-    public UserActivityResponse getActivity(long personId, long dialogId) {
-        Person2Dialog person2Dialog = person2DialogRepository.find(personId, dialogId);
-        Person person = person2Dialog.getPerson();
-        return UserActivityResponse.builder()
-                .online(person.isOnline())
-                .lastActivity(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
-                .build();
     }
 
     @Override
@@ -314,7 +317,7 @@ public class DialogService implements IDialogService {
         }
         Set<Message> dialogMessages = Strings.isNotEmpty(query) ?
                 Objects.requireNonNull(dialogRepository.findById(dialogId).orElse(null)).getMessages().stream()
-                .filter(message -> message.getMessageText().contains(query)).collect(Collectors.toSet()) :
+                        .filter(message -> message.getMessageText().contains(query)).collect(Collectors.toSet()) :
                 Objects.requireNonNull(dialogRepository.findById(dialogId).orElse(null)).getMessages();
         ServiceResponse<DialogResponse> serviceResponse =
                 new ServiceResponse<DialogResponse>(
@@ -323,6 +326,102 @@ public class DialogService implements IDialogService {
         serviceResponse.setOffset(offset);
         serviceResponse.setPerPage(itemPerPage);
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
+    }
+
+    @Override
+    public ResponseEntity<ServiceResponse<AbstractResponse>> readMessage(long dialogId, long messageId) {
+        if (!messageService.exists(messageId)) {
+            return ErrorUtil.badRequest(String.format(MESSAGE_NOT_FOUND_FORMAT, messageId));
+        }
+        if (!this.exists(dialogId)) {
+            return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
+        }
+        messageService.readMessage(messageId);
+        //TODO: Если количество непрочитанных сообщений у всех пока что равно нулю,
+        // то уменьшать не надо. Раскомментировать позже
+//        this.decreaseUnreadCount(dialogId);
+        return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+    }
+
+    @Override
+    public ResponseEntity<ServiceResponse<AbstractResponse>> getLastActivity(long dialogId, long personId) {
+        if (!accountService.exists(personId)) {
+            return ErrorUtil.badRequest(String.format(PERSON_NOT_FOUND_FORMAT, personId));
+        }
+        if (!this.exists(dialogId)) {
+            return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
+        }
+        if (!this.userExistsInDialog(personId, dialogId)) {
+            return ErrorUtil.badRequest(String.format(USER_NOT_EXISTS_IN_DIALOG, personId, dialogId));
+        }
+        Person2Dialog person2Dialog = person2DialogRepository.find(personId, dialogId);
+        Person person = person2Dialog.getPerson();
+        UserActivityResponse userActivityResponse = UserActivityResponse.builder()
+                .online(person.isOnline())
+                .lastActivity(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
+                .build();
+        return ResponseEntity.ok(new ServiceResponse<>(userActivityResponse));
+    }
+
+    @Override
+    public ResponseEntity<ServiceResponse<AbstractResponse>> changeTypingStatus(long dialogId, long personId) {
+        if (!accountService.exists(personId)) {
+            return ErrorUtil.badRequest(String.format(PERSON_NOT_FOUND_FORMAT, personId));
+        }
+        if (!this.exists(dialogId)) {
+            return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
+        }
+        return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+    }
+
+    @Override
+    public ResponseEntity<ServiceResponse<AbstractResponse>> sendMessage(long dialogId, MessageSendRequest sendRequest) {
+        if (!this.exists(dialogId)) {
+            return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
+        }
+        Person author = accountService.findCurrentUser();
+        if (author == null) {
+            return ErrorUtil.unauthorized();
+        }
+        MessageFullResponse messageFullResponse = messageService.sendMessage(author, dialogId, sendRequest.getMessageText());
+        return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
+    }
+
+    @Override
+    public ResponseEntity<ServiceResponse<AbstractResponse>> removeMessage(long dialogId, long messageId) {
+        if (!this.exists(dialogId)) {
+            return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
+        }
+        if (!messageService.exists(messageId)) {
+            return ErrorUtil.badRequest(String.format(MESSAGE_NOT_FOUND_FORMAT, messageId));
+        }
+        long id = messageService.removeMessage(messageId);
+        MessageIdResponse messageIdResponse = MessageIdResponse.builder().messageId(id).build();
+        return ResponseEntity.ok(new ServiceResponse<>(messageIdResponse));
+    }
+
+    @Override
+    public ResponseEntity<ServiceResponse<AbstractResponse>> editMessage(long dialogId, long messageId, MessageSendRequest messageSendRequest) {
+        if (!this.exists(dialogId)) {
+            return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
+        }
+        if (!messageService.exists(messageId)) {
+            return ErrorUtil.badRequest(String.format(MESSAGE_NOT_FOUND_FORMAT, messageId));
+        }
+        MessageFullResponse messageFullResponse = messageService.editMessage(messageId, messageSendRequest.getMessageText());
+        return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
+    }
+
+    @Override
+    public ResponseEntity<ServiceResponse<AbstractResponse>> recoverMessage(long dialogId, long messageId) {
+        if (!this.exists(dialogId)) {
+            return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
+        }
+        if (!messageService.exists(messageId)) {
+            return ErrorUtil.badRequest(String.format(MESSAGE_NOT_FOUND_FORMAT, messageId));
+        }
+        MessageFullResponse messageFullResponse = messageService.recoverMessage(messageId);
+        return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
     }
 
     /**
@@ -385,5 +484,6 @@ public class DialogService implements IDialogService {
         newDialog.setUnreadCount(0);
         return dialogRepository.save(newDialog);
     }
+
 
 }

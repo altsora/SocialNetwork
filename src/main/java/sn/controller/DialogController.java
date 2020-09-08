@@ -1,24 +1,13 @@
 package sn.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import sn.api.requests.MessageSendRequest;
-import sn.api.response.*;
-import sn.model.Person;
-import sn.service.IAccountService;
-import sn.service.IDialogService;
-import sn.service.IErrorService;
-import sn.service.IMessageService;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sn.api.requests.MessageSendRequest;
+import sn.api.response.AbstractResponse;
 import sn.api.response.DialogResponse;
 import sn.api.response.ServiceResponse;
 import sn.service.IDialogService;
@@ -27,18 +16,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/dialogs")
+@RequiredArgsConstructor
 public class DialogController {
-
-    @Autowired
-    @Qualifier("account-service")
-    private IAccountService accountService;
-    @Autowired
-    @Qualifier("dialog-service")
-    private IDialogService dialogService;
-    @Autowired
-    private IErrorService errorService;
-    @Autowired
-    private IMessageService messageService;
+    private final IDialogService dialogService;
 
     /**
      * Метод getUserDialogList().
@@ -107,7 +87,6 @@ public class DialogController {
         return dialogService.addUsersToDialog(dialogId, request);
     }
 
-
     /**
      * Метод deleteUsers().
      * Удалить пользователей из диалога.
@@ -153,6 +132,7 @@ public class DialogController {
      * Метод getMessages.
      * Получение списка сообщений диалога.
      * GET запрос /api/v1/dialogs/{id}/messages
+     *
      * @param dialogId    - Id диалога.
      * @param query       - строка для поиска (поиск как части в Message.messageText).
      * @param offset      - смещение от начала списка сообщений.
@@ -167,120 +147,111 @@ public class DialogController {
         return dialogService.getDialogMessages(dialogId, query, offset, itemPerPage);
     }
 
+    /**
+     * Пометить сообщение как "Прочитанное".
+     *
+     * @param dialogId  - ID диалога.
+     * @param messageId - ID сообщения.
+     * @return ответ с сообщением OK.
+     */
     @PutMapping("/{dialog_id}/messages/{message_id}/read")
     public ResponseEntity<ServiceResponse<AbstractResponse>> readMessage(
             @PathVariable("dialog_id") long dialogId,
             @PathVariable("message_id") long messageId
     ) {
-        if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        if (!dialogService.exists(dialogId)) {
-            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        messageService.readMessage(messageId);
-        //TODO: Если количество непрочитанных сообщений у всех пока что равно нулю,
-        // то уменьшать не надо. Раскомментировать позже
-//        dialogService.decreaseUnreadCount(dialogId);
-        return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+        return dialogService.readMessage(dialogId, messageId);
     }
 
+    /**
+     * Получить последнюю активность и текущий статус для пользователя, с которым ведется диалог.
+     *
+     * @param dialogId - ID диалога.
+     * @param personId - ID пользователя, с которым ведётся диалог.
+     * @return ответ, содержащий статус (онлайн/не онлайн) и время последней активности.
+     */
     @GetMapping("/{id}/activity/{user_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> getLastActivity(
             @PathVariable("id") long dialogId,
             @PathVariable("user_id") long personId
     ) {
-        if (!accountService.exists(personId)) {
-            ErrorResponse errorResponse = errorService.personNotFoundById(personId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        if (!dialogService.exists(dialogId)) {
-            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        if (!dialogService.userExistsInDialog(personId, dialogId)) {
-            ErrorResponse errorResponse = errorService.userNotFoundInDialog(personId, dialogId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        UserActivityResponse userActivityResponse = dialogService.getActivity(personId, dialogId);
-        return ResponseEntity.ok(new ServiceResponse<>(userActivityResponse));
+        return dialogService.getLastActivity(dialogId, personId);
     }
 
+    /**
+     * Изменить статус набора текста пользователем в диалоге.
+     *
+     * @param dialogId - ID диалога.
+     * @param personId - ID пользователя, статус набора текста которого надо изменить.
+     * @return ответ с сообщением OK.
+     */
     @PostMapping("/{id}/activity/{user_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> changeTypingStatus(
             @PathVariable("id") long dialogId,
             @PathVariable("user_id") long personId
     ) {
-        if (!accountService.exists(personId)) {
-            ErrorResponse errorResponse = errorService.personNotFoundById(personId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        if (!dialogService.exists(dialogId)) {
-            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+        return dialogService.changeTypingStatus(dialogId, personId);
     }
 
+    /**
+     * Отправка сообщения.
+     *
+     * @param dialogId    - ID диалога.
+     * @param sendRequest - реквест, содержащий текст сообщения.
+     * @return информация о сообщении: ID, время, автор, получатель, текст, статус.
+     */
     @PostMapping("/{id}/messages")
     public ResponseEntity<ServiceResponse<AbstractResponse>> sendMessage(
             @PathVariable("id") long dialogId,
             @RequestBody MessageSendRequest sendRequest
     ) {
-        if (!dialogService.exists(dialogId)) {
-            ErrorResponse errorResponse = errorService.dialogNotFound(dialogId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        Person author = accountService.findCurrentUser();
-        if (author == null) {
-            ErrorResponse errorResponse = errorService.unauthorized();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServiceResponse<>(errorResponse));
-        }
-        MessageFullResponse messageFullResponse = messageService.sendMessage(author, dialogId, sendRequest.getMessageText());
-        return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
+        return dialogService.sendMessage(dialogId, sendRequest);
     }
 
+    /**
+     * Удаление сообщения.
+     *
+     * @param dialogId  - ID диалога.
+     * @param messageId - ID сообщения.
+     * @return ID удалённого сообщения.
+     */
     @DeleteMapping("/{dialog_id}/messages/{message_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> removeMessage(
             @PathVariable("dialog_id ") long dialogId,
             @PathVariable("message_id ") long messageId
     ) {
-        if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        long id = messageService.removeMessage(messageId);
-        MessageIdResponse messageIdResponse = MessageIdResponse.builder().messageId(id).build();
-        return ResponseEntity.ok(new ServiceResponse<>(messageIdResponse));
+        return dialogService.removeMessage(dialogId, messageId);
     }
 
+    /**
+     * Редактирование сообщения.
+     *
+     * @param dialogId           - ID диалога.
+     * @param messageId          - ID сообщения.
+     * @param messageSendRequest - реквест, содержащий текст сообщения.
+     * @return информация о сообщении: ID, время, автор, получатель, текст, статус.
+     */
     @PutMapping("/{dialog_id}/messages/{message_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> editMessage(
             @PathVariable("dialog_id ") long dialogId,
             @PathVariable("message_id ") long messageId,
             @RequestBody MessageSendRequest messageSendRequest
     ) {
-        if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        MessageFullResponse messageFullResponse = messageService.editMessage(messageId, messageSendRequest.getMessageText());
-        return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
+        return dialogService.editMessage(dialogId, messageId, messageSendRequest);
     }
 
+    /**
+     * Восстановление удаленного сообщения.
+     *
+     * @param dialogId  - ID диалога.
+     * @param messageId - ID сообщения.
+     * @return информация о сообщении: ID, время, автор, получатель, текст, статус.
+     */
     @PutMapping("/{dialog_id}/messages/{message_id}/recover")
     public ResponseEntity<ServiceResponse<AbstractResponse>> recoverMessage(
             @PathVariable("dialog_id") long dialogId,
             @PathVariable("message_id") long messageId
     ) {
-        if (!messageService.exists(messageId)) {
-            ErrorResponse errorResponse = errorService.messageNotFound(messageId);
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
-        }
-        MessageFullResponse messageFullResponse = messageService.recoverMessage(messageId);
-        return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
+        return dialogService.recoverMessage(dialogId, messageId);
     }
 
     /**

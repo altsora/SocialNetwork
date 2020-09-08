@@ -1,8 +1,7 @@
 package sn.service.impl;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import sn.api.response.ErrorResponse;
 import sn.api.response.MessageFullResponse;
 import sn.model.Message;
 import sn.model.Person;
@@ -15,10 +14,16 @@ import sn.utils.TimeUtil;
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class MessageService implements IMessageService {
     private final IDialogService dialogService;
     private final MessageRepository messageRepository;
+
+    public MessageService(
+            @Lazy IDialogService dialogService,
+            MessageRepository messageRepository) {
+        this.dialogService = dialogService;
+        this.messageRepository = messageRepository;
+    }
 
     //==================================================================================================================
 

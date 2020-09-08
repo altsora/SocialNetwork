@@ -1,5 +1,7 @@
 package sn.service;
 
+import sn.api.requests.MessageSendRequest;
+import sn.api.response.AbstractResponse;
 import sn.api.response.UserActivityResponse;
 import org.springframework.http.ResponseEntity;
 import sn.api.response.DialogResponse;
@@ -12,12 +14,6 @@ public interface IDialogService {
     Dialog findById(long dialogId);
 
     boolean exists(long dialogId);
-
-    boolean userExistsInDialog(long personId, long dialogId);
-
-    void decreaseUnreadCount(long dialogId);
-
-    UserActivityResponse getActivity(long personId, long dialogId);
 
     ResponseEntity<ServiceResponse<DialogResponse>> findPersonDialogsWithQuery(
             String query, int offSet, int itemPerPage);
@@ -40,4 +36,21 @@ public interface IDialogService {
 
     ResponseEntity<ServiceResponse<DialogResponse>> getDialogMessages(
             long dialogId, String query, int offset, int itemPerPage);
+
+    ResponseEntity<ServiceResponse<AbstractResponse>> readMessage(long dialogId, long messageId);
+
+    ResponseEntity<ServiceResponse<AbstractResponse>> getLastActivity(long dialogId, long personId);
+
+    ResponseEntity<ServiceResponse<AbstractResponse>> changeTypingStatus(long dialogId, long personId);
+
+    ResponseEntity<ServiceResponse<AbstractResponse>> sendMessage(long dialogId, MessageSendRequest sendRequest);
+
+    ResponseEntity<ServiceResponse<AbstractResponse>> removeMessage(long dialogId, long messageId);
+
+    ResponseEntity<ServiceResponse<AbstractResponse>> editMessage(long dialogId, long messageId,
+                                                                  MessageSendRequest messageSendRequest);
+
+    ResponseEntity<ServiceResponse<AbstractResponse>> recoverMessage(long dialogId, long messageId);
+
+
 }
