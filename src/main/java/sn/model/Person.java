@@ -24,7 +24,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "person")
-@EqualsAndHashCode(exclude = {"posts", "postLikes", "commentLikes"})
+@EqualsAndHashCode(exclude = {"posts", "postLikes", "commentLikes", "ownDialogs", "dialogs", "sentMessages", "receivedMessages"})
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,10 +64,31 @@ public class Person {
     @JsonManagedReference
     @OneToMany(mappedBy = "author")
     private List<Post> posts;
-    @JsonManagedReference
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
     private Set<PostLike> postLikes;
     @JsonManagedReference
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
     private Set<CommentLike> commentLikes;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "owner")
+    private Set<Dialog> ownDialogs;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "person")
+    private Set<Person2Dialog> dialogs;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "author")
+    private Set<Message> sentMessages;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "recipient")
+    private Set<Message> receivedMessages;
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }

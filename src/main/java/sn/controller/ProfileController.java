@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sn.api.ResponseDataMessage;
+import sn.api.response.ResponseDataMessage;
 import sn.api.requests.PersonEditRequest;
 import sn.api.requests.WallPostRequest;
 import sn.api.response.*;
