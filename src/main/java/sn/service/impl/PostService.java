@@ -8,10 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sn.api.requests.PostEditRequest;
-import sn.api.response.CommentResponse;
-import sn.api.response.PersonResponse;
-import sn.api.response.PostResponse;
-import sn.api.response.WallPostResponse;
+import sn.api.response.*;
+import sn.model.Comment;
 import sn.model.Person;
 import sn.model.Post;
 import sn.model.enums.StatusWallPost;
@@ -278,5 +276,97 @@ public class PostService implements IPostService {
                 post.getId()));
 
         return postResponse;
+    }
+
+    /**
+     * Метод deletePost.
+     * Удаление публикации.
+     * DELETE запрос /api/v1/post/{id}
+     *
+     * @param id ID публикации.
+     * @return id удалённой публикации.
+     */
+    @Override
+    public IdResponse deletePost(long id) {
+        Post post = postRepository.getOne(id);
+        post.setDeleted(true);
+        postRepository.saveAndFlush(post);
+        IdResponse idResponse = new IdResponse();
+        idResponse.setId(id);
+        return idResponse;
+    }
+
+    /**
+     * Метод recoverPost.
+     * Восстановление публикации.
+     *
+     * @param id ID публикации.
+     * @return возвращает публикацию.
+     */
+    @Override
+    public PostResponse recoverPost(long id) {
+        Post post = postRepository.getOne(id);
+        post.setDeleted(false);
+        postRepository.saveAndFlush(post);
+
+        PostResponse postResponse = new PostResponse();
+        postResponse.setId(post.getId());
+
+        // если время в посте не будем менять на лонг, то оставляем так:
+        ZonedDateTime zdt = ZonedDateTime.of(post.getTime(),
+                ZoneId.systemDefault());
+        postResponse.setTime(zdt.toInstant().toEpochMilli());
+
+        // С учётом удаления PersonService:
+        postResponse.setAuthor
+                (accountService.getPersonResponse(post.getAuthor()));
+
+        postResponse.setTitle(post.getTitle());
+        postResponse.setPostText(post.getText());
+        postResponse.setBlocked(post.isBlocked());
+        postResponse.setLikes(post.getLikesCount());
+        postResponse.setComments(commentService.getCommentsByPostId(
+                post.getId()));
+
+        return postResponse;
+    }
+
+    /**
+     * Метод postComplaint.
+     * Подать жалобу на публикацию.
+     *
+     * @param id ID публикации.
+     * @see MessageResponse
+     */
+    @Override
+    public MessageResponse complaintPost(long id) {
+        Post post = findById(id);
+        MessageResponse response = new MessageResponse();
+        response.setMessage("ok");
+        if (post == null)
+            return null;
+        else
+            return response;
+    }
+
+    @Override
+    public MessageResponse complaintComment(long id, long commentId) {
+        Post post = findById(id);
+        MessageResponse response = new MessageResponse();
+        response.setMessage("ok");
+        if (post == null)
+            return null;
+        else {
+            Comment comment = null;
+            for (Comment current : post.getComments())
+                if (current.getId() == commentId) {
+                    comment = current;
+                    break;
+                }
+            if (comment == null)
+                return null;
+            else
+                return response;
+        }
     }
 }
