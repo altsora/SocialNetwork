@@ -41,4 +41,8 @@ public interface IPostService {
     IdResponse deletePost(long id);
 
     PostResponse recoverPost(long id);
+
+    MessageResponse complaintPost(long id);
+
+    MessageResponse complaintComment(long id, long commentId);
 }

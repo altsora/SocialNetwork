@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sn.api.ResponseDataMessage;
 import sn.api.requests.PostEditRequest;
 import sn.api.response.*;
-import sn.model.Person;
 import sn.service.IPostService;
 
 import java.util.List;
@@ -35,33 +33,19 @@ public class PostController {
      * @param dateTo Дата публикации ДО.
      * @param offset Отступ от начала списка.
      * @param itemPerPage Количество элементов на страницу.
-     * @return 200 - успешное получение публикации, 400 - bad request,
-     * 401 - unauthorized.
+     * @return 200 - успешное получение публикации
      */
     @GetMapping
     public ResponseEntity<ServiceResponse<AbstractResponse>> findPosts(
             @RequestParam String text, @RequestParam long dateFrom,
             @RequestParam long dateTo,@RequestParam int offset,
             @RequestParam int itemPerPage) {
-        Person person = postService.findCurrentUser();
-        if (person == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized",
-                            new ResponseDataMessage("User is not authorized")));
-        else {
-            List<PostResponse> posts = postService.findPosts(
-                    text, dateFrom, dateTo, offset, itemPerPage);
-            if (posts.size() == 0)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ServiceResponse<>("Bad request",
-                                new ResponseDataMessage("Service unavailable")));
-            else {
-                PostListResponse postListResponse = new PostListResponse(posts);
-                ServiceResponse response = new ServiceResponse(
-                        posts.size(), offset, itemPerPage, postListResponse);
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-        }
+        List<PostResponse> posts = postService.findPosts(
+                text, dateFrom, dateTo, offset, itemPerPage);
+        PostListResponse postListResponse = new PostListResponse(posts);
+        ServiceResponse response = new ServiceResponse(
+                posts.size(), offset, itemPerPage, postListResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
@@ -70,28 +54,14 @@ public class PostController {
      * GET запрос /api/v1/post/{id}
      *
      * @param id ID публикации.
-     * @return 200 - успешное получение публикации, 400 - bad request,
-     * 401 - unauthorized.
+     * @return 200 - успешное получение публикации
      */
     @GetMapping("/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> findPostById(
             @PathVariable(value = "id") long id) {
-        Person person = postService.findCurrentUser();
-        if (person == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized",
-                            new ResponseDataMessage("User is not authorized")));
-        else {
-            PostResponse post = postService.findPostById(id);
-            if (post == null)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ServiceResponse<>("Bad request",
-                                new ResponseDataMessage("Service unavailable")));
-            else {
-                ServiceResponse response = new ServiceResponse(post);
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-        }
+        PostResponse post = postService.findPostById(id);
+        ServiceResponse response = new ServiceResponse(post);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
@@ -101,8 +71,7 @@ public class PostController {
      *
      * @param id ID публикации.
      * @param publishDate Отложить до определённой даты.
-     * @return 200 - успешное получение публикации, 400 - bad request,
-     * 401 - unauthorized.
+     * @return 200 - успешное получение публикации
      * @see sn.api.requests.PostEditRequest
      */
     @PutMapping("/{id}")
@@ -110,23 +79,10 @@ public class PostController {
             @PathVariable(value = "id") long id,
             @RequestParam long publishDate,
             @RequestBody PostEditRequest postEditRequest) {
-        Person person = postService.findCurrentUser();
-        if (person == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized",
-                            new ResponseDataMessage("User is not authorized")));
-        else {
-            PostResponse post = postService.editPost
-                    (id, publishDate, postEditRequest);
-            if (post == null)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ServiceResponse<>("Bad request",
-                                new ResponseDataMessage("Service unavailable")));
-            else {
-                ServiceResponse response = new ServiceResponse(post);
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-        }
+        PostResponse post = postService.editPost
+                (id, publishDate, postEditRequest);
+        ServiceResponse response = new ServiceResponse(post);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
@@ -135,29 +91,15 @@ public class PostController {
      * DELETE запрос /api/v1/post/{id}
      *
      * @param id ID публикации.
-     * @return 200 - успешное удаление публикации, 400 - bad request,
-     * 401 - unauthorized.
+     * @return 200 - успешное удаление публикации
      * @see IdResponse
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> deletePost(
             @PathVariable(value = "id") long id) {
-        Person person = postService.findCurrentUser();
-        if (person == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized",
-                            new ResponseDataMessage("User is not authorized")));
-        else {
-            IdResponse deletePost = postService.deletePost(id);
-            if (deletePost == null)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ServiceResponse<>("Bad request",
-                                new ResponseDataMessage("Service unavailable")));
-            else {
-                ServiceResponse response = new ServiceResponse(deletePost);
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-        }
+        IdResponse deletePost = postService.deletePost(id);
+        ServiceResponse response = new ServiceResponse(deletePost);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
@@ -166,29 +108,49 @@ public class PostController {
      * PUT запрос /api/v1/post/{id}/recover
      *
      * @param id ID публикации.
-     * @return 200 - успешное восстановление публикации, 400 - bad request,
-     * 401 - unauthorized.
+     * @return 200 - успешное восстановление публикации
      * @see PostResponse
      */
     @PutMapping("/{id}/recover")
     public ResponseEntity<ServiceResponse<AbstractResponse>> recoverPost(
             @PathVariable(value = "id") long id) {
-        Person person = postService.findCurrentUser();
-        if (person == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ServiceResponse<>("Unauthorized",
-                            new ResponseDataMessage("User is not authorized")));
-        else {
-            PostResponse post = postService.recoverPost(id);
-            if (post == null)
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ServiceResponse<>("Bad request",
-                                new ResponseDataMessage("Service unavailable")));
-            else {
-                ServiceResponse response = new ServiceResponse(post);
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            }
-        }
+        PostResponse post = postService.recoverPost(id);
+        ServiceResponse response = new ServiceResponse(post);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    /**
+     * Метод postComplaint.
+     * Подать жалобу на публикацию.
+     * POST запрос /api/v1/post/{id}/report
+     *
+     * @param id ID публикации.
+     * @return 200 - успешное создание жалобы на публикацию
+     */
+    @PostMapping("/{id}/report")
+    public ResponseEntity<ServiceResponse<AbstractResponse>> postComplaint(
+            @PathVariable(value = "id") long id) {
+        MessageResponse complaintPost = postService.complaintPost(id);
+        ServiceResponse response = new ServiceResponse(complaintPost);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    /**
+     * Метод commentComplaint.
+     * Подать жалобу на комментарий.
+     * POST запрос /api/v1/post/{id}/comments/{commentId}/report
+     *
+     * @param id ID публикации.
+     * @param commentId ID комментария.
+     * @return 200 - успешное создание жалобы на публикацию
+     */
+    @PostMapping("/{id}/comments/{commentId}/report")
+    public ResponseEntity<ServiceResponse<AbstractResponse>> commentComplaint(
+            @PathVariable(value = "id") long id,
+            @PathVariable(value = "commentId") long commentId) {
+        MessageResponse complaintPost = postService.complaintComment
+                (id, commentId);
+        ServiceResponse response = new ServiceResponse(complaintPost);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

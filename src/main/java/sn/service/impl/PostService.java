@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sn.api.requests.PostEditRequest;
 import sn.api.response.*;
+import sn.model.Comment;
 import sn.model.Person;
 import sn.model.Post;
 import sn.model.enums.StatusWallPost;
@@ -328,5 +329,44 @@ public class PostService implements IPostService {
                 post.getId()));
 
         return postResponse;
+    }
+
+    /**
+     * Метод postComplaint.
+     * Подать жалобу на публикацию.
+     *
+     * @param id ID публикации.
+     * @see MessageResponse
+     */
+    @Override
+    public MessageResponse complaintPost(long id) {
+        Post post = findById(id);
+        MessageResponse response = new MessageResponse();
+        response.setMessage("ok");
+        if (post == null)
+            return null;
+        else
+            return response;
+    }
+
+    @Override
+    public MessageResponse complaintComment(long id, long commentId) {
+        Post post = findById(id);
+        MessageResponse response = new MessageResponse();
+        response.setMessage("ok");
+        if (post == null)
+            return null;
+        else {
+            Comment comment = null;
+            for (Comment current : post.getComments())
+                if (current.getId() == commentId) {
+                    comment = current;
+                    break;
+                }
+            if (comment == null)
+                return null;
+            else
+                return response;
+        }
     }
 }
