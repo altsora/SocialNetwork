@@ -8,9 +8,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CommentResponse {
+public class CommentResponse extends AbstractResponse{
     @JsonProperty("id")
     private long id;
     @JsonProperty("post_id")

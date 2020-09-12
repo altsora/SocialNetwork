@@ -1,5 +1,8 @@
 package sn.repositories;
 
-public class TagRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import sn.model.Tag;
+
+public interface TagRepository extends JpaRepository<Tag, Long> {
 
 }
