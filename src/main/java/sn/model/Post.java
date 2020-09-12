@@ -2,8 +2,8 @@ package sn.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -12,8 +12,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "posts")
-@Data
-@EqualsAndHashCode(exclude = {"comments", "personLikes"})
+@Setter
+@EqualsAndHashCode(exclude = {"comments"})
 public class Post {
     private long id;
     private LocalDateTime time;
@@ -24,7 +24,7 @@ public class Post {
     private boolean isDeleted;
     private int likesCount;
     private Set<Comment> comments;
-    private Set<PostLike> personLikes;
+    private Set<Tag> tags;
 
     //==================================================================================================================
 
@@ -78,9 +78,12 @@ public class Post {
         return comments;
     }
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    public Set<PostLike> getPersonLikes() {
-        return personLikes;
-    }
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {
+        CascadeType.PERSIST,
+        CascadeType.MERGE
+    })
+    @JoinTable(name = "post2tag",
+        joinColumns = {@JoinColumn(name = "post_id")},
+        inverseJoinColumns = {@JoinColumn(name = "tag_id")})
+    public Set<Tag> getTags() { return tags; }
 }
