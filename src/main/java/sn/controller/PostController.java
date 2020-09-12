@@ -1,11 +1,14 @@
 package sn.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sn.api.requests.PostCommentCreateRequest;
 import sn.api.requests.PostEditRequest;
 import sn.api.response.*;
+import sn.service.ICommentService;
 import sn.service.IPostService;
 
 import java.util.List;
@@ -21,7 +24,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
 
+    @Autowired
     private final IPostService postService;
+
+    @Autowired
+    private final ICommentService commentService;
 
     /**
      * Метод findPosts.
@@ -117,6 +124,50 @@ public class PostController {
         PostResponse post = postService.recoverPost(id);
         ServiceResponse response = new ServiceResponse(post);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/{id}/comments")
+    public ServiceResponseDataList<CommentResponse> getComments(
+        @PathVariable(value = "id") long id,
+        @RequestParam int offset,
+        @RequestParam int initPerPage) {
+
+        return new ServiceResponseDataList<>(commentService.getCommentsByPostId(id).size(), offset,
+            initPerPage, commentService.getCommentsByPostId(id));
+    }
+
+    @PostMapping("/{id}/comments")
+    public SimpleServiceResponse<CommentResponse> createComment(
+        @PathVariable(value = "id") long id, PostCommentCreateRequest postCommentCreateRequest) {
+
+        return new SimpleServiceResponse<>(commentService.createPostComment(id,
+            postCommentCreateRequest));
+    }
+
+    @PutMapping("/{id}/comments/{comment_id}")
+    public SimpleServiceResponse<CommentResponse> editComment(
+        @PathVariable(value = "id") long id,
+        @PathVariable(value = "comment_id") long commentId,
+        PostCommentCreateRequest postCommentCreateRequest) {
+
+        return new SimpleServiceResponse<>(commentService.editComment(id, commentId,
+            postCommentCreateRequest));
+    }
+
+    @DeleteMapping("/{id}/comments/{comment_id}")
+    public SimpleServiceResponse<IdResponse> deleteComment(
+        @PathVariable(value = "id") long id,
+        @PathVariable(value = "comment_id") long commentId) {
+
+        return new SimpleServiceResponse<>(commentService.deleteComment(id, commentId));
+    }
+
+    @PutMapping("/{id}/comments/{comment_id}/recover")
+    public SimpleServiceResponse<CommentResponse> recoverComment(
+        @PathVariable(value = "id") long id,
+        @PathVariable(value = "comment_id") long commentId) {
+
+        return new SimpleServiceResponse<>(commentService.recoverComment(id, commentId));
     }
 
     /**
