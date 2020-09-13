@@ -1,6 +1,8 @@
-package sn.api.response;
+package sn.api;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import sn.api.response.AbstractResponse;
 
 @Data
 public class ResponseDataMessage extends AbstractResponse {
@@ -8,10 +10,6 @@ public class ResponseDataMessage extends AbstractResponse {
 
     public ResponseDataMessage(String message) {
         this.message = message;
-    }
-
-    public static ResponseDataMessage ok() {
-        return new ResponseDataMessage("Ok");
     }
 }
 

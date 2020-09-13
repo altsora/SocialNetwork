@@ -2,7 +2,6 @@ package sn.service;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import sn.api.requests.PersonEditRequest;
-import sn.api.response.ErrorResponse;
 import sn.api.response.PersonResponse;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
@@ -14,8 +13,6 @@ import java.util.List;
  * Методы для работы с Account.
  */
 public interface IAccountService {
-
-    boolean exists(long personId);
 
     boolean changeUserLockStatus(long personId);
 

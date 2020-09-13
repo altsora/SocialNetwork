@@ -12,7 +12,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServiceResponseDataList<T extends AbstractResponse> {
     private String error;
-    private Long timestamp;
+    private long timestamp;
     private int total;
     private int offset;
     private int perPage;
@@ -28,11 +28,6 @@ public class ServiceResponseDataList<T extends AbstractResponse> {
         this.total = total;
         this.offset = offset;
         this.perPage = perPage;
-        this.data = data;
-    }
-
-    public ServiceResponseDataList(List<T> data) {
-        this.timestamp = TimeUtil.getTimestampFromLocalDateTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
         this.data = data;
     }
 }

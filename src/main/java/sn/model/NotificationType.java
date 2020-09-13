@@ -2,7 +2,6 @@ package sn.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sn.model.enums.NotificationTypeCode;
 
 import javax.persistence.*;
 
