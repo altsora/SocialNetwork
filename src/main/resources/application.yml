@@ -6,7 +6,7 @@ spring:
       ddl-auto: validate
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snet?stringtype=unspecified}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snet}
     username: snet
     password: snet
   mail:
@@ -18,7 +18,6 @@ spring:
 
 mail:
   debug: true
-
 flyway:
   user: snet
   password: snet
@@ -27,10 +26,3 @@ server:
   servlet:
     contextPath: /api/v1
 
-#JWT Configuration
-security:
-  jwt:
-    header: Authorization
-    prefix: Bearer
-    secret: JWTSecretKeyFor7GroupSocialNetwork082020
-    expiration: 86400

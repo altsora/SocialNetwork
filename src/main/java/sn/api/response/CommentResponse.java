@@ -22,7 +22,7 @@ public class CommentResponse extends AbstractResponse{
     @JsonProperty("parent_id")
     private Long parentId;
     @JsonProperty("time")
-    private Long time;
+    private long time;
     @JsonProperty("is_blocked")
     private boolean isBlocked;
 }

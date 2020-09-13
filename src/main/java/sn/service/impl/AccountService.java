@@ -4,14 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.stereotype.Service;
 import sn.api.requests.PersonEditRequest;
 import sn.api.response.CityResponse;
 import sn.api.response.CountryResponse;
-import sn.api.response.ErrorResponse;
 import sn.api.response.PersonResponse;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
@@ -50,11 +50,6 @@ public class AccountService implements IAccountService {
 
     @Autowired
     private MailSenderService mailSenderService;
-
-    @Override
-    public boolean exists(long personId) {
-        return personRepository.existsById(personId);
-    }
 
     /**
      * Изменяет статус блокировки пользователя на противоположный.
@@ -159,7 +154,7 @@ public class AccountService implements IAccountService {
         if (personRepository.findByEmail(userRegistrationRequest.getEmail()).isPresent()) {
             log.error("User [{}] is exists.", userRegistrationRequest.getEmail());
             return false;
-        }
+        };
         Person person = new Person();
         person.setFirstName(userRegistrationRequest.getFirstName());
         person.setLastName(userRegistrationRequest.getLastName());
@@ -181,7 +176,7 @@ public class AccountService implements IAccountService {
     public boolean recoveryPassword(String email) {
         Optional<Person> personOpt = personRepository.findByEmail(email);
         if (personOpt.isEmpty()) {
-            log.warn("Person [{}] not found for password recovery.", email);
+            log.warn("Person [{}] not found for password recovery." , email);
             return false;
         }
         Person person = personOpt.get();

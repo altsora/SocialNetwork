@@ -2,11 +2,9 @@ package sn.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sn.model.CommentLike;
-import sn.model.PostLike;
-import sn.repositories.CommentLikeRepository;
-import sn.repositories.PersonRepository;
-import sn.repositories.PostLikeRepository;
+import sn.model.Like;
+import sn.model.enums.LikeType;
+import sn.repositories.LikeRepository;
 import sn.service.ILikeService;
 //import sn.service.IPersonService;
 import sn.service.IPostService;
@@ -21,75 +19,27 @@ import java.util.List;
 public class LikeService implements ILikeService {
 //    private final IPersonService personService;
     private final IPostService postService;
-    private final PersonRepository personRepository;
-    private final PostLikeRepository postLikeRepository;
-
-    public static final String COMMENT_LIKE = "Comment";
-    public static final String POST_LIKE = "Post";
+    private final LikeRepository likeRepository;
 
     //==================================================================================================================
 
-    /**
-     * Проверка, существует ли лайк (под постом или комментарием).
-     *
-     * @param personId - идентификатор пользователя;
-     * @param likeType - тип лайка (под постом или комментарием);
-     * @param itemId   - идентификатор объекта, у которого проверяется наличие лайка.
-     * @return - возвращает true, если лайк стоит, иначе false.
-     */
     @Override
-    public boolean likeExists(long personId, String likeType, long itemId) {
-        switch (likeType) {
-            case COMMENT_LIKE:
-                return commentLikeRepository.findByPersonIdAndCommentId(personId, itemId) != null;
-            case POST_LIKE:
-                return postLikeRepository.findByPersonIdAndPostId(personId, itemId) != null;
-            default:
-                return false;
-        }
+    public boolean likeExists(long personId, LikeType likeType, long itemId) {
+        return likeRepository.findLike(personId, likeType, itemId) != null;
     }
 
-    /**
-     * Метод возвращает количество лайков под объектом.
-     *
-     * @param likeType - тип лайка (под постом или комментарием);
-     * @param itemId   - идентификатор объекта, у которого проверяется количество лайков.
-     * @return - возвращает количество лайков у объекта.
-     */
     @Override
-    public int getCount(String likeType, long itemId) {
-        switch (likeType) {
-            case COMMENT_LIKE:
-                return commentLikeRepository.getCount(itemId);
-            case POST_LIKE:
-                return postLikeRepository.getCount(itemId);
-            default:
-                return 0;
-        }
+    public int getCount(LikeType likeType, long itemId) {
+        return likeRepository.getCountByTypeAndItemId(likeType, itemId);
     }
 
-    /**
-     * Метод список пользователей (их идентификаторы), которые поставили лайк под объектом.
-     *
-     * @param likeType - тип лайка (под постом или комментарием);
-     * @param itemId   - идентификатор объекта, у которого стоит лайк.
-     * @return - возвращает список ID пользователей, поставивших лайк.
-     */
     @Override
-    public List<Long> getUsersOfLike(String likeType, long itemId) {
+    public List<Long> getUsersOfLike(LikeType likeType, long itemId) {
         List<Long> users = new ArrayList<>();
-        switch (likeType) {
-            case COMMENT_LIKE:
-                commentLikeRepository.findAllByCommentId(itemId)
-                        .forEach(commentLike -> users.add(commentLike.getId()));
-                return users;
-            case POST_LIKE:
-                postLikeRepository.findAllByPostId(itemId)
-                        .forEach(postLike -> users.add(postLike.getId()));
-                return users;
-            default:
-                return users;
+        for (Like like : likeRepository.findAllByTypeAndItemId(likeType, itemId)) {
+            users.add(like.getPerson().getId());
         }
+        return users;
     }
 
 //    @Override
@@ -105,21 +55,15 @@ public class LikeService implements ILikeService {
 //        }
 //    }
 
-    /**
-     * Метод удаляет лайк из базы.
-     *
-     * @param personId - идентификатор пользователя;
-     * @param likeType - тип лайка (под постом или комментарием);
-     * @param itemId   - идентификатор объекта, которому ставится лайк.
-     */
     @Override
-    public void removeLike(long personId, String likeType, long itemId) {
-        switch (likeType) {
-            case COMMENT_LIKE:
-                removeCommentLike(personId, itemId);
-                return;
-            case POST_LIKE:
-                removePostLike(personId, itemId);
+    public LikeType getLikeType(String type) {
+        switch (type) {
+            case "Post":
+                return LikeType.POST;
+            case "Comment":
+                return LikeType.COMMENT;
+            default:
+                return null;
         }
     }
 

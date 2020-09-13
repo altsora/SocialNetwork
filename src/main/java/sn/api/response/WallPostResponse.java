@@ -15,7 +15,7 @@ public class WallPostResponse extends AbstractResponse {
     @JsonProperty("id")
     private final long id;
     @JsonProperty("time")
-    private final Long time;
+    private final long time;
     @JsonProperty("author")
     private final PersonResponse author;
     @JsonProperty("title")
