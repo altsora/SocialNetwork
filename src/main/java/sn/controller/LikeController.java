@@ -3,7 +3,7 @@ package sn.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sn.api.requests.LikeRequest;
+//import sn.api.requests.LikeRequest;
 import sn.api.response.*;
 import sn.model.enums.LikeType;
 import sn.service.IAccountService;
