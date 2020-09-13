@@ -1,21 +1,29 @@
 package sn.controller;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.requests.LikeRequest;
 import sn.api.response.*;
-import sn.model.enums.LikeType;
 import sn.service.IAccountService;
 import sn.service.ILikeService;
 
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 public class LikeController {
     private final IAccountService accountService;
     private final ILikeService likeService;
+
+    private final String COMMENT_LIKE = "Comment";
+    private final String POST_LIKE = "Post";
+
+    public LikeController(
+            @Qualifier("account-service") IAccountService accountService,
+            ILikeService likeService) {
+        this.accountService = accountService;
+        this.likeService = likeService;
+    }
 
     //==================================================================================================================
 
@@ -23,21 +31,16 @@ public class LikeController {
     public ResponseEntity<ServiceResponse<AbstractResponse>> userHasLiked(
             @RequestParam(value = "user_id") long personId,
             @RequestParam(value = "item_id") long itemId,
-            @RequestParam(value = "type") String type
+            @RequestParam(value = "type") String likeType
     ) {
         boolean value;
-        switch (type) {
-            case "Post":
-                value = likeService.likeExists(personId, LikeType.POST, itemId);
-                break;
-            case "Comment":
-                value = likeService.likeExists(personId, LikeType.COMMENT, itemId);
+        switch (likeType) {
+            case COMMENT_LIKE:
+            case POST_LIKE:
+                value = likeService.likeExists(personId, likeType, itemId);
                 break;
             default:
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .error("Bad request")
-                        .errorDescription("Unknown type: " + type)
-                        .build();
+                ErrorResponse errorResponse = getErrorUnknownLikeType(likeType);
                 return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
         LikeValueResponse likeValueResponse = LikeValueResponse.builder().likeValue(value).build();
@@ -47,17 +50,18 @@ public class LikeController {
     @GetMapping("/likes")
     public ResponseEntity<ServiceResponse<AbstractResponse>> getLikes(
             @RequestParam(value = "item_id") long itemId,
-            @RequestParam(value = "type") String type
+            @RequestParam(value = "type") String likeType
     ) {
-        LikeType likeType = likeService.getLikeType(type);
-        if (likeType == null) {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .error("Bad request")
-                    .errorDescription("Unknown type: " + type)
-                    .build();
-            return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
+        int likes;
+        switch (likeType) {
+            case COMMENT_LIKE:
+            case POST_LIKE:
+                likes = likeService.getCount(likeType, itemId);
+                break;
+            default:
+                ErrorResponse errorResponse = getErrorUnknownLikeType(likeType);
+                return ResponseEntity.badRequest().body(new ServiceResponse<>(errorResponse));
         }
-        int likes = likeService.getCount(likeType, itemId);
         List<Long> users = likeService.getUsersOfLike(likeType, itemId);
         return ResponseEntity.ok(new ServiceResponse<>(new LikeCountResponse(likes, users)));
     }
