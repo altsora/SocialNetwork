@@ -31,16 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @version 1.0
  * @see AccountController
  */
-@RunWith(SpringRunner.class)
-@AutoConfigureMockMvc
-@SpringBootTest
-public class AccountControllerTest {
-
-    private final static String USER_EMAIL = "bro@malta.com";
-    private final static String USER_PASSWORD = "Qwerty0987!";
-
-    @Autowired
-    private MockMvc mockMvc;
+public class AccountControllerTest extends AbstractWebController {
     @Autowired
     private AccountController accountController;
     @MockBean
@@ -73,7 +64,7 @@ public class AccountControllerTest {
     public void whenRegistrateNewUserThenStatusCodeOKAndRegistrationSuccessful() throws Exception {
         UserRegistrationRequest userRegistrationRequest = new UserRegistrationRequest();
         Mockito.doReturn(true).when(accountService).register(userRegistrationRequest);
-        this.mockMvc.perform(post("/account/register")
+        mockMvc.perform(post("/account/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(userRegistrationRequest)))
                 .andDo(print())
