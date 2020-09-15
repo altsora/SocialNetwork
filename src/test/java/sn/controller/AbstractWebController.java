@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @RunWith(SpringRunner.class)
-public class AbstractWebController {
+public abstract class AbstractWebController {
     protected final static String USER_EMAIL = "bro@malta.com";
     protected final static String USER_PASSWORD = "Qwerty0987!";
 
