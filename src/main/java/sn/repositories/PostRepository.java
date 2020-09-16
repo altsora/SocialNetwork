@@ -29,7 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT count(p) FROM Post p WHERE p.author.id = :personId")
     int getTotalCountPostsByPersonId(@Param("personId") long personId);
 
-    @Query(value = "SELECT * FROM posts where and posts.time < " +
+    @Query(value = "SELECT * FROM posts where posts.time < " +
             ":dateTo and posts.time > :dateFrom and posts.text like " +
             "concat('%',:query,'%')",
             nativeQuery = true)
