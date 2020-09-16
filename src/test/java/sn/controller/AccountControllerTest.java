@@ -32,12 +32,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @see AccountController
  */
 public class AccountControllerTest extends AbstractWebController {
+
     @Autowired
     private AccountController accountController;
     @MockBean
     private AccountService accountService;
-    @MockBean
-    private PasswordEncoder passwordEncoder;
 
     private static String asJsonString(final Object obj) {
         try {
