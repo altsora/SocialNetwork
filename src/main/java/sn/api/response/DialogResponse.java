@@ -27,7 +27,7 @@ public class DialogResponse extends AbstractResponse {
     private List<Long> userIds;
     @JsonProperty("link")
     private String inviteLink;
-    @JsonValue
+//    @JsonValue
     private Set<Message> dialogMessages;
 
 

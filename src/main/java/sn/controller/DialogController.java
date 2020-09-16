@@ -216,8 +216,8 @@ public class DialogController {
      */
     @DeleteMapping("/{dialog_id}/messages/{message_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> removeMessage(
-            @PathVariable("dialog_id ") long dialogId,
-            @PathVariable("message_id ") long messageId
+            @PathVariable("dialog_id") long dialogId,
+            @PathVariable("message_id") long messageId
     ) {
         return dialogService.removeMessage(dialogId, messageId);
     }
@@ -232,8 +232,8 @@ public class DialogController {
      */
     @PutMapping("/{dialog_id}/messages/{message_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> editMessage(
-            @PathVariable("dialog_id ") long dialogId,
-            @PathVariable("message_id ") long messageId,
+            @PathVariable("dialog_id") long dialogId,
+            @PathVariable("message_id") long messageId,
             @RequestBody MessageSendRequest messageSendRequest
     ) {
         return dialogService.editMessage(dialogId, messageId, messageSendRequest);
