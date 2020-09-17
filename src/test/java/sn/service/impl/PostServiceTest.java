@@ -18,7 +18,7 @@ import sn.model.Person;
 import sn.model.Post;
 import sn.model.enums.StatusWallPost;
 import sn.repositories.PostRepository;
-import sn.service.IPostService;
+import sn.service.PostService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
@@ -27,20 +27,19 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 
 /**
  * Класс PostServiceTest.
  * Модульные тесты для PostService.
  *
- * @see PostService;
+ * @see PostService ;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class PostServiceTest {
 
     @Autowired
-    private IPostService postService;
+    private PostService postService;
 
     @MockBean
     private PostRepository postRepository;

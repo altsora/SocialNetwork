@@ -1,4 +1,4 @@
-package sn.service.impl;
+package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +17,6 @@ import sn.model.enums.MessageStatus;
 import sn.repositories.DialogRepository;
 import sn.repositories.Person2DialogRepository;
 import sn.repositories.PersonRepository;
-import sn.service.IDialogService;
-import sn.service.IMessageService;
 import sn.utils.ErrorUtil;
 import sn.utils.TimeUtil;
 
@@ -27,14 +25,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service("dialog-service")
+@Service
 @RequiredArgsConstructor
-public class DialogService implements IDialogService {
+public class DialogService {
     private final DialogRepository dialogRepository;
     private final AccountService accountService;
     private final PersonRepository personRepository;
     private final Person2DialogRepository person2DialogRepository;
-    private final IMessageService messageService;
+    private final MessageService messageService;
 
     private static final String DIALOG_NOT_FOUND_FORMAT = "Dialog with ID = %d not found";
     private static final String MESSAGE_NOT_FOUND_FORMAT = "Message with ID = %d not found";
@@ -43,12 +41,10 @@ public class DialogService implements IDialogService {
 
     //==================================================================================================================
 
-    @Override
     public Dialog findById(long dialogId) {
         return dialogRepository.findById(dialogId).orElse(null);
     }
 
-    @Override
     public boolean exists(long dialogId) {
         return dialogRepository.existsById(dialogId);
     }
@@ -75,7 +71,6 @@ public class DialogService implements IDialogService {
         dialogRepository.saveAndFlush(dialog);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> findPersonDialogsWithQuery(
             String query, int offSet, int itemPerPage) {
         Person person = accountService.findCurrentUser();
@@ -98,7 +93,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> createDialog(DialogController.UserIdsRequest request) {
         Person person = accountService.findCurrentUser();
         List<Long> userIds = request.getUserIds();
@@ -130,7 +124,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> getUnreadMessagesCount() {
         Person person = accountService.findCurrentUser();
         if (person == null) {
@@ -146,7 +139,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> deleteDialog(long dialogId) {
         Person person = accountService.findCurrentUser();
         if (person == null) {
@@ -166,7 +158,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> addUsersToDialog(
             long dialogId, DialogController.UserIdsRequest request) {
         Person person = accountService.findCurrentUser();
@@ -208,7 +199,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> deleteUsersFromDialog(
             long dialogId, DialogController.UserIdsRequest request) {
         Person person = accountService.findCurrentUser();
@@ -248,7 +238,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> createInviteLink(long dialogId) {
         Person person = accountService.findCurrentUser();
         if (person == null) {
@@ -270,7 +259,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> joinUserToDialog(long dialogId, String link) {
         Person person = accountService.findCurrentUser();
         if (person == null) {
@@ -297,7 +285,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<DialogResponse>> getDialogMessages(
             long dialogId, String query, int offset, int itemPerPage) {
         Person person = accountService.findCurrentUser();
@@ -328,7 +315,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<AbstractResponse>> readMessage(long dialogId, long messageId) {
         if (!messageService.exists(messageId)) {
             return ErrorUtil.badRequest(String.format(MESSAGE_NOT_FOUND_FORMAT, messageId));
@@ -343,7 +329,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<AbstractResponse>> getLastActivity(long dialogId, long personId) {
         if (!accountService.exists(personId)) {
             return ErrorUtil.badRequest(String.format(PERSON_NOT_FOUND_FORMAT, personId));
@@ -363,7 +348,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.ok(new ServiceResponse<>(userActivityResponse));
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<AbstractResponse>> changeTypingStatus(long dialogId, long personId) {
         if (!accountService.exists(personId)) {
             return ErrorUtil.badRequest(String.format(PERSON_NOT_FOUND_FORMAT, personId));
@@ -374,7 +358,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<AbstractResponse>> sendMessage(long dialogId, MessageSendRequest sendRequest) {
         if (!this.exists(dialogId)) {
             return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
@@ -387,7 +370,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<AbstractResponse>> removeMessage(long dialogId, long messageId) {
         if (!this.exists(dialogId)) {
             return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
@@ -400,7 +382,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.ok(new ServiceResponse<>(messageIdResponse));
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<AbstractResponse>> editMessage(long dialogId, long messageId, MessageSendRequest messageSendRequest) {
         if (!this.exists(dialogId)) {
             return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));
@@ -412,7 +393,6 @@ public class DialogService implements IDialogService {
         return ResponseEntity.ok(new ServiceResponse<>(messageFullResponse));
     }
 
-    @Override
     public ResponseEntity<ServiceResponse<AbstractResponse>> recoverMessage(long dialogId, long messageId) {
         if (!this.exists(dialogId)) {
             return ErrorUtil.badRequest(String.format(DIALOG_NOT_FOUND_FORMAT, dialogId));

@@ -1,4 +1,4 @@
-package sn.service.impl;
+package sn.service;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -7,19 +7,17 @@ import sn.model.Message;
 import sn.model.Person;
 import sn.model.enums.MessageStatus;
 import sn.repositories.MessageRepository;
-import sn.service.IDialogService;
-import sn.service.IMessageService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
 
 @Service
-public class MessageService implements IMessageService {
-    private final IDialogService dialogService;
+public class MessageService {
+    private final DialogService dialogService;
     private final MessageRepository messageRepository;
 
     public MessageService(
-            @Lazy IDialogService dialogService,
+            @Lazy DialogService dialogService,
             MessageRepository messageRepository) {
         this.dialogService = dialogService;
         this.messageRepository = messageRepository;
@@ -27,38 +25,32 @@ public class MessageService implements IMessageService {
 
     //==================================================================================================================
 
-    @Override
     public Message findById(long messageId) {
         return messageRepository.findById(messageId).orElse(null);
     }
 
-    @Override
     public boolean exists(long messageId) {
         return messageRepository.existsById(messageId);
     }
 
-    @Override
     public long removeMessage(long messageId) {
         Message message = findById(messageId);
         message.setDeleted(true);
         return messageRepository.saveAndFlush(message).getId();
     }
 
-    @Override
     public MessageFullResponse recoverMessage(long messageId) {
         Message message = findById(messageId);
         message.setDeleted(false);
         return getMessageFullResponse(messageRepository.saveAndFlush(message));
     }
 
-    @Override
     public void readMessage(long messageId) {
         Message message = findById(messageId);
         message.setStatus(MessageStatus.READ);
         messageRepository.saveAndFlush(message);
     }
 
-    @Override
     public MessageFullResponse editMessage(long messageId, String messageText) {
         Message message = findById(messageId);
         message.setMessageText(messageText);
@@ -66,7 +58,6 @@ public class MessageService implements IMessageService {
         return getMessageFullResponse(message);
     }
 
-    @Override
     public MessageFullResponse sendMessage(Person author, long dialogId, String messageText) {
         Message message = new Message();
         message.setTime(LocalDateTime.now(TimeUtil.TIME_ZONE));

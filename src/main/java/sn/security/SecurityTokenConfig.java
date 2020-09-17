@@ -1,6 +1,5 @@
 package sn.security;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -13,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.context.annotation.RequestScope;
 import sn.repositories.PersonRepository;
-import sn.service.IAccountService;
+import sn.service.AccountService;
 import sn.service.JwtUserDetailsService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -25,10 +24,10 @@ public class SecurityTokenConfig extends WebSecurityConfigurerAdapter {
     private final JwtUserDetailsService userDetailsService;
     private final JwtConfig jwtConfig;
     private final PersonRepository personRepository;
-    private final IAccountService accountService;
+    private final AccountService accountService;
 
     public SecurityTokenConfig(JwtUserDetailsService userDetailsService, JwtConfig jwtConfig,
-                               PersonRepository personRepository, @Qualifier("account-service")  IAccountService accountService) {
+                               PersonRepository personRepository, AccountService accountService) {
         this.userDetailsService = userDetailsService;
         this.jwtConfig = jwtConfig;
         this.personRepository = personRepository;

@@ -10,7 +10,7 @@ import sn.api.requests.MessageSendRequest;
 import sn.api.response.AbstractResponse;
 import sn.api.response.DialogResponse;
 import sn.api.response.ServiceResponse;
-import sn.service.IDialogService;
+import sn.service.DialogService;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/dialogs")
 @RequiredArgsConstructor
 public class DialogController {
-    private final IDialogService dialogService;
+    private final DialogService dialogService;
 
     /**
      * Метод getUserDialogList().
