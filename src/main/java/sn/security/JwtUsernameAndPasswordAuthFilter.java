@@ -21,7 +21,7 @@ import sn.api.response.LoginResponse;
 import sn.api.response.PersonResponse;
 import sn.api.response.PersonResponseWithToken;
 import sn.repositories.PersonRepository;
-import sn.service.IAccountService;
+import sn.service.AccountService;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -39,14 +39,14 @@ public class JwtUsernameAndPasswordAuthFilter extends UsernamePasswordAuthentica
     private final AuthenticationManager authManager;
     private final JwtConfig jwtConfig;
     private final PersonRepository personRepository;
-    private final IAccountService accountService;
+    private final AccountService accountService;
     private final String LOGIN_PATH = "/auth/login";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
     public JwtUsernameAndPasswordAuthFilter(AuthenticationManager authManager, JwtConfig jwtConfig,
                                             PersonRepository personRepository,
-                                            @Qualifier("account-service") IAccountService accountService) {
+                                            AccountService accountService) {
         this.authManager = authManager;
         this.jwtConfig = jwtConfig;
         this.personRepository = personRepository;

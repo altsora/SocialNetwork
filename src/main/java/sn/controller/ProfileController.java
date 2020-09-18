@@ -12,9 +12,9 @@ import sn.api.response.*;
 import sn.model.Person;
 import sn.model.Post;
 import sn.repositories.PersonRepository;
-import sn.service.IAccountService;
-import sn.service.ICommentService;
-import sn.service.IPostService;
+import sn.service.AccountService;
+import sn.service.CommentService;
+import sn.service.PostService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
@@ -25,16 +25,16 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/users")
 public class ProfileController {
-    private final IAccountService accountService;
-    private final ICommentService commentService;
-    private final IPostService postService;
+    private final AccountService accountService;
+    private final CommentService commentService;
+    private final PostService postService;
     private final PersonRepository personRepository;
 
     @Autowired
     public ProfileController(
-            @Qualifier("account-service") IAccountService accountService,
-            ICommentService commentService,
-            IPostService postService,
+            AccountService accountService,
+            CommentService commentService,
+            PostService postService,
             PersonRepository personRepository) {
         this.accountService = accountService;
         this.commentService = commentService;

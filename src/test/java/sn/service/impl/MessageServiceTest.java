@@ -15,8 +15,7 @@ import sn.model.Person;
 import sn.model.enums.MessageStatus;
 import sn.repositories.DialogRepository;
 import sn.repositories.MessageRepository;
-import sn.service.IDialogService;
-import sn.service.IMessageService;
+import sn.service.MessageService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
@@ -27,14 +26,14 @@ import static org.mockito.ArgumentMatchers.any;
 /**
  * Модульные тесты для MessageService.
  *
- * @see MessageService;
+ * @see MessageService ;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class MessageServiceTest {
 
     @Autowired
-    private IMessageService messageService;
+    private MessageService messageService;
     @MockBean
     private MessageRepository messageRepository;
     @MockBean

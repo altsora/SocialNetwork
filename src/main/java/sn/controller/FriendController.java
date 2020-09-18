@@ -20,8 +20,8 @@ import sn.api.response.PersonResponse;
 import sn.api.response.ServiceResponse;
 import sn.api.response.ServiceResponseDataList;
 import sn.model.Person;
-import sn.service.impl.AccountService;
-import sn.service.impl.FriendService;
+import sn.service.AccountService;
+import sn.service.FriendService;
 
 /**
  * Класс FriendController.

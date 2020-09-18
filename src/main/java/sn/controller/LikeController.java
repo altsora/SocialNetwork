@@ -1,26 +1,25 @@
 package sn.controller;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.requests.LikeRequest;
 import sn.api.response.*;
-import sn.service.IAccountService;
-import sn.service.ILikeService;
+import sn.service.AccountService;
+import sn.service.LikeService;
 
 import java.util.List;
 
 @RestController
 public class LikeController {
-    private final IAccountService accountService;
-    private final ILikeService likeService;
+    private final AccountService accountService;
+    private final LikeService likeService;
 
     private final String COMMENT_LIKE = "Comment";
     private final String POST_LIKE = "Post";
 
     public LikeController(
-            @Qualifier("account-service") IAccountService accountService,
-            ILikeService likeService) {
+            AccountService accountService,
+            LikeService likeService) {
         this.accountService = accountService;
         this.likeService = likeService;
     }

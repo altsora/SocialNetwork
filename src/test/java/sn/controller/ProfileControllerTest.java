@@ -20,9 +20,9 @@ import sn.api.response.WallPostResponse;
 import sn.model.Person;
 import sn.model.Post;
 import sn.repositories.PersonRepository;
-import sn.service.impl.AccountService;
-import sn.service.impl.CommentService;
-import sn.service.impl.PostService;
+import sn.service.AccountService;
+import sn.service.CommentService;
+import sn.service.PostService;
 import sn.utils.TimeUtil;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package sn.service.impl;
+package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import sn.api.response.CommentResponse;
 import sn.model.Comment;
 import sn.repositories.CommentRepository;
-import sn.service.ICommentService;
 import sn.utils.TimeUtil;
 
 import java.util.ArrayList;
@@ -19,14 +18,13 @@ import java.util.List;
  * Имплементирует CommentService.
  *
  * @version 1.0
- * @see ICommentService
  * @see sn.model.Comment
  */
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CommentService implements ICommentService {
+public class CommentService {
     private final CommentRepository commentRepository;
 
     //==================================================================================================================
@@ -37,7 +35,6 @@ public class CommentService implements ICommentService {
      * @param commentId - идентификатор комментария;
      * @return - возвращает комментарий, если существует, иначе null.
      */
-    @Override
     public Comment findById(long commentId) {
         return commentRepository.findById(commentId)
                 .orElse(null);
@@ -49,7 +46,6 @@ public class CommentService implements ICommentService {
      * @param postId - идентификатор поста, комментарии которого надо получить;
      * @return - возвращает коллекцию комментарий.
      */
-    @Override
     public List<CommentResponse> getCommentsByPostId(long postId) {
         Sort sort = Sort.by(Sort.Direction.ASC, CommentRepository.COMMENT_TIME);
         List<Comment> comments = commentRepository.findAllCommentsByPostId(postId, sort);
