@@ -1,27 +1,18 @@
 package sn.service.impl;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import sn.model.Person;
-import sn.model.dto.account.UserRegistrationRequest;
 import sn.repositories.PersonRepository;
-import sn.service.IAccountService;
+import sn.service.AccountService;
 import sn.service.MailSenderService;
-
-import java.util.Optional;
 
 /**
  * Класс AccountServiceTest.
  * Модульные тесты для AccountService.
- * @see AccountService;
+ * @see AccountService ;
  */
 @SpringBootTest
 class AccountServiceTest {
@@ -32,8 +23,7 @@ class AccountServiceTest {
     private final static String NEW_USER_PASSWD = "Q_werty0987#";
 
     @Autowired
-    @Qualifier("account-service")
-    private IAccountService accountService;
+    private AccountService accountService;
 
     @MockBean
     private PersonRepository personRepository;

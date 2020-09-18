@@ -1,4 +1,4 @@
-package sn.service.impl;
+package sn.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,14 +11,13 @@ import sn.model.Person;
 import sn.model.enums.FriendshipStatusCode;
 import sn.repositories.FriendshipRepository;
 import sn.repositories.PersonRepository;
-import sn.service.IFriendService;
 
 /**
  * Класс FriendService Сервисный слой для друзей пользователя.
  */
 
 @Service
-public class FriendService implements IFriendService {
+public class FriendService {
 
     @Autowired
     private AccountService accountService;
@@ -40,7 +39,6 @@ public class FriendService implements IFriendService {
      * @return список друзей или пустой список, если друзей не обнаружено
      */
 
-    @Override
     public List<Person> getFriendList(long id, String name, int offset,
         int itemPerPage) {
         return personRepository.findFriends(id, offset, itemPerPage, (name == null) ? "" : name);
@@ -65,7 +63,6 @@ public class FriendService implements IFriendService {
      * @return false - если friendId не дружит с пользователь, иначе - true
      */
 
-    @Override
     public boolean deleteFriend(long id, long friendId) {
         Friendship friendship = friendshipRepository
             .getFriendship(id, friendId, FriendshipStatusCode.FRIEND.toString());
@@ -90,7 +87,6 @@ public class FriendService implements IFriendService {
      * @return false - если пользователь с friendId не существует, иначе - true
      */
 
-    @Override
     public boolean addFriend(long id, long friendId) {
         if (personRepository.findById(friendId).isEmpty()) {
             return false;
@@ -119,7 +115,6 @@ public class FriendService implements IFriendService {
      * @return список заявок или пустой список, если заявок не обнаружено
      */
 
-    @Override
     public List<Person> getFriendRequestList(long id, String name, Integer offset,
         int itemPerPage) {
 
@@ -132,7 +127,6 @@ public class FriendService implements IFriendService {
      * @param id - пользователь
      */
 
-    @Override
     public int getTotalCountOfRequest(long id) {
         return friendshipRepository.getRequestsCount(id);
     }
@@ -148,7 +142,6 @@ public class FriendService implements IFriendService {
      * @return список рекомендованных друзей или пустой список, заявок некого рекомендовать
      */
 
-    @Override
     public List<Person> getFriendRecommendationList(long id, String city, Integer offset,
         int itemPerPage) {
         return personRepository.findRecommendedFriends(id, city, offset, itemPerPage);
@@ -161,7 +154,6 @@ public class FriendService implements IFriendService {
      * @param city - город пользователя
      */
 
-    @Override
     public int getTotalCountOfRecommendationList(long id, String city) {
         return 0;
     }
@@ -175,7 +167,6 @@ public class FriendService implements IFriendService {
      * @see IsFriendResponse
      */
 
-    @Override
     public List<IsFriendResponse> isFriend(long id, IsFriendsRequest request) {
         List<Long> friends = getFriendList(id, null, 0, getFriendsCount(id)).stream().map(Person::getId).collect(
             Collectors.toList());

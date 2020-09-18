@@ -1,4 +1,4 @@
-package sn.service.impl;
+package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,6 @@ import sn.model.Person;
 import sn.model.Post;
 import sn.model.enums.StatusWallPost;
 import sn.repositories.PostRepository;
-import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
@@ -23,7 +22,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PostService implements IPostService {
+public class PostService {
     private final PostRepository postRepository;
 
     /**
@@ -32,7 +31,6 @@ public class PostService implements IPostService {
      * @param postId - идентификатор поста;
      * @return - возвращает пост, если существует, иначе null.
      */
-    @Override
     public Post findById(long postId) {
         return postRepository
                 .findById(postId)
@@ -47,7 +45,6 @@ public class PostService implements IPostService {
      * @param itemPerPage - Количество публикаций из результирующего списка, которые представлены для отображения.
      * @return - получение результирующего списка с публикациями на стене пользователя;.
      */
-    @Override
     public List<Post> findAllByPersonId(long personId, int offset, int itemPerPage) {
         int pageNumber = offset / itemPerPage;
         Sort sort = Sort.by(Sort.Direction.DESC, PostRepository.POST_TIME);
@@ -64,7 +61,6 @@ public class PostService implements IPostService {
      * @param postTime - дата публикации поста;
      * @return - возвращает только что добавленный в базу пост.
      */
-    @Override
     public Post addPost(Person author, String title, String text, LocalDateTime postTime) {
         Post post = new Post();
         post.setTime(postTime);
@@ -81,7 +77,6 @@ public class PostService implements IPostService {
      * @param personId - идентификатор пользователя;
      * @return - возвращает общее количество постов у пользователя с указанным идентификатором.
      */
-    @Override
     public int getTotalCountPostsByPersonId(long personId) {
         return postRepository.getTotalCountPostsByPersonId(personId);
     }
@@ -93,7 +88,6 @@ public class PostService implements IPostService {
      * @param author - автор поста;
      * @return - возвращает WallPost для нового поста.
      */
-    @Override
     public WallPostResponse createNewWallPost(Post post, PersonResponse author) {
         return WallPostResponse.builder()
                 .id(post.getId())
@@ -115,7 +109,6 @@ public class PostService implements IPostService {
      * @param comments - комментарии к посту;
      * @return - возвращает WallPost для существующего поста.
      */
-    @Override
     public WallPostResponse getExistsWallPost(Post post, PersonResponse author, List<CommentResponse> comments) {
         return WallPostResponse.builder()
                 .id(post.getId())
@@ -135,7 +128,6 @@ public class PostService implements IPostService {
      *
      * @param postId - идентификатор поста;
      */
-    @Override
     public void putLike(long postId) {
         Post post = findById(postId);
         post.setLikesCount(post.getLikesCount() + 1);
@@ -147,7 +139,6 @@ public class PostService implements IPostService {
      *
      * @param postId - идентификатор поста;
      */
-    @Override
     public void removeLike(long postId) {
         Post post = findById(postId);
         post.setLikesCount(post.getLikesCount() - 1);

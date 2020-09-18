@@ -1,4 +1,4 @@
-package sn.service.impl;
+package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,8 +7,6 @@ import sn.model.PostLike;
 import sn.repositories.CommentLikeRepository;
 import sn.repositories.PersonRepository;
 import sn.repositories.PostLikeRepository;
-import sn.service.ILikeService;
-import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
@@ -17,10 +15,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class LikeService implements ILikeService {
+public class LikeService {
     private final CommentLikeRepository commentLikeRepository;
     private final CommentService commentService;
-    private final IPostService postService;
+    private final PostService postService;
     private final PersonRepository personRepository;
     private final PostLikeRepository postLikeRepository;
 
@@ -37,7 +35,6 @@ public class LikeService implements ILikeService {
      * @param itemId   - идентификатор объекта, у которого проверяется наличие лайка.
      * @return - возвращает true, если лайк стоит, иначе false.
      */
-    @Override
     public boolean likeExists(long personId, String likeType, long itemId) {
         switch (likeType) {
             case COMMENT_LIKE:
@@ -56,7 +53,6 @@ public class LikeService implements ILikeService {
      * @param itemId   - идентификатор объекта, у которого проверяется количество лайков.
      * @return - возвращает количество лайков у объекта.
      */
-    @Override
     public int getCount(String likeType, long itemId) {
         switch (likeType) {
             case COMMENT_LIKE:
@@ -75,7 +71,6 @@ public class LikeService implements ILikeService {
      * @param itemId   - идентификатор объекта, у которого стоит лайк.
      * @return - возвращает список ID пользователей, поставивших лайк.
      */
-    @Override
     public List<Long> getUsersOfLike(String likeType, long itemId) {
         List<Long> users = new ArrayList<>();
         switch (likeType) {
@@ -99,7 +94,6 @@ public class LikeService implements ILikeService {
      * @param likeType - тип лайка (под постом или комментарием);
      * @param itemId   - идентификатор объекта, которому ставится лайк.
      */
-    @Override
     public void putLike(long personId, String likeType, long itemId) {
         switch (likeType) {
             case COMMENT_LIKE:
@@ -117,7 +111,6 @@ public class LikeService implements ILikeService {
      * @param likeType - тип лайка (под постом или комментарием);
      * @param itemId   - идентификатор объекта, которому ставится лайк.
      */
-    @Override
     public void removeLike(long personId, String likeType, long itemId) {
         switch (likeType) {
             case COMMENT_LIKE:

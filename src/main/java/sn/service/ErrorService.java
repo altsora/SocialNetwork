@@ -1,15 +1,13 @@
-package sn.service.impl;
+package sn.service;
 
 import org.springframework.stereotype.Service;
 import sn.api.response.ErrorResponse;
-import sn.service.IErrorService;
 
 @Service
-public class ErrorService implements IErrorService {
+public class ErrorService {
     private static final String BAD_REQUEST = "Bad request";
     private static final String INVALID_REQUEST = "Invalid request";
 
-    @Override
     public ErrorResponse userNotFoundInDialog(long personId, long dialogId) {
         return ErrorResponse.builder()
                 .error(BAD_REQUEST)
@@ -17,7 +15,6 @@ public class ErrorService implements IErrorService {
                 .build();
     }
 
-    @Override
     public ErrorResponse dialogNotFound(long dialogId) {
         return ErrorResponse.builder()
                 .error(BAD_REQUEST)
@@ -25,7 +22,6 @@ public class ErrorService implements IErrorService {
                 .build();
     }
 
-    @Override
     public ErrorResponse personNotFoundById(long personId) {
         return ErrorResponse.builder()
                 .error(BAD_REQUEST)
@@ -33,7 +29,6 @@ public class ErrorService implements IErrorService {
                 .build();
     }
 
-    @Override
     public ErrorResponse unauthorized() {
         return ErrorResponse.builder()
                 .error(INVALID_REQUEST)
@@ -41,7 +36,6 @@ public class ErrorService implements IErrorService {
                 .build();
     }
 
-    @Override
     public ErrorResponse messageNotFound(long messageId) {
         return ErrorResponse.builder()
                 .error(BAD_REQUEST)
@@ -49,7 +43,6 @@ public class ErrorService implements IErrorService {
                 .build();
     }
 
-    @Override
     public ErrorResponse unknownLikeType(String likeType) {
         return ErrorResponse.builder()
                 .error(BAD_REQUEST)
