@@ -9,10 +9,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import sn.api.requests.MessageSendRequest;
 import sn.api.response.AbstractResponse;
 import sn.api.response.ServiceResponse;
-import sn.service.impl.DialogService;
-import sn.service.impl.MessageService;
+import sn.service.DialogService;
 import sn.utils.ErrorUtil;
 
 import static org.junit.Assert.assertNotNull;
@@ -32,13 +32,12 @@ public class DialogControllerTest extends AbstractWebController {
 
     @Autowired
     private DialogController dialogController;
-    @MockBean
-    private MessageService messageService;
+
     @MockBean
     private DialogService dialogService;
 
     private static ResponseEntity<ServiceResponse<AbstractResponse>> badRequestResponse = ErrorUtil.badRequest("bad");
-    private static ResponseEntity<ServiceResponse> okResponse = ResponseEntity.ok(new ServiceResponse<>());
+    private static ResponseEntity<ServiceResponse<AbstractResponse>> okResponse = ResponseEntity.ok(new ServiceResponse<>());
     private static long dialogId = 1;
 
     private static String asJsonString(final Object obj) {
@@ -486,7 +485,7 @@ public class DialogControllerTest extends AbstractWebController {
      * Изменить статус набора текста пользователем в диалоге. OK.
      */
     @Test
-    public void changeTypingStatusIsOk() throws Exception{
+    public void changeTypingStatusIsOk() throws Exception {
         long personId = 3;
 
         Mockito.doReturn(okResponse)
@@ -500,8 +499,82 @@ public class DialogControllerTest extends AbstractWebController {
                 .andReturn();
     }
 
+    /**
+     * Изменить статус набора текста пользователем в диалоге. Bad request.
+     */
     @Test
-    public void sendMessage() {
+    public void changeTypingStatusIsBadRequest() throws Exception {
+        long personId = 3;
+
+        Mockito.doReturn(badRequestResponse)
+                .when(dialogService)
+                .changeTypingStatus(dialogId, personId);
+
+        mockMvc.perform(post("/dialogs/{id}/activity/{user_id}", dialogId, personId))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    /**
+     * Отправка сообщения. OK.
+     */
+    @Test
+    public void sendMessageIsOk() throws Exception {
+        MessageSendRequest sendRequest = new MessageSendRequest();
+
+        Mockito.doReturn(okResponse)
+                .when(dialogService)
+                .sendMessage(dialogId, sendRequest);
+
+        mockMvc.perform(post("/dialogs/{id}/messages", dialogId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(sendRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    /**
+     * Отправка сообщения. Bad request.
+     */
+    @Test
+    public void sendMessageIsBadRequest() throws Exception {
+        MessageSendRequest sendRequest = new MessageSendRequest();
+
+        Mockito.doReturn(badRequestResponse)
+                .when(dialogService)
+                .sendMessage(dialogId, sendRequest);
+
+        mockMvc.perform(post("/dialogs/{id}/messages", dialogId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(sendRequest)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    /**
+     * Отправка сообщения. Unauthorized.
+     */
+    @Test
+    public void sendMessageIsUnauthorized() throws Exception {
+        MessageSendRequest sendRequest = new MessageSendRequest();
+
+        Mockito.doReturn(ErrorUtil.unauthorized())
+                .when(dialogService)
+                .sendMessage(dialogId, sendRequest);
+
+        mockMvc.perform(post("/dialogs/{id}/messages", dialogId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(sendRequest)))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
     }
 
     /**
@@ -511,10 +584,9 @@ public class DialogControllerTest extends AbstractWebController {
      */
     @Test
     public void removeMessageIsOk() throws Exception {
-        long dialogId = 1;
         long messageId = 2;
 
-        Mockito.doReturn(ResponseEntity.ok(new ServiceResponse<>()))
+        Mockito.doReturn(okResponse)
                 .when(dialogService)
                 .removeMessage(dialogId, messageId);
 
@@ -532,10 +604,9 @@ public class DialogControllerTest extends AbstractWebController {
      */
     @Test
     public void removeMessageIsBadRequest() throws Exception {
-        long dialogId = 1;
         long messageId = 2;
 
-        Mockito.doReturn(ErrorUtil.badRequest("bad"))
+        Mockito.doReturn(badRequestResponse)
                 .when(dialogService)
                 .removeMessage(dialogId, messageId);
 
@@ -546,11 +617,89 @@ public class DialogControllerTest extends AbstractWebController {
                 .andReturn();
     }
 
+    /**
+     * Редактирование сообщения. OK.
+     *
+     * @throws Exception
+     */
     @Test
-    public void editMessage() {
+    public void editMessageIsOk() throws Exception {
+        long messageId = 2;
+        MessageSendRequest sendRequest = new MessageSendRequest();
+
+        Mockito.doReturn(okResponse)
+                .when(dialogService)
+                .editMessage(dialogId, messageId, sendRequest);
+
+        mockMvc.perform(put("/dialogs/{dialog_id}/messages/{message_id}", dialogId, messageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(sendRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
     }
 
+    /**
+     * Редактирование сообщения. Bad request.
+     *
+     * @throws Exception
+     */
     @Test
-    public void recoverMessage() {
+    public void editMessageIsBadRequest() throws Exception {
+        long messageId = 2;
+        MessageSendRequest sendRequest = new MessageSendRequest();
+
+        Mockito.doReturn(badRequestResponse)
+                .when(dialogService)
+                .editMessage(dialogId, messageId, sendRequest);
+
+        mockMvc.perform(put("/dialogs/{dialog_id}/messages/{message_id}", dialogId, messageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(sendRequest)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    /**
+     * Восстановление удаленного сообщения. OK.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void recoverMessageIsOk() throws Exception {
+        long messageId = 2;
+
+        Mockito.doReturn(okResponse)
+                .when(dialogService)
+                .recoverMessage(dialogId, messageId);
+
+        mockMvc.perform(put("/dialogs/{dialog_id}/messages/{message_id}/recover", dialogId, messageId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+    }
+
+    /**
+     * Восстановление удаленного сообщения. Bad request.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void recoverMessageIsBadRequest() throws Exception {
+        long messageId = 2;
+
+        Mockito.doReturn(okResponse)
+                .when(dialogService)
+                .recoverMessage(dialogId, messageId);
+
+        mockMvc.perform(put("/dialogs/{dialog_id}/messages/{message_id}/recover", dialogId, messageId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
     }
 }

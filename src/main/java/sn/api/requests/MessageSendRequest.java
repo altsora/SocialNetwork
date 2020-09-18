@@ -1,16 +1,12 @@
 package sn.api.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
-@AllArgsConstructor
+@Data
+@NoArgsConstructor
 public class MessageSendRequest {
     @JsonProperty("message_text")
     private String messageText;
-    // С одним полем десериализация не работает, потому добавлено второе поле для решения проблемы (или есть иные варианты)
-    private String var;
 }
