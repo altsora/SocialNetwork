@@ -12,16 +12,16 @@ import sn.api.response.MessageResponse;
 import sn.api.response.SimpleServiceResponse;
 import sn.api.response.ServiceResponseDataList;
 import sn.api.response.tagresponse.TagResponseDTO;
-import sn.service.ITagService;
+import sn.service.TagService;
 
 @RestController
 @RequestMapping("/tags")
 public class TagController {
 
-    private ITagService tagService;
+    private TagService tagService;
 
     @Autowired
-    public TagController(ITagService tagService) {
+    public TagController(TagService tagService) {
         this.tagService = tagService;
     }
 

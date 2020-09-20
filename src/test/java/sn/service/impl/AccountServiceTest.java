@@ -1,10 +1,16 @@
 package sn.service.impl;
 
+import java.util.Optional;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import sn.model.Person;
+import sn.model.dto.account.UserRegistrationRequest;
 import sn.repositories.PersonRepository;
 import sn.service.AccountService;
 import sn.service.MailSenderService;

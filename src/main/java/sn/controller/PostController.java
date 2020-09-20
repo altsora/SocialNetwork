@@ -1,5 +1,6 @@
 package sn.controller;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,10 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import sn.api.requests.PostCommentCreateRequest;
 import sn.api.requests.PostEditRequest;
 import sn.api.response.*;
-import sn.service.ICommentService;
-import sn.service.IPostService;
-
-import java.util.List;
+import sn.service.CommentService;
+import sn.service.PostService;
 
 /**
  * Класс PostController.
@@ -25,10 +24,10 @@ import java.util.List;
 public class PostController {
 
     @Autowired
-    private final IPostService postService;
+    private final PostService postService;
 
     @Autowired
-    private final ICommentService commentService;
+    private final CommentService commentService;
 
     /**
      * Метод findPosts.

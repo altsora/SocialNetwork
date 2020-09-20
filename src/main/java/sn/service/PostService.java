@@ -1,4 +1,4 @@
-package sn.service.impl;
+package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +14,6 @@ import sn.model.Person;
 import sn.model.Post;
 import sn.model.enums.StatusWallPost;
 import sn.repositories.PostRepository;
-import sn.service.IAccountService;
-import sn.service.ICommentService;
-import sn.service.IPostService;
 import sn.utils.TimeUtil;
 
 import java.time.Instant;
@@ -28,15 +25,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PostService implements IPostService {
+public class PostService {
     private final PostRepository postRepository;
 
     @Autowired
     @Qualifier("account-service")
-    private IAccountService accountService;
+    private AccountService accountService;
 
     @Autowired
-    private ICommentService commentService;
+    private CommentService commentService;
 
     /**
      * Поиск поста по его идентификатору.
@@ -44,7 +41,6 @@ public class PostService implements IPostService {
      * @param postId - идентификатор поста;
      * @return - возвращает пост, если существует, иначе null.
      */
-    @Override
     public Post findById(long postId) {
         return postRepository
                 .findById(postId)
@@ -59,7 +55,6 @@ public class PostService implements IPostService {
      * @param itemPerPage - Количество публикаций из результирующего списка, которые представлены для отображения.
      * @return - получение результирующего списка с публикациями на стене пользователя;.
      */
-    @Override
     public List<Post> findAllByPersonId(long personId, int offset, int itemPerPage) {
         int pageNumber = offset / itemPerPage;
         Sort sort = Sort.by(Sort.Direction.DESC, PostRepository.POST_TIME);
@@ -76,7 +71,6 @@ public class PostService implements IPostService {
      * @param postTime - дата публикации поста;
      * @return - возвращает только что добавленный в базу пост.
      */
-    @Override
     public Post addPost(Person author, String title, String text, LocalDateTime postTime) {
         Post post = new Post();
         post.setTime(postTime);
@@ -92,7 +86,6 @@ public class PostService implements IPostService {
      * @param personId - идентификатор пользователя;
      * @return - возвращает общее количество постов у пользователя с указанным идентификатором.
      */
-    @Override
     public int getTotalCountPostsByPersonId(long personId) {
         return postRepository.getTotalCountPostsByPersonId(personId);
     }
@@ -104,7 +97,6 @@ public class PostService implements IPostService {
      * @param author - автор поста;
      * @return - возвращает WallPost для нового поста.
      */
-    @Override
     public WallPostResponse createNewWallPost(Post post, PersonResponse author) {
         return WallPostResponse.builder()
                 .id(post.getId())
@@ -126,7 +118,6 @@ public class PostService implements IPostService {
      * @param comments - комментарии к посту;
      * @return - возвращает WallPost для существующего поста.
      */
-    @Override
     public WallPostResponse getExistsWallPost(Post post, PersonResponse author, List<CommentResponse> comments) {
         return WallPostResponse.builder()
                 .id(post.getId())
@@ -147,7 +138,6 @@ public class PostService implements IPostService {
      *
      * @return Person или null, если текущий пользователь не аутентифицирован.
      */
-    @Override
     public Person findCurrentUser() {
         return accountService.findCurrentUser();
     }
@@ -163,7 +153,6 @@ public class PostService implements IPostService {
      * @param itemPerPage Количество элементов на страницу.
      * @return возвращает список публикации
      */
-    @Override
     public List<PostResponse> findPosts(String text, long dateFrom, long dateTo,
                                         int offset, int itemPerPage) {
         int pageNumber = offset / itemPerPage;
@@ -209,7 +198,6 @@ public class PostService implements IPostService {
      * @param id ID публикации.
      * @return возвращает публикацию.
      */
-    @Override
     public PostResponse findPostById(long id) {
         Post post = findById(id);
         PostResponse postResponse = new PostResponse();
@@ -242,7 +230,6 @@ public class PostService implements IPostService {
      * @param publishDate Отложить до определённой даты.
      * @return возвращает публикацию.
      */
-    @Override
     public PostResponse editPost
     (long id, long publishDate, PostEditRequest postEditRequest) {
         Post post = postRepository.getOne(id);
@@ -286,7 +273,6 @@ public class PostService implements IPostService {
      * @param id ID публикации.
      * @return id удалённой публикации.
      */
-    @Override
     public IdResponse deletePost(long id) {
         Post post = postRepository.getOne(id);
         post.setDeleted(true);
@@ -303,7 +289,6 @@ public class PostService implements IPostService {
      * @param id ID публикации.
      * @return возвращает публикацию.
      */
-    @Override
     public PostResponse recoverPost(long id) {
         Post post = postRepository.getOne(id);
         post.setDeleted(false);
@@ -338,7 +323,6 @@ public class PostService implements IPostService {
      * @param id ID публикации.
      * @see MessageResponse
      */
-    @Override
     public MessageResponse complaintPost(long id) {
         Post post = findById(id);
         MessageResponse response = new MessageResponse();
@@ -349,7 +333,6 @@ public class PostService implements IPostService {
             return response;
     }
 
-    @Override
     public MessageResponse complaintComment(long id, long commentId) {
         Post post = findById(id);
         MessageResponse response = new MessageResponse();
@@ -369,4 +352,27 @@ public class PostService implements IPostService {
                 return response;
         }
     }
+
+    /**
+     * Метод ставит лайк под постом.
+     *
+     * @param postId - идентификатор поста;
+     */
+    public void putLike(long postId) {
+        Post post = findById(postId);
+        post.setLikesCount(post.getLikesCount() + 1);
+        postRepository.saveAndFlush(post);
+    }
+
+    /**
+     * Метод убирает лайк под постом.
+     *
+     * @param postId - идентификатор поста;
+     */
+    public void removeLike(long postId) {
+        Post post = findById(postId);
+        post.setLikesCount(post.getLikesCount() - 1);
+        postRepository.saveAndFlush(post);
+    }
+
 }

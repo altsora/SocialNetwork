@@ -27,7 +27,7 @@ public class SecurityTokenConfig extends WebSecurityConfigurerAdapter {
     private final AccountService accountService;
 
     public SecurityTokenConfig(JwtUserDetailsService userDetailsService, JwtConfig jwtConfig,
-                               PersonRepository personRepository, AccountService accountService) {
+        PersonRepository personRepository, AccountService accountService) {
         this.userDetailsService = userDetailsService;
         this.jwtConfig = jwtConfig;
         this.personRepository = personRepository;
@@ -37,25 +37,25 @@ public class SecurityTokenConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
-                .and()
-                .authorizeRequests().antMatchers("/account/register", "/account/password/recovery").permitAll()
-                .and()
-                .addFilterBefore(new JwtTokenAuthFilter(jwtConfig), JwtUsernameAndPasswordAuthFilter.class)
-                .addFilterAfter(new JwtUsernameAndPasswordAuthFilter(authenticationManager(), jwtConfig, personRepository, accountService), JwtTokenAuthFilter.class)
-                .authorizeRequests()
-                .antMatchers("/api/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .formLogin()
-                .usernameParameter("email")
-                .permitAll()
-                .and()
-                .logout()
-                .permitAll();
+            .csrf().disable()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .exceptionHandling().authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+            .and()
+            .authorizeRequests().antMatchers("/account/register", "/account/password/recovery").permitAll()
+            .and()
+            .addFilterBefore(new JwtTokenAuthFilter(jwtConfig), JwtUsernameAndPasswordAuthFilter.class)
+            .addFilterAfter(new JwtUsernameAndPasswordAuthFilter(authenticationManager(), jwtConfig, personRepository, accountService), JwtTokenAuthFilter.class)
+            .authorizeRequests()
+            .antMatchers("/api/**").permitAll()
+            .anyRequest().authenticated()
+            .and()
+            .formLogin()
+            .usernameParameter("email")
+            .permitAll()
+            .and()
+            .logout()
+            .permitAll();
     }
 
     @Override

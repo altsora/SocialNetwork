@@ -15,7 +15,6 @@ import sn.api.response.PersonResponse;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
 import sn.repositories.PersonRepository;
-import sn.service.MailSenderService;
 import sn.utils.TimeUtil;
 
 import javax.transaction.Transactional;
