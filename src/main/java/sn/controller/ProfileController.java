@@ -1,20 +1,20 @@
 package sn.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sn.api.ResponseDataMessage;
+import sn.api.response.ResponseDataMessage;
 import sn.api.requests.PersonEditRequest;
 import sn.api.requests.WallPostRequest;
 import sn.api.response.*;
 import sn.model.Person;
 import sn.model.Post;
 import sn.repositories.PersonRepository;
-import sn.service.IAccountService;
-import sn.service.ICommentService;
-import sn.service.IPostService;
+import sn.service.AccountService;
+import sn.service.CommentService;
+import sn.service.PostService;
 import sn.utils.TimeUtil;
 
 import java.time.LocalDateTime;
@@ -24,14 +24,23 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class ProfileController {
-    private final IAccountService accountService;
-    private final ICommentService commentService;
-    private final IPostService postService;
+    private final AccountService accountService;
+    private final CommentService commentService;
+    private final PostService postService;
+    private final PersonRepository personRepository;
 
     @Autowired
-    private PersonRepository personRepository;
+    public ProfileController(
+            AccountService accountService,
+            CommentService commentService,
+            PostService postService,
+            PersonRepository personRepository) {
+        this.accountService = accountService;
+        this.commentService = commentService;
+        this.postService = postService;
+        this.personRepository = personRepository;
+    }
 
     //==================================================================================================================
 

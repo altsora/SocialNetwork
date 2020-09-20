@@ -1,13 +1,12 @@
-package sn.service.impl;
+package sn.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sn.api.requests.PersonEditRequest;
 import sn.api.response.CityResponse;
@@ -16,7 +15,6 @@ import sn.api.response.PersonResponse;
 import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
 import sn.repositories.PersonRepository;
-import sn.service.IAccountService;
 import sn.service.MailSenderService;
 import sn.utils.TimeUtil;
 
@@ -36,8 +34,8 @@ import java.util.concurrent.CompletableFuture;
  * @version 1.0
  */
 @Slf4j
-@Service("account-service")
-public class AccountService implements IAccountService {
+@Service
+public class AccountService {
 
     @Autowired
     private PersonRepository personRepository;
@@ -51,13 +49,16 @@ public class AccountService implements IAccountService {
     @Autowired
     private MailSenderService mailSenderService;
 
+    public boolean exists(long personId) {
+        return personRepository.existsById(personId);
+    }
+
     /**
      * Изменяет статус блокировки пользователя на противоположный.
      *
      * @param personId - идентификатор пользователя.
      * @return - возврат true, если статус изменён, иначе false.
      */
-    @Override
     public boolean changeUserLockStatus(long personId) {
         Person person = personRepository.findById(personId).orElse(null);
         if (person == null) {
@@ -76,7 +77,6 @@ public class AccountService implements IAccountService {
      * @param person - пользователя;
      * @return - возвращается обновлённый пользователь.
      */
-    @Override
     public Person updatePerson(Person person, PersonEditRequest personEditRequest) {
         person.setFirstName(personEditRequest.getFirstName());
         person.setLastName(personEditRequest.getLastName());
@@ -96,7 +96,6 @@ public class AccountService implements IAccountService {
      * @param person - объект класса Person.
      * @return - возврат true, если статус изменён, иначе false.
      */
-    @Override
     public PersonResponse getPersonResponse(Person person) {
         //TODO: Нет данных, откуда берутся город и страна
         return PersonResponse.builder()
@@ -128,7 +127,6 @@ public class AccountService implements IAccountService {
      * @param itemPerPage - количество элементов на страницу;
      * @return - возвращает список пользователей, подходящих по заданным параметрам.
      */
-    @Override
     public List<Person> searchPersons(String firstName, String lastName, Integer ageFrom, Integer ageTo, Integer offset, Integer itemPerPage) {
         int pageNumber = offset / itemPerPage;
         Pageable pageable = PageRequest.of(pageNumber, itemPerPage);
@@ -145,7 +143,6 @@ public class AccountService implements IAccountService {
      * база данных недоступна.
      * @see UserRegistrationRequest ;
      */
-    @Override
     public boolean register(UserRegistrationRequest userRegistrationRequest) {
         if (!userRegistrationRequest.getPasswd1().equals(userRegistrationRequest.getPasswd2())) {
             log.warn("Passwords mismatch. Registration cancelled.");
@@ -154,7 +151,7 @@ public class AccountService implements IAccountService {
         if (personRepository.findByEmail(userRegistrationRequest.getEmail()).isPresent()) {
             log.error("User [{}] is exists.", userRegistrationRequest.getEmail());
             return false;
-        };
+        }
         Person person = new Person();
         person.setFirstName(userRegistrationRequest.getFirstName());
         person.setLastName(userRegistrationRequest.getLastName());
@@ -172,11 +169,10 @@ public class AccountService implements IAccountService {
      * @param email почта пользователя.
      * @return true - новый пароль сохранен и отправлен пользователю, false - person не найден в базе, база недоступна.
      */
-    @Override
     public boolean recoveryPassword(String email) {
         Optional<Person> personOpt = personRepository.findByEmail(email);
         if (personOpt.isEmpty()) {
-            log.warn("Person [{}] not found for password recovery." , email);
+            log.warn("Person [{}] not found for password recovery.", email);
             return false;
         }
         Person person = personOpt.get();
@@ -196,7 +192,6 @@ public class AccountService implements IAccountService {
      * @param password новый пароль.
      * @return true - если пароль изменен, false - если пользователь не найден в базе, база недоступна.
      */
-    @Override
     @Transactional
     public boolean setNewPassword(String password) {
         Optional<Person> personOpt = personRepository.findByEmail(authentication.getName());
@@ -222,7 +217,6 @@ public class AccountService implements IAccountService {
      * @return true - если адрес измене, false - если существует пользователь с таким же почтовым адресом,
      * пользователь не найден, база недоступна.
      */
-    @Override
     @Transactional
     public boolean changeEmail(String newEmail) {
         Optional<Person> personOpt = personRepository.findByEmail(authentication.getName());

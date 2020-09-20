@@ -23,6 +23,7 @@ flyway:
   password: snet
 
 server:
+  port: 9000
   servlet:
     contextPath: /api/v1
 

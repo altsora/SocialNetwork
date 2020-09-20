@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import sn.api.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
 import sn.model.dto.account.UserRegistrationRequest;
-import sn.service.IAccountService;
+import sn.service.AccountService;
 
 /**
  * Класс AccountController.
@@ -24,8 +24,7 @@ import sn.service.IAccountService;
 public class AccountController {
 
     @Autowired
-    @Qualifier("account-service")
-    private IAccountService accountService;
+    private AccountService accountService;
 
     /**
      * Метод register.

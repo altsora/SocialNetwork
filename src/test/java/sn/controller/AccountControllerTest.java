@@ -2,19 +2,13 @@ package sn.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 import sn.model.dto.account.UserRegistrationRequest;
-import sn.service.impl.AccountService;
+import sn.service.AccountService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -31,22 +25,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @version 1.0
  * @see AccountController
  */
-@RunWith(SpringRunner.class)
-@AutoConfigureMockMvc
-@SpringBootTest
-public class AccountControllerTest {
+public class AccountControllerTest extends AbstractWebController {
 
-    private final static String USER_EMAIL = "bro@malta.com";
-    private final static String USER_PASSWORD = "Qwerty0987!";
-
-    @Autowired
-    private MockMvc mockMvc;
     @Autowired
     private AccountController accountController;
     @MockBean
     private AccountService accountService;
-    @MockBean
-    private PasswordEncoder passwordEncoder;
 
     private static String asJsonString(final Object obj) {
         try {
@@ -73,7 +57,7 @@ public class AccountControllerTest {
     public void whenRegistrateNewUserThenStatusCodeOKAndRegistrationSuccessful() throws Exception {
         UserRegistrationRequest userRegistrationRequest = new UserRegistrationRequest();
         Mockito.doReturn(true).when(accountService).register(userRegistrationRequest);
-        this.mockMvc.perform(post("/account/register")
+        mockMvc.perform(post("/account/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(userRegistrationRequest)))
                 .andDo(print())
