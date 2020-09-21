@@ -1,11 +1,11 @@
 package sn.api.response;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
-//@Builder
+@Setter
 @RequiredArgsConstructor
 public class CountryResponse {
     private final int id = 1;

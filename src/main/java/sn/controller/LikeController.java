@@ -1,5 +1,6 @@
 package sn.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.requests.LikeRequest;
@@ -17,6 +18,7 @@ public class LikeController {
     private final String COMMENT_LIKE = "Comment";
     private final String POST_LIKE = "Post";
 
+    @Autowired
     public LikeController(
             AccountService accountService,
             LikeService likeService) {

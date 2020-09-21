@@ -139,7 +139,7 @@ public class PostController {
     public SimpleServiceResponse<CommentResponse> createComment(
         @PathVariable(value = "id") long id, PostCommentCreateRequest postCommentCreateRequest) {
 
-        return new SimpleServiceResponse<>(commentService.createPostComment(id,
+        return new SimpleServiceResponse<>(postService.createPostComment(id,
             postCommentCreateRequest));
     }
 
@@ -149,7 +149,7 @@ public class PostController {
         @PathVariable(value = "comment_id") long commentId,
         PostCommentCreateRequest postCommentCreateRequest) {
 
-        return new SimpleServiceResponse<>(commentService.editComment(id, commentId,
+        return new SimpleServiceResponse<>(postService.editComment(id, commentId,
             postCommentCreateRequest));
     }
 
@@ -158,7 +158,7 @@ public class PostController {
         @PathVariable(value = "id") long id,
         @PathVariable(value = "comment_id") long commentId) {
 
-        return new SimpleServiceResponse<>(commentService.deleteComment(id, commentId));
+        return new SimpleServiceResponse<>(postService.deleteComment(id, commentId));
     }
 
     @PutMapping("/{id}/comments/{comment_id}/recover")
@@ -166,7 +166,7 @@ public class PostController {
         @PathVariable(value = "id") long id,
         @PathVariable(value = "comment_id") long commentId) {
 
-        return new SimpleServiceResponse<>(commentService.recoverComment(id, commentId));
+        return new SimpleServiceResponse<>(postService.recoverComment(id, commentId));
     }
 
     /**

@@ -1,6 +1,7 @@
 package sn.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sn.model.CommentLike;
 import sn.model.PostLike;
@@ -14,12 +15,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class LikeService {
     private final CommentLikeRepository commentLikeRepository;
     private final CommentService commentService;
     private final PostService postService;
     private final PersonRepository personRepository;
+
+    @Autowired
+    public LikeService(CommentLikeRepository commentLikeRepository,
+        CommentService commentService, PostService postService,
+        PersonRepository personRepository, PostLikeRepository postLikeRepository) {
+        this.commentLikeRepository = commentLikeRepository;
+        this.commentService = commentService;
+        this.postService = postService;
+        this.personRepository = personRepository;
+        this.postLikeRepository = postLikeRepository;
+    }
+
     private final PostLikeRepository postLikeRepository;
 
     public static final String COMMENT_LIKE = "Comment";

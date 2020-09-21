@@ -3,6 +3,7 @@ package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sn.api.requests.PostCommentCreateRequest;
@@ -28,8 +29,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentService {
 
+    @Autowired
     private final CommentRepository commentRepository;
-    private final PostService postService;
 
     //==================================================================================================================
 
@@ -72,70 +73,4 @@ public class CommentService {
         }
         return commentResponses;
     }
-
-    public CommentResponse createPostComment(long id,
-        PostCommentCreateRequest postCommentCreateRequest) {
-
-        Comment comment = new Comment();
-        Post post = postService.findById(id);
-        if (post != null) {
-            comment.setParent(findById(postCommentCreateRequest.getParentId()));
-            comment.setText(postCommentCreateRequest.getCommentText());
-            commentRepository.save(comment);
-            post.getComments().add(comment);
-            return commentToCommentResponse(comment);
-        } else {
-            return new CommentResponse();
-        }
-    }
-
-    public CommentResponse editComment(long id, long commentId,
-        PostCommentCreateRequest postCommentCreateRequest) {
-        Post post = postService.findById(id);
-        if (commentRepository.findById(commentId).isPresent()) {
-            Comment comment = commentRepository.findById(commentId).get();
-            comment.setText(postCommentCreateRequest.getCommentText());
-            commentRepository.saveAndFlush(comment);
-            post.getComments().add(comment);
-            return commentToCommentResponse(comment);
-        } else {
-            return new CommentResponse();
-        }
-    }
-
-    public IdResponse deleteComment(long id, long commentId) {
-        Post post = postService.findById(id);
-        Comment comment = findById(commentId);
-        if (post != null) {
-            post.getComments().remove(comment);
-        }
-
-        IdResponse response = new IdResponse();
-        response.setId(commentId);
-        return response;
-    }
-
-    public CommentResponse recoverComment(long id, long commentId) {
-        Post post = postService.findById(id);
-        if (post != null && commentRepository.findById(commentId).isPresent()) {
-            Comment comment = commentRepository.findById(commentId).get();
-            post.getComments().add(comment);
-            return commentToCommentResponse(comment);
-        } else {
-            return new CommentResponse();
-        }
-    }
-
-    private CommentResponse commentToCommentResponse(Comment comment) {
-        CommentResponse commentResponse = new CommentResponse();
-        commentResponse.setId(comment.getId());
-        commentResponse.setAuthorId(comment.getAuthor().getId());
-        commentResponse.setBlocked(comment.isBlocked());
-        commentResponse.setTime(TimeUtil.getTimestampFromLocalDateTime(comment.getTime()));
-        commentResponse.setCommentText(comment.getText());
-        commentResponse.setPostId(comment.getPost().getId());
-        return commentResponse;
-    }
-
-
 }

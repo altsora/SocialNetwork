@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.api.requests.MessageSendRequest;
@@ -18,7 +19,9 @@ import java.util.List;
 @RequestMapping("/dialogs")
 @RequiredArgsConstructor
 public class DialogController {
-    private final DialogService dialogService;
+
+    @Autowired
+    private DialogService dialogService;
 
     /**
      * Метод getUserDialogList().
