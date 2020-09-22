@@ -18,12 +18,12 @@ public class ServiceResponseDataList<T extends AbstractResponse> {
     private List<T> data;
 
     public ServiceResponseDataList(String error) {
-        this.timestamp = TimeUtil.getTimestampFromLocalDateTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
+        this.timestamp = TimeUtil.getTimestampFromLocalDateTime(TimeUtil.now());
         this.error = error;
     }
 
     public ServiceResponseDataList(int total, int offset, int perPage, List<T> data) {
-        this.timestamp = TimeUtil.getTimestampFromLocalDateTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
+        this.timestamp = TimeUtil.getTimestampFromLocalDateTime(TimeUtil.now());
         this.total = total;
         this.offset = offset;
         this.perPage = perPage;

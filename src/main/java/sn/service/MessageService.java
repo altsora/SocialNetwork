@@ -60,7 +60,7 @@ public class MessageService {
 
     public MessageFullResponse sendMessage(Person author, long dialogId, String messageText) {
         Message message = new Message();
-        message.setTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
+        message.setTime(TimeUtil.now());
         message.setAuthor(author);
         //TODO: пока не ясно, кто получатель
         message.setRecipient(null);
