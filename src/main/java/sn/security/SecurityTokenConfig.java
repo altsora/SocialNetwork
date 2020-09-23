@@ -1,6 +1,7 @@
 package sn.security;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,7 +28,8 @@ public class SecurityTokenConfig extends WebSecurityConfigurerAdapter {
     private final AccountService accountService;
 
     public SecurityTokenConfig(JwtUserDetailsService userDetailsService, JwtConfig jwtConfig,
-                               PersonRepository personRepository, AccountService accountService) {
+                               PersonRepository personRepository,
+                               @Lazy AccountService accountService) {
         this.userDetailsService = userDetailsService;
         this.jwtConfig = jwtConfig;
         this.personRepository = personRepository;

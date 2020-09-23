@@ -163,7 +163,7 @@ public class MessageServiceTest {
 
         Message message = new Message();
         message.setId(1);
-        message.setTime(LocalDateTime.now(TimeUtil.TIME_ZONE));
+        message.setTime(TimeUtil.now());
         message.setAuthor(author);
         message.setRecipient(null);
         message.setMessageText(messageText);

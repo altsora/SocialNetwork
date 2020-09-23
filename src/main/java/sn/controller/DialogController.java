@@ -123,7 +123,7 @@ public class DialogController {
      * @return коллекция Id присоединенных к диалогу пользователей.
      */
     @PutMapping("/{id}/users/join")
-    public ResponseEntity<ServiceResponse<DialogResponse>> joinToDialog(@PathVariable long dialogId,
+    public ResponseEntity<ServiceResponse<DialogResponse>> joinToDialog(@PathVariable("id") long dialogId,
                                                                         @RequestBody String link) {
         return dialogService.joinUserToDialog(dialogId, link);
     }
@@ -140,7 +140,7 @@ public class DialogController {
      * @return список сообщений.
      */
     @GetMapping("/{id}/messages")
-    public ResponseEntity<ServiceResponse<DialogResponse>> getMessages(@PathVariable long dialogId,
+    public ResponseEntity<ServiceResponse<DialogResponse>> getMessages(@PathVariable("id") long dialogId,
                                                                        @RequestParam(required = false) String query,
                                                                        @RequestParam int offset,
                                                                        @RequestParam int itemPerPage) {
@@ -216,8 +216,8 @@ public class DialogController {
      */
     @DeleteMapping("/{dialog_id}/messages/{message_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> removeMessage(
-            @PathVariable("dialog_id ") long dialogId,
-            @PathVariable("message_id ") long messageId
+            @PathVariable("dialog_id") long dialogId,
+            @PathVariable("message_id") long messageId
     ) {
         return dialogService.removeMessage(dialogId, messageId);
     }
@@ -232,8 +232,8 @@ public class DialogController {
      */
     @PutMapping("/{dialog_id}/messages/{message_id}")
     public ResponseEntity<ServiceResponse<AbstractResponse>> editMessage(
-            @PathVariable("dialog_id ") long dialogId,
-            @PathVariable("message_id ") long messageId,
+            @PathVariable("dialog_id") long dialogId,
+            @PathVariable("message_id") long messageId,
             @RequestBody MessageSendRequest messageSendRequest
     ) {
         return dialogService.editMessage(dialogId, messageId, messageSendRequest);
