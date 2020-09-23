@@ -8,9 +8,11 @@ import javax.persistence.*;
  * @author Andrey.Kazakov
  * @date 04.08.2020
  */
-@Data
+
 @Builder
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "notification_settings")
 public class NotificationSettings {
