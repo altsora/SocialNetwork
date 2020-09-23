@@ -1,8 +1,6 @@
 package sn.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GeneratorType;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -11,6 +9,7 @@ import javax.persistence.*;
  * @date 04.08.2020
  */
 @Data
+@Builder
 @NoArgsConstructor
 @Entity
 @Table(name = "notification_settings")
@@ -26,3 +25,4 @@ public class NotificationSettings {
     private NotificationType type;
     private boolean enable;
 }
+

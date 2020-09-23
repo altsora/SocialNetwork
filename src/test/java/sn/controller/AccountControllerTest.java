@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import sn.api.requests.NotificationSettingRequest;
+import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
+import sn.model.enums.NotificationTypeCode;
 import sn.service.AccountService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -198,6 +201,24 @@ public class AccountControllerTest extends AbstractWebController {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string(containsString("Service unavailable")))
                 .andExpect(content().string(containsString("Bad request")))
+                .andReturn();
+    }
+
+    @Test
+    @WithMockUser(username = USER_EMAIL)
+    public void setAccountSettings() throws Exception {
+        Person person = new Person();
+        person.setId(2);
+        NotificationSettingRequest request = new NotificationSettingRequest(NotificationTypeCode.POST, false);
+        Mockito.doReturn(person).when(accountService).findCurrentUser();
+        this.mockMvc.perform(put("/account/notifications")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(request))
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(containsString("\"message\":\"Ok\"")))
                 .andReturn();
     }
 
