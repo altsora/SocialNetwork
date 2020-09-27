@@ -12,9 +12,9 @@ import java.util.List;
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
-    @Query(value = "SELECT person_id FROM likes WHERE person.id = :personId AND liketype = :likeType", nativeQuery = true)
+    @Query(value = "SELECT person_id FROM likes WHERE item_id = :itemId AND liketype = :likeType", nativeQuery = true)
     List<Long> getUsersOfLike(
-            @Param("personId") long personId,
+            @Param("itemId") long itemId,
             @Param("likeType") LikeType likeType
     );
 }
