@@ -3,7 +3,6 @@ package sn.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
-import sn.model.enums.FriendshipStatusCode;
 import sn.model.enums.LikeType;
 
 import javax.persistence.*;
@@ -27,7 +26,6 @@ public class Like {
 
     @Enumerated(EnumType.STRING)
       private LikeType likeType;
-
 
     @CreationTimestamp
     @Column(columnDefinition = "timestamp with time zone")

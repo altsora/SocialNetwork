@@ -24,7 +24,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "person")
-@EqualsAndHashCode(exclude = {"posts", "postLikes", "commentLikes", "ownDialogs", "dialogs", "sentMessages", "receivedMessages"})
+@EqualsAndHashCode(exclude = {"posts", "postLikes", "likes", "ownDialogs", "dialogs", "sentMessages", "receivedMessages"})
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
