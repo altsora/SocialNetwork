@@ -6,6 +6,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import sn.model.CommentLike;
 import sn.model.Like;
+import sn.model.Person;
 import sn.model.PostLike;
 import sn.model.enums.LikeType;
 import sn.repositories.CommentLikeRepository;
@@ -28,13 +29,13 @@ public class LikeService {
     /**
      * Проверка, существует ли лайк (под постом или комментарием).
      *
-     * @param personId - идентификатор пользователя;
+     * @param person   - пользователь;
      * @param type     - тип лайка (под постом или комментарием);
      * @param itemId   - идентификатор объекта, у которого проверяется наличие лайка.
      * @return - возвращает true, если лайк стоит, иначе false.
      */
-    public boolean likeExists(long personId, long itemId, LikeType type) {
-        return likeRepository.exists(Example.of(new Like(personId, itemId, type)));
+    public boolean likeExists(Person person, long itemId, LikeType type) {
+        return likeRepository.exists(Example.of(new Like(person, itemId, type)));
     }
 
     /**
@@ -52,12 +53,12 @@ public class LikeService {
     /**
      * Метод создаёт лайк в базе.
      *
-     * @param personId - идентификатор пользователя;
+     * @param person - пользователь;
      * @param type - тип лайка (под постом или комментарием);
      * @param itemId   - идентификатор объекта, которому ставится лайк.
      */
-    public void putLike(long personId, long itemId, LikeType type) {
-        likeRepository.save(new Like(personId,itemId,type));
+    public void putLike(Person person, long itemId, LikeType type) {
+        likeRepository.save(new Like(person,itemId,type));
     }
 
     /**
@@ -67,7 +68,7 @@ public class LikeService {
      * @param type - тип лайка (под постом или комментарием);
      * @param itemId   - идентификатор объекта, которому ставится лайк.
      */
-    public void removeLike(long personId, long itemId, LikeType type) {
-        likeRepository.delete(new Like(personId,itemId,type));
+    public void removeLike(Person person, long itemId, LikeType type) {
+        likeRepository.delete(new Like(person,itemId,type));
     }
 }

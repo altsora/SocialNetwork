@@ -1,5 +1,6 @@
 package sn.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import sn.model.enums.FriendshipStatusCode;
@@ -16,14 +17,17 @@ public class Like {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "person_id")
-    private long personId;
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "person_id")
+    private Person person;
 
     @Column(name = "item_id")
     private long itemId;
 
     @Enumerated(EnumType.STRING)
-    private LikeType likeType;
+      private LikeType likeType;
+
 
     @CreationTimestamp
     @Column(columnDefinition = "timestamp with time zone")
@@ -31,8 +35,8 @@ public class Like {
 
     public Like() {}
 
-    public Like(long personId, long itemId, LikeType likeType) {
-        this.personId = personId;
+    public Like(Person person, long itemId, LikeType likeType) {
+        this.person = person;
         this.itemId = itemId;
         this.likeType = likeType;
     }
