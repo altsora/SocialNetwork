@@ -31,10 +31,10 @@ public class LikeController {
             @RequestParam(value = "user_id") long personId,
             @RequestParam(value = "item_id") long itemId,
             @RequestParam(value = "type") LikeType type
-            ) {
+    ) {
 
         Person person = personRepository.findById(personId).orElse(null);
-        if (person==null) {
+        if (person == null) {
             return ResponseEntity.badRequest().body(false);
         }
         Boolean likes = likeService.likeExists(person, itemId, type);
@@ -46,15 +46,19 @@ public class LikeController {
             @RequestParam(value = "item_id") long itemId,
             @RequestParam(value = "type") LikeType type
     ) {
-        List<Long> usersId = likeService.getUsersOfLike(itemId,type);
-        return ResponseEntity.ok(new LikeCountResponse(usersId.size(),usersId));
+        List<Long> usersId = likeService.getUsersOfLike(itemId, type);
+        return ResponseEntity.ok(new LikeCountResponse(usersId.size(), usersId));
     }
 
     @PutMapping("/likes")
-    public ResponseEntity<LikeCountResponse> putLike(@RequestBody LikeRequest lk) {
-        likeService.putLike(accountService.findCurrentUser(), lk.getItemId(), lk.getType());
-        List<Long> usersId = likeService.getUsersOfLike(lk.getItemId(),lk.getType());
-        return ResponseEntity.ok(new LikeCountResponse(usersId.size(),usersId));
+    public ResponseEntity<?> putLike(@RequestBody LikeRequest lk) {
+        Boolean result = likeService.putLike(accountService.findCurrentUser(), lk.getItemId(), lk.getType());
+        if (result) {
+            List<Long> usersId = likeService.getUsersOfLike(lk.getItemId(), lk.getType());
+            return ResponseEntity.ok(new LikeCountResponse(usersId.size(), usersId));
+        } else {
+            return ResponseEntity.badRequest().body("User have like on this item");
+        }
     }
 
 
@@ -64,7 +68,7 @@ public class LikeController {
             @RequestParam(value = "type") LikeType type
     ) {
         likeService.removeLike(accountService.findCurrentUser(), itemId, type);
-        List<Long> usersId = likeService.getUsersOfLike(itemId,type);
-        return ResponseEntity.ok(new LikeCountResponse(usersId.size(),usersId));
+        List<Long> usersId = likeService.getUsersOfLike(itemId, type);
+        return ResponseEntity.ok(new LikeCountResponse(usersId.size(), usersId));
     }
 }

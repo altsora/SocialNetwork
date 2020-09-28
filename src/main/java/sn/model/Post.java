@@ -5,15 +5,15 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "posts")
 @Data
-@EqualsAndHashCode(exclude = {"comments", "personLikes"})
+@EqualsAndHashCode(exclude = {"comments"})
 public class Post {
     private long id;
     private LocalDateTime time;
@@ -24,7 +24,6 @@ public class Post {
     private boolean isDeleted;
     private int likesCount;
     private Set<Comment> comments;
-    private Set<PostLike> personLikes;
 
     //==================================================================================================================
 
@@ -73,14 +72,8 @@ public class Post {
     }
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     public Set<Comment> getComments() {
         return comments;
-    }
-
-    @JsonManagedReference
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    public Set<PostLike> getPersonLikes() {
-        return personLikes;
     }
 }
