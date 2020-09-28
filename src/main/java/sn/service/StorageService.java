@@ -2,55 +2,62 @@ package sn.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import sn.api.response.StorageResponse;
+import sn.api.response.AbstractResponse;
+import sn.api.response.FileUploadResponse;
+import sn.api.response.ServiceResponse;
 
-import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Map;
-import java.util.Objects;
 
+import static sn.api.response.AbstractResponse.createErrorResponse;
+
+/**
+ * Класс StorageService.
+ * Сервис для работы с Cloudinary и формирования ответа для StorageController.
+ *
+ * @see sn.controller.StorageController
+ * @see sn.config.CloudinaryConfig
+ */
+@Slf4j
 @Service
 public class StorageService {
-    // Cloudinary cloud_name, API_Key and API_Secret
-    private static final String
-            CLOUDINARY_CLOUD_NAME = "javapro-socialnetwork-studygroup-7";
-    private static final String
-            CLOUDINARY_API_KEY = "751383328333813";
-    private static final String
-            CLOUDINARY_API_SECRET = "11mJVXn8IE-H5oftzDbYbycc3Ig";
 
-    public StorageResponse uploadFileResponse(String type, MultipartFile file)
-            throws IOException {
-        StorageResponse cloudinaryUrl = new StorageResponse();
-        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", CLOUDINARY_CLOUD_NAME,
-                "api_key", CLOUDINARY_API_KEY,
-                "api_secret", CLOUDINARY_API_SECRET));
-        // Convert multipart file type image to File type because Cloudinary
-        // doesn't accept multipart file type.
-        File convFile = multipartToFile(file);
-        try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> result =
-                    cloudinary.uploader().upload(convFile, ObjectUtils.emptyMap());
-            cloudinaryUrl.setSuccess(true);
-            cloudinaryUrl.setResponse(result);
-        } catch (IOException e) {
-            System.out.println("Could not upload file to Cloundinary from " +
-                    "MultipartFile " + file.getOriginalFilename()+ e.toString());
-            throw e;
+    @Autowired
+    private Cloudinary cloudinary;
+
+    @Autowired
+    private AccountService accountService;
+
+    public ResponseEntity<ServiceResponse<AbstractResponse>> uploadFile(String type, String path) {
+        if (!Strings.isNotEmpty(type) || !type.equals("IMAGE")) {
+            log.error("type [{}] is incorrect", type);
+            return createErrorResponse("incorrect type", "file type must be \"image\" or \"IMAGE\"");
         }
-        return cloudinaryUrl;
-    }
-
-    private static File multipartToFile(MultipartFile image)
-            throws IllegalStateException,
-            IOException {
-        File convFile = new File(Objects.
-                requireNonNull(image.getOriginalFilename()));
-        image.transferTo(convFile);
-        return convFile;
+        try {
+            Map map = cloudinary.uploader().upload(path, ObjectUtils.emptyMap());
+            FileUploadResponse response = FileUploadResponse.builder()
+                    .id((String) map.get("signature"))
+                    .ownerId(accountService.findCurrentUser().getId())
+                    .fileName((String) map.get("original_filename"))
+                    .relativeFilePath((String) map.get("secure_url"))
+                    .rawFileURL((String) map.get("secure_url"))
+                    .fileFormat((String) map.get("format"))
+                    .bytes((Integer) map.get("bytes"))
+                    .fileType(type)
+                    .createdAt(Instant.parse(((String) map.get("created_at"))).getEpochSecond())
+                    .build();
+            return ResponseEntity.status(HttpStatus.OK).body(new ServiceResponse<>(response));
+        } catch (IOException exception) {
+            log.error(exception.getMessage());
+            exception.printStackTrace();
+            return createErrorResponse("IO exception", exception.getMessage());
+        }
     }
 }
