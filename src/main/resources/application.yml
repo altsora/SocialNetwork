@@ -41,3 +41,13 @@ cloudinary:
   cloud-name: javapro-socialnetwork-studygroup-7
   apikey: 751383328333813
   api-secret: 11mJVXn8IE-H5oftzDbYbycc3Ig
+
+#Local storage
+storage:
+  root:
+    location: tmp_storage
+
+#User permissions
+user:
+  permissions:
+    image: ALL

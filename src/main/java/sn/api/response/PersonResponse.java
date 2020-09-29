@@ -28,9 +28,9 @@ public class PersonResponse extends AbstractResponse {
     @JsonProperty("about")
     private final String about;
     @JsonProperty("city")
-    private final CityResponse city;
+    private final /*CityResponse*/ String city;
     @JsonProperty("country")
-    private final CountryResponse country;
+    private final /*CountryResponse*/ String country;
     @JsonProperty("messages_permission")
     private final String messagesPermission;
     @JsonProperty("last_online_time")
