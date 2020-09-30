@@ -6,10 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sn.api.requests.NotificationSettingRequest;
 import sn.api.response.ResponseDataMessage;
 import sn.api.response.ServiceResponse;
+import sn.model.NotificationSettings;
+import sn.model.Person;
 import sn.model.dto.account.UserRegistrationRequest;
 import sn.service.AccountService;
+import sn.service.NotificationService;
 
 /**
  * Класс AccountController.
@@ -24,6 +28,8 @@ public class AccountController {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * Метод register.
@@ -116,8 +122,8 @@ public class AccountController {
 
     //Редактирование настроек оповещения
     @PutMapping("/notifications")
-    public ResponseEntity<Object> putNotifications(/*@RequestBody Notifications notifications*/) {
-        //todo
-        return null;
+    public ServiceResponse<ResponseDataMessage> putNotifications(@RequestBody NotificationSettingRequest request) {
+        Person person = accountService.findCurrentUser();
+        return notificationService.saveNotificationSettings(person, request);
     }
 }

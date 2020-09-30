@@ -24,4 +24,12 @@ public final class TimeUtil {
     public static LocalDate getLocalDateFromTimestamp(long timestamp) {
         return LocalDate.ofInstant(Instant.ofEpochSecond(timestamp), TIME_ZONE);
     }
+
+    public static LocalDateTime now() {
+        return LocalDateTime.now(TimeUtil.TIME_ZONE);
+    }
+
+    public static boolean beforeNow(LocalDateTime localDateTime) {
+        return localDateTime.isBefore(now());
+    }
 }

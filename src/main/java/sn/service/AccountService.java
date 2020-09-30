@@ -1,31 +1,34 @@
 package sn.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sn.api.requests.PersonEditRequest;
-import sn.api.response.CityResponse;
-import sn.api.response.CountryResponse;
-import sn.api.response.PersonResponse;
+import sn.api.requests.WallPostRequest;
+import sn.api.response.*;
 import sn.model.Person;
+import sn.model.Post;
 import sn.model.dto.account.UserRegistrationRequest;
-import sn.service.MailSenderService;
 import sn.repositories.PersonRepository;
+import sn.utils.ErrorUtil;
 import sn.utils.TimeUtil;
 
 import javax.transaction.Transactional;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * Класс AccountService.
@@ -35,59 +38,17 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AccountService {
-
-    @Autowired
-    private PersonRepository personRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private Authentication authentication;
-
-    @Autowired
-    private MailSenderService mailSenderService;
+    private final PersonRepository personRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final Authentication authentication;
+    private final MailSenderService mailSenderService;
+    private final PostService postService;
+    private final CommentService commentService;
 
     public boolean exists(long personId) {
         return personRepository.existsById(personId);
-    }
-
-    /**
-     * Изменяет статус блокировки пользователя на противоположный.
-     *
-     * @param personId - идентификатор пользователя.
-     * @return - возврат true, если статус изменён, иначе false.
-     */
-    public boolean changeUserLockStatus(long personId) {
-        Person person = personRepository.findById(personId).orElse(null);
-        if (person == null) {
-            log.warn("User with id {} do not exist. Lock status didn't changed", personId);
-            return false;
-        }
-        person.setBlocked(!person.isBlocked());
-        personRepository.saveAndFlush(person);
-        log.info("User with id {} changed lock status", personId);
-        return true;
-    }
-
-    /**
-     * Обновление данных о пользователе.
-     *
-     * @param person - пользователя;
-     * @return - возвращается обновлённый пользователь.
-     */
-    public Person updatePerson(Person person, PersonEditRequest personEditRequest) {
-        person.setFirstName(personEditRequest.getFirstName());
-        person.setLastName(personEditRequest.getLastName());
-        person.setBirthDate(TimeUtil.getLocalDateFromTimestamp(personEditRequest.getBirthDate()));
-        person.setPhone(personEditRequest.getPhone());
-        person.setPhoto(personEditRequest.getPhoto());
-        person.setAbout(personEditRequest.getAbout());
-        //TODO: город и страна без изменений
-        person.setMessagesPermission(personEditRequest.getMessagesPermission());
-        log.info("Update data for user with id {}.", person.getId());
-        return personRepository.saveAndFlush(person);
     }
 
     /**
@@ -97,7 +58,7 @@ public class AccountService {
      * @return - возврат true, если статус изменён, иначе false.
      */
     public PersonResponse getPersonResponse(Person person) {
-        //TODO: Нет данных, откуда берутся город и страна
+        //TODO: Нет данных, откуда берутся город и страна. Если логика стран и городов заработает - изменить соответствующие поля
         return PersonResponse.builder()
                 .id(person.getId())
                 .firstName(person.getFirstName())
@@ -115,24 +76,6 @@ public class AccountService {
                 .isBlocked(person.isBlocked())
                 .build();
     }
-
-    /**
-     * Осуществляет поиск пользователей по заданным параметрам.
-     *
-     * @param firstName   - имя пользователя;
-     * @param lastName    - фамилия пользователя;
-     * @param ageFrom     - минимальный возраст пользователя;
-     * @param ageTo       - максимальный возраст пользователя;
-     * @param offset      - отступ от начала списка;
-     * @param itemPerPage - количество элементов на страницу;
-     * @return - возвращает список пользователей, подходящих по заданным параметрам.
-     */
-    public List<Person> searchPersons(String firstName, String lastName, Integer ageFrom, Integer ageTo, Integer offset, Integer itemPerPage) {
-        int pageNumber = offset / itemPerPage;
-        Pageable pageable = PageRequest.of(pageNumber, itemPerPage);
-        return personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
-    }
-
 
     /**
      * Метод register.
@@ -285,4 +228,185 @@ public class AccountService {
         return null;
     }
 
+    /**
+     * Получение текущего пользователя.
+     * Пользователь должен быть авторизован.
+     *
+     * @return 200 - пользователь успешно получен; 401 - ошибка авторизации.
+     */
+    public ResponseEntity<ServiceResponse<AbstractResponse>> getCurrentUser() {
+        Person person = findCurrentUser();
+        if (person == null) {
+            log.error("Unauthorized access");
+            return ErrorUtil.unauthorized();
+        }
+        return ResponseEntity.ok(new ServiceResponse<>(getPersonResponse(person)));
+    }
+
+    /**
+     * Редактирование текущего пользователя - обновление данных.
+     * Пользователь должен быть авторизован.
+     *
+     * @param personEditRequest - тело запроса в формате JSON. Содержит данные новые данные пользователя.
+     * @return 200 - пользователь успешно отредактирован; 401 - ошибка авторизации.
+     */
+    public ResponseEntity<ServiceResponse<AbstractResponse>> editUser(PersonEditRequest personEditRequest) {
+        Person person = findCurrentUser();
+        if (person == null) {
+            log.error("Unauthorized access");
+            return ErrorUtil.unauthorized();
+        }
+        person.setFirstName(personEditRequest.getFirstName());
+        person.setLastName(personEditRequest.getLastName());
+        person.setBirthDate(TimeUtil.getLocalDateFromTimestamp(personEditRequest.getBirthDate()));
+        person.setPhone(personEditRequest.getPhone());
+        person.setPhoto(personEditRequest.getPhoto());
+        person.setAbout(personEditRequest.getAbout());
+        //TODO: город и страна без изменений. Если логика с городами и странами заработает - добавить соответствующие сеттеры
+        person.setMessagesPermission(personEditRequest.getMessagesPermission());
+        person = personRepository.saveAndFlush(person);
+        log.info("Update data for user with id {}.", person.getId());
+        return ResponseEntity.ok(new ServiceResponse<>(getPersonResponse(person)));
+    }
+
+    /**
+     * Удаление текущего пользователя.
+     * Пользователь должен быть авторизован.
+     *
+     * @return 200 - пользователь удалён; 401 - ошибка авторизации.
+     */
+    public ResponseEntity<ServiceResponse<AbstractResponse>> deleteUser() {
+        Person person = findCurrentUser();
+        if (person == null) {
+            log.error("Unauthorized access");
+            return ErrorUtil.unauthorized();
+        }
+        personRepository.deleteById(person.getId());
+        log.info("User with ID {} was deleted", person.getId());
+        return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+    }
+
+    /**
+     * Получить пользователя по id.
+     * Пользователь должен существовать в базе.
+     *
+     * @param personId - ID пользователя, которого надо получить.
+     * @return 200 - получение пользователя по указанному идентификатору;
+     * 400 - произошла ошибка; 401 - ошибка авторизации.
+     */
+    public ResponseEntity<ServiceResponse<AbstractResponse>> getUserById(long personId) {
+        Person person = personRepository.findById(personId).orElse(null);
+        if (person == null) {
+            log.error("User with ID = {} not found", personId);
+            return ErrorUtil.badRequest(String.format("User with ID = %s not found", personId));
+        }
+        return ResponseEntity.ok(new ServiceResponse<>(getPersonResponse(person)));
+    }
+
+    /**
+     * Получение записей на стене пользователя.
+     * Пользователь должен сщуествовать в базе.
+     * Формируется ответ, содержащий список постов, а также информацию о каждом посте.
+     *
+     * @param personId    - ID пользователя, со стены которого требуется получить записи.
+     * @param offset      - Отступ от начала результирующего списка публикаций.
+     * @param itemPerPage - Количество публикаций из результирующего списка, которые представлены для отображения.
+     * @return 200 - получение результирующего списка с публикациями на стене пользователя;
+     * 400 - произошла ошибка; 401 - ошибка авторизации.
+     */
+    public ResponseEntity<ServiceResponseDataList<WallPostResponse>> getWallPosts(long personId, int offset, int itemPerPage) {
+        Person person = personRepository.findById(personId).orElse(null);
+        if (person == null) {
+            log.error("User with ID = {} not found", personId);
+            return ResponseEntity.badRequest()
+                    .body(new ServiceResponseDataList<>("User with ID = " + personId + " not found"));
+        }
+        List<WallPostResponse> wallPosts = new ArrayList<>();
+        List<Post> posts = postService.findAllByPersonId(personId, offset, itemPerPage);
+        PersonResponse author = getPersonResponse(person);
+        for (Post post : posts) {
+            List<CommentResponse> comments = commentService.getCommentsByPostId(post.getId());
+            WallPostResponse wallPostResponse = postService.getExistsWallPost(post, author, comments);
+            wallPosts.add(wallPostResponse);
+        }
+        int total = postService.getTotalCountPostsByPersonId(personId);
+        return ResponseEntity.ok(new ServiceResponseDataList<>(total, offset, itemPerPage, wallPosts));
+    }
+
+    /**
+     * Добавление публикации на стену пользователя.
+     * Если дата публикации не указана или указана прошедшая дата, то устанавливаем текущий момент времени.
+     *
+     * @param personId        - ID пользователя, который публикует записи.
+     * @param publishDate     - Дата публикации, установленная пользователем.
+     * @param wallPostRequest - тело запроса в формате JSON. Содержит данные о новой публикации.
+     * @return 200 - запись готова к публикации к назначенному времени; 400 - произошла ошибка;
+     */
+    public ResponseEntity<ServiceResponse<AbstractResponse>> addWallPost(long personId, Long publishDate, WallPostRequest wallPostRequest) {
+        Person person = personRepository.findById(personId).orElse(null);
+        if (person == null) {
+            log.error("User with ID = {} not found", personId);
+            return ErrorUtil.badRequest(String.format("User with ID = %s not found", personId));
+        }
+
+        LocalDateTime postTime = publishDate != null ?
+                TimeUtil.getLocalDateTimeFromTimestamp(publishDate) :
+                TimeUtil.now();
+
+        postTime = TimeUtil.beforeNow(postTime) ? TimeUtil.now() : postTime;
+
+        String title = wallPostRequest.getTitle();
+        String text = wallPostRequest.getPostText();
+        Post post = postService.addPost(person, title, text, postTime);
+        PersonResponse author = getPersonResponse(person);
+        WallPostResponse newPost = postService.createNewWallPost(post, author);
+        return ResponseEntity.ok(new ServiceResponse<>(newPost));
+    }
+
+    /**
+     * Поиск пользователей по указанным параметрам.
+     * Параметры могут быть указаны в различной комбинации (что-то указано, что-то нет).
+     * Также параметры могут отсутствовать вовсе. Тогда выводятся все пользователи в количестве itemPerPage, начиная с offset.
+     *
+     * @param firstName   - Имя пользователей.
+     * @param lastName    - Фамилия пользователей.
+     * @param ageFrom     - Минимальный возраст пользователей.
+     * @param ageTo       - Максимальный возраст пользователей.
+     * @param countryId   - Идентификатор страны пользователей.
+     * @param cityId      - Идентификатор города пользователей.
+     * @param offset      - Отступ от начала результирующего списка пользователей.
+     * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для отображения.
+     * @return 200 - Возврат списка пользователей, подходящих по указанным параметрам.
+     */
+    public ResponseEntity<ServiceResponseDataList<PersonResponse>> findUsers(
+            String firstName, String lastName, Integer ageFrom, Integer ageTo,
+            Integer countryId, Integer cityId, Integer offset, Integer itemPerPage
+    ) {
+        Pageable pageable = PageRequest.of(offset / itemPerPage, itemPerPage);
+        //TODO: без учёта города и страны. Если логика городов и стран заработает - изменить метод поиска в репозитории
+        List<Person> personList = personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
+        List<PersonResponse> searchResult = personList.stream()
+                .map(this::getPersonResponse)
+                .collect(Collectors.toList());
+        int total = personRepository.getTotalCountUsers();
+        return ResponseEntity.ok(new ServiceResponseDataList<>(total, offset, itemPerPage, searchResult));
+    }
+
+    /**
+     * Изменяет статус блокировки пользователя на противоположный.
+     * Пользователь должен сщуествовать в базе.
+     *
+     * @param personId - идентификатор пользователя.
+     */
+    public ResponseEntity<ServiceResponse<AbstractResponse>> changeUserLockStatus(long personId) {
+        Person person = personRepository.findById(personId).orElse(null);
+        if (person == null) {
+            log.warn("User with id {} do not exist. Lock status didn't changed", personId);
+            return ErrorUtil.badRequest(String.format("User with ID = %s not found", personId));
+        }
+        person.setBlocked(!person.isBlocked());
+        personRepository.saveAndFlush(person);
+        log.info("User with id {} changed lock status", person.getId());
+        return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+    }
 }
