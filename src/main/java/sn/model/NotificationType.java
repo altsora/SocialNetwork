@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import sn.model.enums.NotificationTypeCode;
 
 /**
  * @author Andrey.Kazakov
