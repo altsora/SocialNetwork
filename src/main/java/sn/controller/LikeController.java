@@ -1,5 +1,6 @@
 package sn.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +53,7 @@ public class LikeController {
 
     @PutMapping("/likes")
     public ResponseEntity<?> putLike(@RequestBody LikeRequest lk) {
-        Boolean result = likeService.putLike(accountService.findCurrentUser(), lk.getItemId(), lk.getType());
+        boolean result = likeService.putLike(accountService.findCurrentUser(), lk.getItemId(), lk.getType());
         if (result) {
             List<Long> usersId = likeService.getUsersOfLike(lk.getItemId(), lk.getType());
             return ResponseEntity.ok(new LikeCountResponse(usersId.size(), usersId));
@@ -60,7 +61,6 @@ public class LikeController {
             return ResponseEntity.badRequest().body("User have like on this item");
         }
     }
-
 
     @DeleteMapping("/likes")
     public ResponseEntity<LikeCountResponse> removeLike(
