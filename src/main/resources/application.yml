@@ -6,7 +6,7 @@ spring:
       ddl-auto: validate
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/Snet2?stringtype=unspecified}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snet?stringtype=unspecified}
     username: snet
     password: snet
   mail:
