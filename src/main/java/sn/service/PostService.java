@@ -11,6 +11,7 @@ import sn.api.response.PersonResponse;
 import sn.api.response.WallPostResponse;
 import sn.model.Person;
 import sn.model.Post;
+import sn.model.enums.LikeType;
 import sn.model.enums.StatusWallPost;
 import sn.repositories.PostRepository;
 import sn.utils.TimeUtil;
@@ -124,22 +125,22 @@ public class PostService {
     }
 
     /**
-     * Метод ставит лайк под постом.
+     * Метод увеличивет счетчик лайков
      *
      * @param postId - идентификатор поста;
      */
-    public void putLike(long postId) {
+    public void incLikesCount(long postId) {
         Post post = findById(postId);
         post.setLikesCount(post.getLikesCount() + 1);
         postRepository.saveAndFlush(post);
     }
 
     /**
-     * Метод убирает лайк под постом.
+     * Метод уменьшает счетик лайков.
      *
      * @param postId - идентификатор поста;
      */
-    public void removeLike(long postId) {
+    public void decLikesCount(long postId) {
         Post post = findById(postId);
         post.setLikesCount(post.getLikesCount() - 1);
         postRepository.saveAndFlush(post);

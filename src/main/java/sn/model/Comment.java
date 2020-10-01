@@ -5,16 +5,19 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import sn.model.enums.LikeType;
+import sn.service.LikeService;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "comments")
 @NoArgsConstructor
 @Data
-@EqualsAndHashCode(exclude = {"children", "personLikes"})
+@EqualsAndHashCode(exclude = {"children"})
 public class Comment {
     private long id;
     private Comment parent;
@@ -24,7 +27,6 @@ public class Comment {
     private String text;
     private boolean isBlocked;
     private Set<Comment> children;
-    private Set<CommentLike> personLikes;
 
     //==================================================================================================================
 
@@ -71,14 +73,9 @@ public class Comment {
     }
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     public Set<Comment> getChildren() {
         return children;
     }
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    public Set<CommentLike> getPersonLikes() {
-        return personLikes;
-    }
 }
