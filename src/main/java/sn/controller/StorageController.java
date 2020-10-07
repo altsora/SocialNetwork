@@ -6,9 +6,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import sn.api.response.AbstractResponse;
 import sn.api.response.ServiceResponse;
 import sn.service.StorageService;
+
+import javax.mail.Multipart;
 
 /**
  * Класс StorageController.
@@ -24,17 +27,17 @@ public class StorageController {
     /**
      * Метод uploadFile.
      * Загрузка картинок.
-     * POST запрос /api/v1/storage
+     * MULTIPART FORM-DATA POST запрос /api/v1/storage
      *
+     * @param file multipart form-data файл
      * @param type тип файла
-     * @param path путь к файлу
-     * @return ResponseEntity<ServiceResponse < AbstractResponse>>
+     * @return ResponseEntity<ServiceResponse <AbstractResponse>>
      * @see sn.api.response.FileUploadResponse
      * @see StorageService
      */
     @PostMapping
-    public ResponseEntity<ServiceResponse<AbstractResponse>> uploadFile(@RequestParam(required = false) String type,
-                                                                        @RequestParam(required = false) String path) {
-        return storageService.uploadFile(type, path);
+    public ResponseEntity<ServiceResponse<AbstractResponse>> uploadFile(@RequestParam(required = false) MultipartFile file,
+                                                                        @RequestParam(required = false) String type) {
+        return storageService.uploadFile(file, type);
     }
 }
