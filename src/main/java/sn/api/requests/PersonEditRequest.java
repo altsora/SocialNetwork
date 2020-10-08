@@ -30,4 +30,6 @@ public class PersonEditRequest {
     private String country;
     @JsonProperty("messages_permission")
     private String messagesPermission;
+
+
 }
