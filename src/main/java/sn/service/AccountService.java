@@ -2,6 +2,8 @@ package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import javax.transaction.Transactional;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,12 +43,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
+
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
     private final Authentication authentication;
     private final MailSenderService mailSenderService;
     private final PostService postService;
     private final CommentService commentService;
+    @Value("${user.permissions.image}")
+    private String userImagePermissions;
 
     public boolean exists(long personId) {
         return personRepository.existsById(personId);
@@ -69,8 +75,8 @@ public class AccountService {
                 .phone(person.getPhone())
                 .photo(person.getPhoto())
                 .about(person.getAbout())
-                .city(new CityResponse("Москва"))
-                .country(new CountryResponse("Россия"))
+                .city(person.getCity())
+                .country(person.getCountry())
                 .messagesPermission(person.getMessagesPermission())
                 .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
                 .isBlocked(person.isBlocked())
@@ -100,6 +106,7 @@ public class AccountService {
         person.setLastName(userRegistrationRequest.getLastName());
         person.setPassword(passwordEncoder.encode(userRegistrationRequest.getPasswd1()));
         person.setEmail(userRegistrationRequest.getEmail());
+        person.setMessagesPermission(userImagePermissions);
         personRepository.save(person);
         log.info("Person successfully registered");
         return true;
@@ -258,12 +265,16 @@ public class AccountService {
         }
         person.setFirstName(personEditRequest.getFirstName());
         person.setLastName(personEditRequest.getLastName());
-        person.setBirthDate(TimeUtil.getLocalDateFromTimestamp(personEditRequest.getBirthDate()));
+        person.setBirthDate(OffsetDateTime.parse(personEditRequest.getBirthDate()).toLocalDate());
         person.setPhone(personEditRequest.getPhone());
-        person.setPhoto(personEditRequest.getPhoto());
+        if (Strings.isNotEmpty(personEditRequest.getPhoto())) {
+            person.setPhoto(personEditRequest.getPhoto());
+        }
         person.setAbout(personEditRequest.getAbout());
-        //TODO: город и страна без изменений. Если логика с городами и странами заработает - добавить соответствующие сеттеры
-        person.setMessagesPermission(personEditRequest.getMessagesPermission());
+        person.setCity(personEditRequest.getCity());
+        person.setCountry(personEditRequest.getCountry());
+        person.setMessagesPermission(Strings.isNotEmpty(personEditRequest.getMessagesPermission()) ?
+                personEditRequest.getMessagesPermission() : userImagePermissions);
         person = personRepository.saveAndFlush(person);
         log.info("Update data for user with id {}.", person.getId());
         return ResponseEntity.ok(new ServiceResponse<>(getPersonResponse(person)));
@@ -379,12 +390,13 @@ public class AccountService {
      * @return 200 - Возврат списка пользователей, подходящих по указанным параметрам.
      */
     public ResponseEntity<ServiceResponseDataList<PersonResponse>> findUsers(
-            String firstName, String lastName, Integer ageFrom, Integer ageTo,
-            Integer countryId, Integer cityId, Integer offset, Integer itemPerPage
+            String firstName, String lastName, String city, String country, Integer ageFrom, Integer ageTo,
+            Integer offset, Integer itemPerPage
     ) {
         Pageable pageable = PageRequest.of(offset / itemPerPage, itemPerPage);
         //TODO: без учёта города и страны. Если логика городов и стран заработает - изменить метод поиска в репозитории
-        List<Person> personList = personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
+        List<Person> personList = personRepository.searchPersons(firstName, lastName, city, country, pageable);
+//        List<Person> personList = personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
         List<PersonResponse> searchResult = personList.stream()
                 .map(this::getPersonResponse)
                 .collect(Collectors.toList());

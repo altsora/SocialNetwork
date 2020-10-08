@@ -34,18 +34,18 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query("SELECT COUNT(p) FROM Person p")
     int getTotalCountUsers();
 
-    //TODO: Работает для MYSQL. Проверить для Postgresql.
-    // Отсутствует параметры для городов и стран
-    @Query(value = "SELECT p.* FROM persons p WHERE " +
-        "CASE WHEN :firstName IS NOT NULL THEN p.first_name = :firstName ELSE TRUE END AND " +
-        "CASE WHEN :lastName IS NOT NULL THEN p.last_name = :lastName ELSE TRUE END AND " +
-        "CASE WHEN :ageFrom IS NOT NULL THEN (YEAR(NOW()) - YEAR(p.birth_date) >= :ageFrom) ELSE TRUE END AND " +
-        "CASE WHEN :ageTo IS NOT NULL THEN (YEAR(NOW()) - YEAR(p.birth_date) <= :ageTo) ELSE TRUE END"
+    @Query(value = "SELECT p.* FROM Person p WHERE " +
+            "LOWER(p.first_name) LIKE LOWER(CONCAT('%', NULLIF(:firstName, '%'), '%')) " +      //имя
+            "AND LOWER(p.last_name) LIKE LOWER(CONCAT('%', NULLIF(:lastName, '%'), '%')) " +    //фамилия
+            "AND LOWER(p.city) LIKE LOWER(CONCAT('%', NULLIF(:city, '%'),  '%')) " +            //город
+            "AND LOWER(p.country) LIKE LOWER(CONCAT('%', NULLIF(:country, '%'),  '%'))"
         , nativeQuery = true)
     List<Person> searchPersons(@Param("firstName") String firstName,
         @Param("lastName") String lastName,
-        @Param("ageFrom") Integer ageFrom,
-        @Param("ageTo") Integer ageTo,
+        @Param("city") String city,
+        @Param("country") String country,
+//        @Param("ageFrom") Integer ageFrom,
+//        @Param("ageTo") Integer ageTo,
         Pageable pageable
     );
 
