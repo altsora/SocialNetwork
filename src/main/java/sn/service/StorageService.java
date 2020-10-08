@@ -5,14 +5,23 @@ import com.cloudinary.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import sn.api.response.AbstractResponse;
 import sn.api.response.FileUploadResponse;
 import sn.api.response.ServiceResponse;
 
+import javax.mail.Multipart;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Map;
 
@@ -35,29 +44,51 @@ public class StorageService {
     @Autowired
     private AccountService accountService;
 
-    public ResponseEntity<ServiceResponse<AbstractResponse>> uploadFile(String type, String path) {
+    @Value("${storage.root.location}")
+    private String uploadPath;
+
+
+    public ResponseEntity<ServiceResponse<AbstractResponse>> uploadFile(MultipartFile file, String type) {
         if (!Strings.isNotEmpty(type) || !type.equals("IMAGE")) {
             log.error("type [{}] is incorrect", type);
             return createErrorResponse("incorrect type", "file type must be \"image\" or \"IMAGE\"");
         }
         try {
-            Map map = cloudinary.uploader().upload(path, ObjectUtils.emptyMap());
+            File uploadedFile = convertMultiPartToFile(file);
+            Map uploadResult = cloudinary.uploader().upload(uploadedFile, ObjectUtils.emptyMap());
             FileUploadResponse response = FileUploadResponse.builder()
-                    .id((String) map.get("signature"))
+                    .id((String) uploadResult.get("secure_url"))
                     .ownerId(accountService.findCurrentUser().getId())
-                    .fileName((String) map.get("original_filename"))
-                    .relativeFilePath((String) map.get("secure_url"))
-                    .rawFileURL((String) map.get("secure_url"))
-                    .fileFormat((String) map.get("format"))
-                    .bytes((Integer) map.get("bytes"))
+                    .fileName((String) uploadResult.get("original_filename"))
+                    .relativeFilePath((String) uploadResult.get("secure_url"))
+                    .rawFileURL((String) uploadResult.get("secure_url"))
+                    .fileFormat((String) uploadResult.get("format"))
+                    .bytes((Integer) uploadResult.get("bytes"))
                     .fileType(type)
-                    .createdAt(Instant.parse(((String) map.get("created_at"))).getEpochSecond())
+                    .createdAt(Instant.parse(((String) uploadResult.get("created_at"))).getEpochSecond())
                     .build();
+            FileSystemUtils.deleteRecursively(Paths.get(uploadPath));
             return ResponseEntity.status(HttpStatus.OK).body(new ServiceResponse<>(response));
-        } catch (IOException exception) {
+        } catch (IOException | NullPointerException exception) {
             log.error(exception.getMessage());
             exception.printStackTrace();
-            return createErrorResponse("IO exception", exception.getMessage());
+            ServiceResponse<AbstractResponse> serviceResponse = new ServiceResponse<>();
+            serviceResponse.setError("Catch some error when upload.");
+            return ResponseEntity.status(HttpStatus.OK).body(serviceResponse);
         }
+    }
+
+    private File convertMultiPartToFile(MultipartFile file) throws IOException {
+        Path rootLocation = Paths.get(uploadPath);
+        File uploadDir = new File(rootLocation.toUri());
+        if (!uploadDir.exists()) {
+            log.warn("create temp upload file directory");
+            uploadDir.mkdirs();
+        }
+        File convFile = rootLocation.resolve(StringUtils.cleanPath(file.getOriginalFilename())).toFile();
+        FileOutputStream fileOutputStream = new FileOutputStream(convFile);
+        fileOutputStream.write(file.getBytes());
+        fileOutputStream.close();
+        return convFile;
     }
 }

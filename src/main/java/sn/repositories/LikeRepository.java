@@ -5,28 +5,24 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sn.model.Like;
-import sn.model.enums.LikeType;
 
 import java.util.List;
 
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
-    @Query("SELECT l FROM Like l WHERE l.person.id = :personId AND l.likeType = :likeType AND l.itemId = :itemId")
-    Like findLike(
-            @Param("personId") long personId,
-            @Param("likeType") LikeType likeType,
-            @Param("itemId") long itemId
+
+    @Query(value = "SELECT person_id FROM likes WHERE item_id = :itemId AND like_type = :likeType", nativeQuery = true)
+    List<Long> getUsersOfLike(
+            @Param("itemId") long itemId,
+            @Param("likeType") String likeType
     );
 
-    @Query("SELECT l FROM Like l WHERE l.likeType = :likeType AND l.itemId = :itemId")
-    List<Like> findAllByTypeAndItemId(
-            @Param("likeType") LikeType likeType,
-            @Param("itemId") long itemId
-    );
-
-    @Query("SELECT COUNT(l) FROM Like l WHERE l.likeType = :likeType AND l.itemId = :itemId")
-    int getCountByTypeAndItemId(
-            @Param("likeType") LikeType likeType,
-            @Param("itemId") long itemId
-    );
+    @Query(value = "SELECT count(id) FROM likes WHERE person_id = :id AND item_id = :itemId AND like_type = :likeType", nativeQuery = true)
+    Integer likeExist(@Param("id") long id,
+                      @Param("itemId") long itemId,
+                      @Param("likeType") String type);
+    @Query(value = "SELECT id FROM likes WHERE person_id = :id AND item_id = :itemId AND like_type = :likeType", nativeQuery = true)
+    Long findLikeId(@Param("id") long id,
+                    @Param("itemId") long itemId,
+                    @Param("likeType") String type);
 }

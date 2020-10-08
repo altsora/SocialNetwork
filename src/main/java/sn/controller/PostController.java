@@ -20,14 +20,16 @@ import sn.service.PostService;
  */
 @RestController
 @RequestMapping("/post")
-@RequiredArgsConstructor
 public class PostController {
 
-    @Autowired
     private final PostService postService;
+    private final CommentService commentService;
 
     @Autowired
-    private final CommentService commentService;
+    public PostController(PostService postService, CommentService commentService) {
+        this.postService = postService;
+        this.commentService = commentService;
+    }
 
     /**
      * Метод findPosts.
@@ -42,16 +44,15 @@ public class PostController {
      * @return 200 - успешное получение публикации
      */
     @GetMapping
-    public ResponseEntity<ServiceResponse<AbstractResponse>> findPosts(
+    public ServiceResponse<AbstractResponse> findPosts(
             @RequestParam String text, @RequestParam long dateFrom,
             @RequestParam long dateTo,@RequestParam int offset,
             @RequestParam int itemPerPage) {
         List<PostResponse> posts = postService.findPosts(
                 text, dateFrom, dateTo, offset, itemPerPage);
         PostListResponse postListResponse = new PostListResponse(posts);
-        ServiceResponse response = new ServiceResponse(
+        return new ServiceResponse(
                 posts.size(), offset, itemPerPage, postListResponse);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /**
@@ -63,11 +64,11 @@ public class PostController {
      * @return 200 - успешное получение публикации
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> findPostById(
+    public ServiceResponse<AbstractResponse> findPostById(
             @PathVariable(value = "id") long id) {
         PostResponse post = postService.findPostById(id);
         ServiceResponse response = new ServiceResponse(post);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return response;
     }
 
     /**
@@ -81,14 +82,14 @@ public class PostController {
      * @see sn.api.requests.PostEditRequest
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> editPost(
+    public ServiceResponse<AbstractResponse> editPost(
             @PathVariable(value = "id") long id,
             @RequestParam long publishDate,
             @RequestBody PostEditRequest postEditRequest) {
         PostResponse post = postService.editPost
                 (id, publishDate, postEditRequest);
         ServiceResponse response = new ServiceResponse(post);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return response;
     }
 
     /**
@@ -101,11 +102,11 @@ public class PostController {
      * @see IdResponse
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> deletePost(
+    public ServiceResponse<AbstractResponse> deletePost(
             @PathVariable(value = "id") long id) {
         IdResponse deletePost = postService.deletePost(id);
         ServiceResponse response = new ServiceResponse(deletePost);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return response;
     }
 
     /**
@@ -118,11 +119,11 @@ public class PostController {
      * @see PostResponse
      */
     @PutMapping("/{id}/recover")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> recoverPost(
+    public ServiceResponse<AbstractResponse> recoverPost(
             @PathVariable(value = "id") long id) {
         PostResponse post = postService.recoverPost(id);
         ServiceResponse response = new ServiceResponse(post);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return response;
     }
 
     @GetMapping("/{id}/comments")
@@ -178,11 +179,11 @@ public class PostController {
      * @return 200 - успешное создание жалобы на публикацию
      */
     @PostMapping("/{id}/report")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> postComplaint(
+    public ServiceResponse<AbstractResponse> postComplaint(
             @PathVariable(value = "id") long id) {
         MessageResponse complaintPost = postService.complaintPost(id);
         ServiceResponse response = new ServiceResponse(complaintPost);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return response;
     }
 
     /**
@@ -195,12 +196,12 @@ public class PostController {
      * @return 200 - успешное создание жалобы на публикацию
      */
     @PostMapping("/{id}/comments/{commentId}/report")
-    public ResponseEntity<ServiceResponse<AbstractResponse>> commentComplaint(
+    public ServiceResponse<AbstractResponse> commentComplaint(
             @PathVariable(value = "id") long id,
             @PathVariable(value = "commentId") long commentId) {
         MessageResponse complaintPost = postService.complaintComment
                 (id, commentId);
         ServiceResponse response = new ServiceResponse(complaintPost);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return response;
     }
 }

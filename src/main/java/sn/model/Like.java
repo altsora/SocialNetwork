@@ -2,51 +2,43 @@ package sn.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import sn.model.enums.LikeType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "likes")
-@NoArgsConstructor
-@Data
 public class Like {
-    private long id;
-    private LocalDateTime time;
-    private Person person;
-    private LikeType likeType; //POST или COMMENT
-    private long itemId;
-
-    //==================================================================================================================
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public long getId() {
-        return id;
-    }
-
-    @Column(name = "time", nullable = false)
-    public LocalDateTime getTime() {
-        return time;
-    }
+    private long id;
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "person_id")
-    public Person getPerson() {
-        return person;
-    }
+    private Person person;
 
-    @Column(name = "type", nullable = false)
+    @Column(name = "item_id")
+    private long itemId;
+
     @Enumerated(EnumType.STRING)
-    public LikeType getLikeType() {
-        return likeType;
-    }
+      private LikeType likeType;
 
-    @Column(name = "item_id", nullable = false)
-    public long getItemId() {
-        return itemId;
+    @CreationTimestamp
+    @Column(columnDefinition = "timestamp with time zone")
+    private LocalDateTime time;
+
+    public Like() {}
+
+    public Like(Person person, long itemId, LikeType likeType) {
+        this.person = person;
+        this.itemId = itemId;
+        this.likeType = likeType;
     }
 }
+
+
+

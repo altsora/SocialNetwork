@@ -3,7 +3,7 @@ spring:
     generate-ddl: false
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/snet?stringtype=unspecified}
@@ -41,3 +41,13 @@ cloudinary:
   cloud-name: javapro-socialnetwork-studygroup-7
   apikey: 751383328333813
   api-secret: 11mJVXn8IE-H5oftzDbYbycc3Ig
+
+#Local storage
+storage:
+  root:
+    location: tmp_storage
+
+#User permissions
+user:
+  permissions:
+    image: ALL

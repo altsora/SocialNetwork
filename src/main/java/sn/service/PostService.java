@@ -2,6 +2,7 @@ package sn.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -12,6 +13,7 @@ import sn.api.response.*;
 import sn.model.Comment;
 import sn.model.Person;
 import sn.model.Post;
+import sn.model.enums.LikeType;
 import sn.model.enums.StatusWallPost;
 import sn.repositories.CommentRepository;
 import sn.repositories.PostRepository;
@@ -25,20 +27,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class PostService {
 
-    @Autowired
     private final PostRepository postRepository;
+    private final AccountService accountService;
+    private final CommentService commentService;
+    private final CommentRepository commentRepository;
 
-    @Autowired
-    private AccountService accountService;
-
-    @Autowired
-    private CommentService commentService;
-
-    @Autowired
-    private CommentRepository commentRepository;
+    @Lazy
+    public PostService(PostRepository postRepository, AccountService accountService,
+        CommentService commentService, CommentRepository commentRepository) {
+        this.postRepository = postRepository;
+        this.accountService = accountService;
+        this.commentService = commentService;
+        this.commentRepository = commentRepository;
+    }
 
     /**
      * Поиск поста по его идентификатору.
@@ -356,22 +359,22 @@ public class PostService {
     }
 
     /**
-     * Метод ставит лайк под постом.
+     * Метод увеличивет счетчик лайков
      *
      * @param postId - идентификатор поста;
      */
-    public void putLike(long postId) {
+    public void incLikesCount(long postId) {
         Post post = findById(postId);
         post.setLikesCount(post.getLikesCount() + 1);
         postRepository.saveAndFlush(post);
     }
 
     /**
-     * Метод убирает лайк под постом.
+     * Метод уменьшает счетик лайков.
      *
      * @param postId - идентификатор поста;
      */
-    public void removeLike(long postId) {
+    public void decLikesCount(long postId) {
         Post post = findById(postId);
         post.setLikesCount(post.getLikesCount() - 1);
         postRepository.saveAndFlush(post);
@@ -381,6 +384,7 @@ public class PostService {
         PostCommentCreateRequest postCommentCreateRequest) {
 
         Comment comment = new Comment();
+
         if (postRepository.findById(id).isPresent()) {
             Post post = postRepository.findById(id).get();
             comment.setParent(commentService.findById(postCommentCreateRequest.getParentId()));
@@ -395,12 +399,12 @@ public class PostService {
 
     public CommentResponse editComment(long id, long commentId,
         PostCommentCreateRequest postCommentCreateRequest) {
-        Post post = postRepository.findById(id).get();
+
         if (commentRepository.findById(commentId).isPresent()) {
             Comment comment = commentRepository.findById(commentId).get();
             comment.setText(postCommentCreateRequest.getCommentText());
             commentRepository.saveAndFlush(comment);
-            post.getComments().add(comment);
+            postRepository.findById(id).ifPresent(post -> post.getComments().add(comment));
             return commentToCommentResponse(comment);
         } else {
             return new CommentResponse();

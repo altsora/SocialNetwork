@@ -24,7 +24,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "person")
-@EqualsAndHashCode(exclude = {"posts", "postLikes", "commentLikes", "ownDialogs", "dialogs", "sentMessages", "receivedMessages"})
+@EqualsAndHashCode(exclude = {"posts", "likes", "ownDialogs", "dialogs", "sentMessages", "receivedMessages"})
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,11 +64,9 @@ public class Person {
     @JsonManagedReference
     @OneToMany(mappedBy = "author")
     private List<Post> posts;
-    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
-    private Set<PostLike> postLikes;
     @JsonManagedReference
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
-    private Set<CommentLike> commentLikes;
+    private Set<Like> likes;
     @JsonManagedReference
     @OneToMany(mappedBy = "owner")
     private Set<Dialog> ownDialogs;
