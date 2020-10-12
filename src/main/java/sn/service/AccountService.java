@@ -397,7 +397,7 @@ public class AccountService {
     ) {
         Pageable pageable = PageRequest.of(offset / itemPerPage, itemPerPage);
         List<Person> personList = personRepository.searchPersons(
-                firstName, lastName, city, country, new TypedParameterValue(IntegerType.INSTANCE, ageFrom), new TypedParameterValue(IntegerType.INSTANCE, ageTo), pageable);
+                firstName, lastName, city, country, pageable);
         List<PersonResponse> searchResult = personList.stream()
                 .map(this::getPersonResponse)
                 .collect(Collectors.toList());
