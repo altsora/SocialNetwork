@@ -38,9 +38,7 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
             "lower(p.first_name) like lower(concat('%', nullif(:firstName, '%'), '%')) " +
             "and lower(p.last_name) like lower(concat('%', nullif(:lastName, '%'), '%')) " +
             "and lower(p.city) like lower(concat('%', nullif(:city, '%'),  '%')) " +
-            "and lower(p.country) like lower(concat('%', nullif(:country, '%'),  '%')) " +
-            "and date_part('year', current_date) - nullif(:ageFrom, 0) >= date_part('year', p.birth_date) " +
-            "and date_part('year', current_date) - nullif(:ageTo, 100) <= date_part('year', p.birth_date)"
+            "and lower(p.country) like lower(concat('%', nullif(:country, '%'),  '%'))"
             , nativeQuery = true)
     List<Person> searchPersons(@Param("firstName") String firstName,
                                       @Param("lastName") String lastName,
