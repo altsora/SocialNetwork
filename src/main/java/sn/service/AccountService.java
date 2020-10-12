@@ -3,6 +3,8 @@ package sn.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.hibernate.jpa.TypedParameterValue;
+import org.hibernate.type.IntegerType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -381,10 +383,10 @@ public class AccountService {
      *
      * @param firstName   - Имя пользователей.
      * @param lastName    - Фамилия пользователей.
+     * @param city        - Город пользователей.
+     * @param country     - Cтрана пользователей.
      * @param ageFrom     - Минимальный возраст пользователей.
      * @param ageTo       - Максимальный возраст пользователей.
-     * @param countryId   - Идентификатор страны пользователей.
-     * @param cityId      - Идентификатор города пользователей.
      * @param offset      - Отступ от начала результирующего списка пользователей.
      * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для отображения.
      * @return 200 - Возврат списка пользователей, подходящих по указанным параметрам.
@@ -394,9 +396,8 @@ public class AccountService {
             Integer offset, Integer itemPerPage
     ) {
         Pageable pageable = PageRequest.of(offset / itemPerPage, itemPerPage);
-        //TODO: без учёта города и страны. Если логика городов и стран заработает - изменить метод поиска в репозитории
-        List<Person> personList = personRepository.searchPersons(firstName, lastName, city, country, pageable);
-//        List<Person> personList = personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
+        List<Person> personList = personRepository.searchPersons(
+                firstName, lastName, city, country, new TypedParameterValue(IntegerType.INSTANCE, ageFrom), new TypedParameterValue(IntegerType.INSTANCE, ageTo), pageable);
         List<PersonResponse> searchResult = personList.stream()
                 .map(this::getPersonResponse)
                 .collect(Collectors.toList());

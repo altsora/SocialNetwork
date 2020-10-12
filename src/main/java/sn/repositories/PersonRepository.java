@@ -1,5 +1,6 @@
 package sn.repositories;
 
+import org.hibernate.jpa.TypedParameterValue;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,20 +34,21 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query("SELECT COUNT(p) FROM Person p")
     int getTotalCountUsers();
-
-    @Query(value = "SELECT p.* FROM Person p WHERE " +
-            "LOWER(p.first_name) LIKE LOWER(CONCAT('%', NULLIF(:firstName, '%'), '%')) " +      //имя
-            "AND LOWER(p.last_name) LIKE LOWER(CONCAT('%', NULLIF(:lastName, '%'), '%')) " +    //фамилия
-            "AND LOWER(p.city) LIKE LOWER(CONCAT('%', NULLIF(:city, '%'),  '%')) " +            //город
-            "AND LOWER(p.country) LIKE LOWER(CONCAT('%', NULLIF(:country, '%'),  '%'))"
-        , nativeQuery = true)
+    @Query(value = "select p.* from Person p where " +
+            "lower(p.first_name) like lower(concat('%', nullif(:firstName, '%'), '%')) " +
+            "and lower(p.last_name) like lower(concat('%', nullif(:lastName, '%'), '%')) " +
+            "and lower(p.city) like lower(concat('%', nullif(:city, '%'),  '%')) " +
+            "and lower(p.country) like lower(concat('%', nullif(:country, '%'),  '%')) " +
+            "and date_part('year', p.birth_date) between date_part('year', current_date) - nullif(:ageTo, 0) " +
+            "and date_part('year', current_date) - nullif(:ageFrom, 100)"
+            , nativeQuery = true)
     List<Person> searchPersons(@Param("firstName") String firstName,
-        @Param("lastName") String lastName,
-        @Param("city") String city,
-        @Param("country") String country,
-//        @Param("ageFrom") Integer ageFrom,
-//        @Param("ageTo") Integer ageTo,
-        Pageable pageable
+                                      @Param("lastName") String lastName,
+                                      @Param("city") String city,
+                                      @Param("country") String country,
+                                      @Param("ageFrom") TypedParameterValue ageFrom,
+                                      @Param("ageTo") TypedParameterValue ageTo,
+                                      Pageable pageable
     );
 
     /**
