@@ -16,9 +16,9 @@ public class PersonResponse extends AbstractResponse {
     @JsonProperty("last_name")
     private final String lastName;
     @JsonProperty("reg_date")
-    private final Long regDate;
+    private final long regDate;
     @JsonProperty("birth_date")
-    private final Long birthDate;
+    private final long birthDate;
     @JsonProperty("email")
     private final String email;
     @JsonProperty("phone")
@@ -34,7 +34,7 @@ public class PersonResponse extends AbstractResponse {
     @JsonProperty("messages_permission")
     private final String messagesPermission;
     @JsonProperty("last_online_time")
-    private final Long lastOnlineTime;
+    private final long lastOnlineTime;
     @JsonProperty("is_blocked")
     private final boolean isBlocked;
 }

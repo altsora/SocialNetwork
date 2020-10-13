@@ -140,7 +140,6 @@ public class NotificationService {
 
         return new ServiceResponse<>(ResponseDataMessage.ok());
     }
-
     /**
      * Метод getAllNotificationType.
      * Получение все типы нотификации и сохраняет в HASHMAP.

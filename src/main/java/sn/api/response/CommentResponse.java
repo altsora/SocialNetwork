@@ -8,9 +8,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CommentResponse {
+public class CommentResponse extends AbstractResponse{
     @JsonProperty("id")
     private long id;
     @JsonProperty("post_id")
@@ -22,7 +22,7 @@ public class CommentResponse {
     @JsonProperty("parent_id")
     private Long parentId;
     @JsonProperty("time")
-    private Long time;
+    private long time;
     @JsonProperty("is_blocked")
     private boolean isBlocked;
 }

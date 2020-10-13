@@ -14,3 +14,4 @@ public class ErrorResponse extends AbstractResponse {
     @JsonProperty("error_description")
     private final String errorDescription;
 }
+

@@ -26,7 +26,7 @@ public class JwtTokenAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         String header = httpServletRequest.getHeader(jwtConfig.getHeader());
 
@@ -39,11 +39,11 @@ public class JwtTokenAuthFilter extends OncePerRequestFilter {
         String token = header.replace(jwtConfig.getPrefix(), "");
 
         try {    // исключение может быть брошено, если, например, время действия токена истекло
-                // 4. Проверяем токен
+            // 4. Проверяем токен
             Jws<Claims> claims = Jwts.parserBuilder()
-                    .setSigningKey(jwtConfig.getSecret().getBytes())
-                    .build()
-                    .parseClaimsJws(token);
+                .setSigningKey(jwtConfig.getSecret().getBytes())
+                .build()
+                .parseClaimsJws(token);
 
             String username = claims.getBody().getSubject();
 
@@ -53,7 +53,7 @@ public class JwtTokenAuthFilter extends OncePerRequestFilter {
 
                 // 5. Создаем авторизированный объект
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                        username, null, authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+                    username, null, authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
 
                 // 6. Аутентифицируем пользователя
                 SecurityContextHolder.getContext().setAuthentication(auth);

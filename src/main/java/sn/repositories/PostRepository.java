@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sn.model.Post;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -27,4 +28,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT count(p) FROM Post p WHERE p.author.id = :personId")
     int getTotalCountPostsByPersonId(@Param("personId") long personId);
+
+    @Query(value = "SELECT * FROM posts where posts.time < " +
+            ":dateTo and posts.time > :dateFrom and posts.text like " +
+            "concat('%',:query,'%')",
+            nativeQuery = true)
+    List<Post> findAllByTextAndTime
+            (@Param("query") String text,
+             @Param("dateFrom") LocalDateTime dateFrom,
+             @Param("dateTo") LocalDateTime dateTo,
+             Pageable pageable);
 }

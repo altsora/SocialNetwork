@@ -45,8 +45,8 @@ public class JwtUsernameAndPasswordAuthFilter extends UsernamePasswordAuthentica
     private ObjectMapper objectMapper = new ObjectMapper();
 
     public JwtUsernameAndPasswordAuthFilter(AuthenticationManager authManager, JwtConfig jwtConfig,
-                                            PersonRepository personRepository,
-                                            AccountService accountService) {
+        PersonRepository personRepository,
+        AccountService accountService) {
         this.authManager = authManager;
         this.jwtConfig = jwtConfig;
         this.personRepository = personRepository;
@@ -58,7 +58,7 @@ public class JwtUsernameAndPasswordAuthFilter extends UsernamePasswordAuthentica
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException {
+        throws AuthenticationException {
 
         try {
             // 1. Получаем учетные данные из HTTP-запроса
@@ -66,7 +66,7 @@ public class JwtUsernameAndPasswordAuthFilter extends UsernamePasswordAuthentica
 
             // 2. Создаем аутентифицированный объект(с полученными учетными данными) для использования менеджером аутентификации
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    creds.getEmail(), creds.getPassword(), Collections.emptyList());
+                creds.getEmail(), creds.getPassword(), Collections.emptyList());
 
             // 3. Атентификация пользователя менеджером аутентификации
             return authManager.authenticate(authToken);
@@ -78,19 +78,19 @@ public class JwtUsernameAndPasswordAuthFilter extends UsernamePasswordAuthentica
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        FilterChain chain, Authentication authResult) throws IOException, ServletException {
         long now = System.currentTimeMillis();
 
         @SuppressWarnings("deprecation")
         String token = Jwts.builder()
-                .setSubject(authResult.getName())
-                // Конвертируем в список строк(важно!)
-                .claim("authorities", authResult.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-                .setIssuedAt(new Date(now))
-                .setExpiration(new Date(now + jwtConfig.getExpiration() * 1000))  // milliseconds!
-                .signWith(SignatureAlgorithm.HS256, jwtConfig.getSecret().getBytes())
-                .compact();
+            .setSubject(authResult.getName())
+            // Конвертируем в список строк(важно!)
+            .claim("authorities", authResult.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+            .setIssuedAt(new Date(now))
+            .setExpiration(new Date(now + jwtConfig.getExpiration() * 1000))  // milliseconds!
+            .signWith(SignatureAlgorithm.HS256, jwtConfig.getSecret().getBytes())
+            .compact();
 
         response.addHeader(jwtConfig.getHeader(), jwtConfig.getPrefix() + token);
 
@@ -104,19 +104,19 @@ public class JwtUsernameAndPasswordAuthFilter extends UsernamePasswordAuthentica
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                              AuthenticationException failed) throws IOException, ServletException {
+        AuthenticationException failed) throws IOException, ServletException {
         enrichAuthenticationResponse(response, false, null, null);
     }
 
     private void enrichAuthenticationResponse(HttpServletResponse response, boolean success,
-                                              String email, String token) {
+        String email, String token) {
         try {
             if (success) {
                 PersonResponse personResponse =
-                        accountService.getPersonResponse(personRepository.findById(1L).orElse(null));
+                    accountService.getPersonResponse(personRepository.findById(1L).orElse(null));
 
                 PersonResponseWithToken personResponseWithToken =
-                        new PersonResponseWithToken(personResponse, jwtConfig.getPrefix() + token);
+                    new PersonResponseWithToken(personResponse, jwtConfig.getPrefix() + token);
 
                 LoginResponse loginResponse = new LoginResponse();
                 loginResponse.setTimestamp(new java.util.Date().getTime() / 1000L);
@@ -125,16 +125,16 @@ public class JwtUsernameAndPasswordAuthFilter extends UsernamePasswordAuthentica
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.setCharacterEncoding("UTF-8");
                 response.getWriter()
-                        .println(objectMapper.writeValueAsString(loginResponse));
+                    .println(objectMapper.writeValueAsString(loginResponse));
 
             }else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
-                        .error("invalid_request")
-                        .errorDescription("string")
-                        .build();
+                    .error("invalid_request")
+                    .errorDescription("string")
+                    .build();
 
                 response.getWriter()
-                        .println(objectMapper.writeValueAsString(errorResponse));
+                    .println(objectMapper.writeValueAsString(errorResponse));
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
             }
 

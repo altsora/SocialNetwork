@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import sn.model.enums.FriendshipStatusCode;
 
 @Getter
-@Builder
+@Setter
 @RequiredArgsConstructor
 public class IsFriendResponse extends AbstractResponse {
 

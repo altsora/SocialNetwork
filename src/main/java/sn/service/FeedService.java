@@ -20,11 +20,11 @@ public class FeedService {
      */
     public ResponseEntity<ServiceResponse> getFeeds(String name, int offset, int itemPerPage) {
         // TODO сменить, когда появится проверка авторизации
-        boolean isNotAuthorized = false;
+        boolean isAuthorized = true;
         // TODO сменить, успешное получение списка новостей
         boolean feedsIsOk = true;
 
-        if (isNotAuthorized) {
+        if (!isAuthorized) {
             return new ResponseEntity<>(new ServiceResponse<>("invalid_request",
                     new ResponseDataMessage("User isn`t authorized")), HttpStatus.UNAUTHORIZED);
         }

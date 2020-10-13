@@ -1,5 +1,6 @@
 package sn.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import sn.api.requests.IsFriendsRequest;
 import sn.api.response.IsFriendResponse;
 import sn.model.Friendship;
 import sn.model.Person;
+import sn.model.*;
 import sn.model.enums.FriendshipStatusCode;
 import sn.repositories.FriendshipRepository;
 import sn.repositories.PersonRepository;

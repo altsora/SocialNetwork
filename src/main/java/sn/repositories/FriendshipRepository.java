@@ -49,3 +49,5 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     Friendship getFriendship(long id, long friendId, String status);
 
 }
+
+

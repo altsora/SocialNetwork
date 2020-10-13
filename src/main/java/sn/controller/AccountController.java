@@ -3,7 +3,6 @@ package sn.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,13 +42,13 @@ public class AccountController {
      */
     @PostMapping("/register")
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> register(
-            @RequestBody UserRegistrationRequest userRegistrationRequest) {
+        @RequestBody UserRegistrationRequest userRegistrationRequest) {
         return accountService.register(userRegistrationRequest) ? ResponseEntity.status(HttpStatus.OK).body(
-                new ServiceResponse<>(new ResponseDataMessage("Registration successful"))
+            new ServiceResponse<>(new ResponseDataMessage("Registration successful"))
         ) :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                        new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
-                );
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
+            );
     }
 
     /**
@@ -64,15 +63,15 @@ public class AccountController {
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> recoveryPassword(@RequestBody String email) {
         if (!Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
+                new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
         return accountService.recoveryPassword(email) ?
-                ResponseEntity.status(HttpStatus.OK).body(
-                        new ServiceResponse<>(new ResponseDataMessage("Recovery information was sent to e-mail"))
-                ) :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                        new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
-                );
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ServiceResponse<>(new ResponseDataMessage("Recovery information was sent to e-mail"))
+            ) :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
+            );
     }
 
     /**
@@ -87,15 +86,15 @@ public class AccountController {
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setPassword(@RequestBody String password) {
         if (!Strings.isNotEmpty(password)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ServiceResponse<>("Bad request", new ResponseDataMessage("New password null or empty")));
+                new ServiceResponse<>("Bad request", new ResponseDataMessage("New password null or empty")));
         }
         return accountService.setNewPassword(password) ?
-                ResponseEntity.status(HttpStatus.OK).body(
-                        new ServiceResponse<>(new ResponseDataMessage("Person password successfully changed"))
-                ) :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                        new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
-                );
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ServiceResponse<>(new ResponseDataMessage("Person password successfully changed"))
+            ) :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
+            );
     }
 
     /**
@@ -110,15 +109,15 @@ public class AccountController {
     public ResponseEntity<ServiceResponse<ResponseDataMessage>> setEmail(@RequestBody String email) {
         if (!Strings.isNotEmpty(email)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
+                new ServiceResponse<>("Bad request", new ResponseDataMessage("Email is null or empty")));
         }
         return accountService.changeEmail(email) ?
-                ResponseEntity.status(HttpStatus.OK).body(
-                        new ServiceResponse<>(new ResponseDataMessage("Person email successfully changed"))
-                ) :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                        new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
-                );
+            ResponseEntity.status(HttpStatus.OK).body(
+                new ServiceResponse<>(new ResponseDataMessage("Person email successfully changed"))
+            ) :
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                new ServiceResponse<>("Bad request", new ResponseDataMessage("Service unavailable"))
+            );
     }
 
     //Редактирование настроек оповещения

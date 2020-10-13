@@ -1,5 +1,6 @@
 package sn.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import sn.service.FeedService;
 public class FeedController {
     private final FeedService feedService;
 
+    @Autowired
     public FeedController(FeedService feedService) {
         this.feedService = feedService;
     }

@@ -5,10 +5,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Getter
-@Builder
-@RequiredArgsConstructor
-public class LikeValueResponse extends AbstractResponse {
-    @JsonProperty("likes")
-    private final boolean likeValue;
-}
+    @Getter
+    @Builder
+    @RequiredArgsConstructor
+    public class LikeValueResponse extends AbstractResponse {
+        @JsonProperty("likes")
+        private final boolean likeValue;
+    }

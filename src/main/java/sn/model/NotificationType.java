@@ -2,9 +2,9 @@ package sn.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sn.model.enums.NotificationTypeCode;
 
 import javax.persistence.*;
+import sn.model.enums.NotificationTypeCode;
 
 /**
  * @author Andrey.Kazakov
