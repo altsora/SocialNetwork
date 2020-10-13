@@ -335,24 +335,24 @@ public class ProfileControllerTest extends AbstractWebController {
     public void findUsersOk() throws Exception {
         String firstName = "first_name";
         String lastName = "last_name";
+        String city = "Moscow";
+        String country = "Russia";
         Integer ageFrom = 1;
         Integer ageTo = 2;
-        Integer countryId = 3;
-        Integer cityId = 4;
         Integer offset = 0;
         Integer itemPerPage = 20;
 
         Mockito.doReturn(okResponse)
                 .when(accountService)
-                .findUsers(firstName, lastName, ageFrom, ageTo, countryId, cityId, offset, itemPerPage);
+                .findUsers(firstName, lastName, city, country, ageFrom, ageTo, offset, itemPerPage);
 
         mockMvc.perform(get("/users/search")
                 .param("first_name", firstName)
                 .param("last_name", lastName)
+                .param("city", city)
+                .param("country", country)
                 .param("age_from", String.valueOf(ageFrom))
                 .param("age_to", String.valueOf(ageTo))
-                .param("country_id", String.valueOf(countryId))
-                .param("city_id", String.valueOf(cityId))
                 .param("offset", String.valueOf(offset))
                 .param("itemPerPage", String.valueOf(itemPerPage)))
                 .andDo(print())
@@ -368,20 +368,22 @@ public class ProfileControllerTest extends AbstractWebController {
     public void findUsersWithoutCountryIdAndCityIdOk() throws Exception {
         String firstName = "first_name";
         String lastName = "last_name";
+        String city = "Moscow";
+        String country = "Russia";
         Integer ageFrom = 1;
         Integer ageTo = 2;
-        Integer countryId = null;
-        Integer cityId = null;
         Integer offset = 0;
         Integer itemPerPage = 20;
 
         Mockito.doReturn(okResponse)
                 .when(accountService)
-                .findUsers(firstName, lastName, ageFrom, ageTo, countryId, cityId, offset, itemPerPage);
+                .findUsers(firstName, lastName, city, country, ageFrom,  ageTo, offset, itemPerPage);
 
         mockMvc.perform(get("/users/search")
                 .param("first_name", firstName)
                 .param("last_name", lastName)
+                .param("city", city)
+                .param("country", country)
                 .param("age_from", String.valueOf(ageFrom))
                 .param("age_to", String.valueOf(ageTo))
                 .param("offset", String.valueOf(offset))
@@ -399,16 +401,16 @@ public class ProfileControllerTest extends AbstractWebController {
     public void findUsersNoParametersOk() throws Exception {
         String firstName = null;
         String lastName = null;
+        String city = null;
+        String country = null;
         Integer ageFrom = null;
         Integer ageTo = null;
-        Integer countryId = null;
-        Integer cityId = null;
         Integer offset = 0;
         Integer itemPerPage = 20;
 
         Mockito.doReturn(okResponse)
                 .when(accountService)
-                .findUsers(firstName, lastName, ageFrom, ageTo, countryId, cityId, offset, itemPerPage);
+                .findUsers(firstName, lastName, city, country, ageFrom, ageTo, offset, itemPerPage);
 
         mockMvc.perform(get("/users/search")
                 .param("offset", String.valueOf(offset))

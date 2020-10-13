@@ -21,15 +21,20 @@ import sn.repositories.PersonRepository;
 import sn.utils.ErrorUtil;
 import sn.utils.TimeUtil;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -43,15 +48,18 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AccountService {
+
     private final PersonRepository personRepository;
     private final PasswordEncoder passwordEncoder;
     private final Authentication authentication;
     private final MailSenderService mailSenderService;
     private final PostService postService;
     private final CommentService commentService;
-
     @Value("${user.permissions.image}")
     private String userImagePermissions;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public boolean exists(long personId) {
         return personRepository.existsById(personId);
@@ -77,8 +85,6 @@ public class AccountService {
                 .about(person.getAbout())
                 .city(person.getCity())
                 .country(person.getCountry())
-//                .city(CityResponse.builder().title("Москва").build())
-//                .country(CountryResponse.builder().title("Россия").build())
                 .messagesPermission(person.getMessagesPermission())
                 .lastOnlineTime(TimeUtil.getTimestampFromLocalDateTime(person.getLastOnlineTime()))
                 .isBlocked(person.isBlocked())
@@ -383,21 +389,20 @@ public class AccountService {
      *
      * @param firstName   - Имя пользователей.
      * @param lastName    - Фамилия пользователей.
+     * @param city        - Город пользователей.
+     * @param country     - Cтрана пользователей.
      * @param ageFrom     - Минимальный возраст пользователей.
      * @param ageTo       - Максимальный возраст пользователей.
-     * @param countryId   - Идентификатор страны пользователей.
-     * @param cityId      - Идентификатор города пользователей.
      * @param offset      - Отступ от начала результирующего списка пользователей.
      * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для отображения.
      * @return 200 - Возврат списка пользователей, подходящих по указанным параметрам.
      */
     public ResponseEntity<ServiceResponseDataList<PersonResponse>> findUsers(
-            String firstName, String lastName, Integer ageFrom, Integer ageTo,
-            Integer countryId, Integer cityId, Integer offset, Integer itemPerPage
+            String firstName, String lastName, String city, String country, Integer ageFrom, Integer ageTo,
+            Integer offset, Integer itemPerPage
     ) {
         Pageable pageable = PageRequest.of(offset / itemPerPage, itemPerPage);
-        //TODO: без учёта города и страны. Если логика городов и стран заработает - изменить метод поиска в репозитории
-        List<Person> personList = personRepository.searchPersons(firstName, lastName, ageFrom, ageTo, pageable);
+        List<Person> personList = this.searchUsersWithParameters(firstName, lastName, city, country, ageFrom, ageTo, pageable);
         List<PersonResponse> searchResult = personList.stream()
                 .map(this::getPersonResponse)
                 .collect(Collectors.toList());
@@ -421,5 +426,65 @@ public class AccountService {
         personRepository.saveAndFlush(person);
         log.info("User with id {} changed lock status", person.getId());
         return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+    }
+
+    /**
+     * Метод searchUsersWithParameters.
+     * Поиск пользователей с учетом параметров запроса.
+     * @param firstName - имя
+     * @param lastName - фамилия
+     * @param city - город
+     * @param country - страна
+     * @param ageFrom - количество лет ОТ
+     * @param ageTo - количество ло ДО
+     * @param pageable - параметры пагинации
+     * @return список найденных пользователей
+     */
+    public List<Person> searchUsersWithParameters(String firstName, String lastName, String city, String country,
+                                                  Integer ageFrom, Integer ageTo, Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Person> criteriaQuery = criteriaBuilder.createQuery(Person.class);
+        Root<Person> person = criteriaQuery.from(Person.class);
+        criteriaQuery.where(createPredicateArray(criteriaBuilder, person, firstName, lastName, city, country,
+                ageFrom, ageTo));
+        TypedQuery<Person> searchQuery = entityManager.createQuery(criteriaQuery);
+        searchQuery.setFirstResult(pageable.first().getPageNumber());
+        searchQuery.setMaxResults(pageable.getPageSize());
+        return searchQuery.getResultList();
+    }
+
+    /**
+     * Метод createPredicateArray.
+     * Построение массива условий запроса в базу данных.
+     * return массив условий для запроса.
+     */
+    private Predicate[] createPredicateArray(CriteriaBuilder criteriaBuilder, Root<Person> person,
+                                             String firstName, String lastName, String city, String country,
+                                             Integer ageFrom, Integer ageTo) {
+        Set<Predicate> predicateSet = new HashSet<>();
+        LocalDate today = LocalDate.now();
+        if (Strings.isNotEmpty(firstName)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("firstName")),
+                    "%" + firstName.toLowerCase() + "%"));
+        }
+        if (Strings.isNotEmpty(lastName)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("lastName")),
+                    "%" + lastName.toLowerCase() + "%"));
+        }
+        if (Strings.isNotEmpty(city)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("city")),
+                    "%" + city.toLowerCase() + "%"));
+        }
+        if (Strings.isNotEmpty(country)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("country")),
+                    "%" + country.toLowerCase() + "%"));
+        }
+        if (ageFrom != null && ageFrom > 0) {
+            predicateSet.add(criteriaBuilder.lessThanOrEqualTo(person.get("birthDate"), today.minusYears(ageFrom)));
+        }
+        if (ageTo != null && ageTo > 0) {
+            predicateSet.add(criteriaBuilder.greaterThanOrEqualTo(person.get("birthDate"), today.minusYears(ageTo)));
+        }
+        return predicateSet.toArray(new Predicate[]{});
     }
 }

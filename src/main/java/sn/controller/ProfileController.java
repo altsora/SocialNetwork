@@ -107,10 +107,10 @@ public class ProfileController {
      *
      * @param firstName   - Имя пользователей.
      * @param lastName    - Фамилия пользователей.
+     * @param city        - Город пользователя.
+     * @param country     - Страна пользователя.
      * @param ageFrom     - Минимальный возраст пользователей.
      * @param ageTo       - Максимальный возраст пользователей.
-     * @param countryId   - Идентификатор страны пользователей.
-     * @param cityId      - Идентификатор города пользователей.
      * @param offset      - Отступ от начала результирующего списка пользователей.
      * @param itemPerPage - Количество пользователей из результирующего списка, которые представлены для отображения.
      * @return 200 - Возврат списка пользователей, подходящих по указанным параметрам;
@@ -120,14 +120,14 @@ public class ProfileController {
     public ResponseEntity<ServiceResponseDataList<PersonResponse>> findUsers(
             @RequestParam(value = "first_name", required = false) String firstName,
             @RequestParam(value = "last_name", required = false) String lastName,
+            @RequestParam(value = "city", required = false) String city,
+            @RequestParam(value = "country", required = false) String country,
             @RequestParam(value = "age_from", required = false) Integer ageFrom,
             @RequestParam(value = "age_to", required = false) Integer ageTo,
-            @RequestParam(value = "country_id", required = false) Integer countryId,
-            @RequestParam(value = "city_id", required = false) Integer cityId,
             @RequestParam(value = "offset", defaultValue = "0") Integer offset,
             @RequestParam(value = "itemPerPage", defaultValue = "20") Integer itemPerPage
     ) {
-        return accountService.findUsers(firstName, lastName, ageFrom, ageTo, countryId, cityId, offset, itemPerPage);
+        return accountService.findUsers(firstName, lastName, city, country, ageFrom, ageTo, offset, itemPerPage);
     }
 
     /**
