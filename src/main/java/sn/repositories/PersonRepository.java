@@ -34,18 +34,6 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     @Query("SELECT COUNT(p) FROM Person p")
     int getTotalCountUsers();
-    @Query(value = "select p.* from Person p where " +
-            "lower(p.first_name) like lower(concat('%', nullif(:firstName, '%'), '%')) " +
-            "and lower(p.last_name) like lower(concat('%', nullif(:lastName, '%'), '%')) " +
-            "and lower(p.city) like lower(concat('%', nullif(:city, '%'),  '%')) " +
-            "and lower(p.country) like lower(concat('%', nullif(:country, '%'),  '%'))"
-            , nativeQuery = true)
-    List<Person> searchPersons(@Param("firstName") String firstName,
-                                      @Param("lastName") String lastName,
-                                      @Param("city") String city,
-                                      @Param("country") String country,
-                                      Pageable pageable
-    );
 
     /**
      * Метод findFriends. Нахождение друзей пользователя

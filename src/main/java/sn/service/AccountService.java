@@ -3,8 +3,6 @@ package sn.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.hibernate.jpa.TypedParameterValue;
-import org.hibernate.type.IntegerType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,15 +21,20 @@ import sn.repositories.PersonRepository;
 import sn.utils.ErrorUtil;
 import sn.utils.TimeUtil;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -54,6 +57,9 @@ public class AccountService {
     private final CommentService commentService;
     @Value("${user.permissions.image}")
     private String userImagePermissions;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public boolean exists(long personId) {
         return personRepository.existsById(personId);
@@ -396,8 +402,7 @@ public class AccountService {
             Integer offset, Integer itemPerPage
     ) {
         Pageable pageable = PageRequest.of(offset / itemPerPage, itemPerPage);
-        List<Person> personList = personRepository.searchPersons(
-                firstName, lastName, city, country, pageable);
+        List<Person> personList = this.searchUsersWithParameters(firstName, lastName, city, country, ageFrom, ageTo, pageable);
         List<PersonResponse> searchResult = personList.stream()
                 .map(this::getPersonResponse)
                 .collect(Collectors.toList());
@@ -421,5 +426,65 @@ public class AccountService {
         personRepository.saveAndFlush(person);
         log.info("User with id {} changed lock status", person.getId());
         return ResponseEntity.ok(new ServiceResponse<>(ResponseDataMessage.ok()));
+    }
+
+    /**
+     * Метод searchUsersWithParameters.
+     * Поиск пользователей с учетом параметров запроса.
+     * @param firstName - имя
+     * @param lastName - фамилия
+     * @param city - город
+     * @param country - страна
+     * @param ageFrom - количество лет ОТ
+     * @param ageTo - количество ло ДО
+     * @param pageable - параметры пагинации
+     * @return список найденных пользователей
+     */
+    public List<Person> searchUsersWithParameters(String firstName, String lastName, String city, String country,
+                                                  Integer ageFrom, Integer ageTo, Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Person> criteriaQuery = criteriaBuilder.createQuery(Person.class);
+        Root<Person> person = criteriaQuery.from(Person.class);
+        criteriaQuery.where(createPredicateArray(criteriaBuilder, person, firstName, lastName, city, country,
+                ageFrom, ageTo));
+        TypedQuery<Person> searchQuery = entityManager.createQuery(criteriaQuery);
+        searchQuery.setFirstResult(pageable.first().getPageNumber());
+        searchQuery.setMaxResults(pageable.getPageSize());
+        return searchQuery.getResultList();
+    }
+
+    /**
+     * Метод createPredicateArray.
+     * Построение массива условий запроса в базу данных.
+     * return массив условий для запроса.
+     */
+    private Predicate[] createPredicateArray(CriteriaBuilder criteriaBuilder, Root<Person> person,
+                                             String firstName, String lastName, String city, String country,
+                                             Integer ageFrom, Integer ageTo) {
+        Set<Predicate> predicateSet = new HashSet<>();
+        LocalDate today = LocalDate.now();
+        if (Strings.isNotEmpty(firstName)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("firstName")),
+                    "%" + firstName.toLowerCase() + "%"));
+        }
+        if (Strings.isNotEmpty(lastName)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("lastName")),
+                    "%" + lastName.toLowerCase() + "%"));
+        }
+        if (Strings.isNotEmpty(city)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("city")),
+                    "%" + city.toLowerCase() + "%"));
+        }
+        if (Strings.isNotEmpty(country)) {
+            predicateSet.add(criteriaBuilder.like(criteriaBuilder.lower(person.get("country")),
+                    "%" + country.toLowerCase() + "%"));
+        }
+        if (ageFrom != null && ageFrom > 0) {
+            predicateSet.add(criteriaBuilder.lessThanOrEqualTo(person.get("birthDate"), today.minusYears(ageFrom)));
+        }
+        if (ageTo != null && ageTo > 0) {
+            predicateSet.add(criteriaBuilder.greaterThanOrEqualTo(person.get("birthDate"), today.minusYears(ageTo)));
+        }
+        return predicateSet.toArray(new Predicate[]{});
     }
 }
